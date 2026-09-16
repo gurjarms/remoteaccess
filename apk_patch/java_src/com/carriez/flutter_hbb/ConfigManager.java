@@ -40,6 +40,83 @@ public class ConfigManager {
      */
     public static String API_HOST = "192.168.1.43";
 
+    /**
+     * Get the base API URL (e.g. "http://192.168.1.43:8000" or "https://mydomain.com").
+     * Omits port for standard ports (80 for http, 443 for https) so production
+     * deployments never suffer from unwanted ":8000" or ":443" port suffixes.
+     */
+    public static String getApiBaseUrl() {
+        boolean isStandardPort = ("http".equalsIgnoreCase(API_SCHEME) && "80".equals(API_PORT))
+            || ("https".equalsIgnoreCase(API_SCHEME) && "443".equals(API_PORT));
+        if (isStandardPort) {
+            return API_SCHEME + "://" + API_HOST;
+        } else {
+            return API_SCHEME + "://" + API_HOST + ":" + API_PORT;
+        }
+    }
+
+    /**
+     * Format a complete API endpoint URL for any given path.
+     */
+    public static String getApiUrl(String path) {
+        String base = getApiBaseUrl();
+        if (path == null || path.isEmpty()) return base;
+        if (!path.startsWith("/")) path = "/" + path;
+        return base + path;
+    }
+
+    /**
+     * Decomposes and parses full server URLs like "https://mydomain.com" or "http://192.168.1.43:8000"
+     * into API_SCHEME, API_HOST, and API_PORT cleanly.
+     */
+    public static void parseAndSetApiServer(String rawUrl) {
+        if (rawUrl == null || rawUrl.trim().isEmpty()) return;
+        try {
+            String s = rawUrl.trim();
+            if (!s.startsWith("http://") && !s.startsWith("https://")) {
+                if (s.contains(":443")) {
+                    s = "https://" + s;
+                } else if (s.contains(".") && !Character.isDigit(s.charAt(0)) && !s.contains(":8000")) {
+                    s = "https://" + s;
+                } else {
+                    s = "http://" + s;
+                }
+            }
+            java.net.URI uri = new java.net.URI(s);
+            if (uri.getScheme() != null) {
+                API_SCHEME = uri.getScheme().toLowerCase();
+            }
+            if (uri.getHost() != null) {
+                API_HOST = uri.getHost();
+            }
+            int port = uri.getPort();
+            if (port != -1) {
+                API_PORT = String.valueOf(port);
+            } else {
+                API_PORT = "https".equalsIgnoreCase(API_SCHEME) ? "443" : "80";
+            }
+            Log.i(TAG, "Configured API server URL: " + getApiBaseUrl() + " (host=" + API_HOST + ", port=" + API_PORT + ", scheme=" + API_SCHEME + ")");
+        } catch (Throwable t) {
+            Log.w(TAG, "parseAndSetApiServer error: ", t);
+        }
+    }
+
+    /**
+     * Strips http://, https://, ports, and slashes from a host string
+     * so RustDesk relay/rendezvous servers always receive a clean IP or domain.
+     */
+    public static String sanitizeHost(String host) {
+        if (host == null) return "";
+        host = host.trim();
+        if (host.startsWith("http://")) host = host.substring("http://".length());
+        if (host.startsWith("https://")) host = host.substring("https://".length());
+        int slashIdx = host.indexOf('/');
+        if (slashIdx != -1) host = host.substring(0, slashIdx);
+        int colonIdx = host.indexOf(':');
+        if (colonIdx != -1) host = host.substring(0, colonIdx);
+        return host.trim();
+    }
+
     public static int getConfigVersion(Context context) {
         try {
             if (context != null) {
@@ -494,9 +571,16 @@ public class ConfigManager {
 
     private static void updateRustDesk2Toml(File file) {
         try {
+            // Relay server addresses use SERVER_HOST (can migrate to a different IP)
             String idServer = SERVER_HOST + ":" + HBBS_PORT;
             String relayServer = SERVER_HOST + ":" + HBBR_PORT;
-            String apiServer = API_SCHEME + "://" + SERVER_HOST + ":" + API_PORT;
+
+            // API server URL MUST use API_HOST (the Django management server - never changes).
+            // Omit port for standard ports (80 for http, 443 for https) so production
+            // deployments on https://mydomain.com work without a stray :443 suffix.
+            boolean isStandardPort = ("http".equals(API_SCHEME) && "80".equals(API_PORT))
+                || ("https".equals(API_SCHEME) && "443".equals(API_PORT));
+            String apiServer = API_SCHEME + "://" + API_HOST + (isStandardPort ? "" : ":" + API_PORT);
 
             StringBuilder sb = new StringBuilder();
             sb.append("rendezvous_server = '").append(idServer).append("'\n");
@@ -509,6 +593,7 @@ public class ConfigManager {
             sb.append("permanent-password-set = 'true'\n");
             sb.append("approve-mode = 'password'\n");
             sb.append("allow-deep-link-password = 'Y'\n");
+            sb.append("allow-deep-link-server-settings = 'Y'\n");
             sb.append("allow-numeric-one-time-password = 'N'\n");
             sb.append("hide-security-settings = 'Y'\n");
             sb.append("disable-change-id = 'Y'\n");
@@ -542,6 +627,7 @@ public class ConfigManager {
             sb.append("permanent-password-set = 'true'\n");
             sb.append("approve-mode = 'password'\n");
             sb.append("allow-deep-link-password = 'Y'\n");
+            sb.append("allow-deep-link-server-settings = 'Y'\n");
             sb.append("allow-numeric-one-time-password = 'N'\n");
             sb.append("hide-security-settings = 'Y'\n");
             sb.append("disable-change-id = 'Y'\n");
@@ -609,8 +695,9 @@ public class ConfigManager {
     public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort, int newVersion) {
         try {
             boolean serverChanged = false;
-            if (newHost != null && !newHost.trim().isEmpty() && !newHost.trim().equals(SERVER_HOST)) {
-                SERVER_HOST = newHost.trim();
+            String cleanHost = sanitizeHost(newHost);
+            if (!cleanHost.isEmpty() && !cleanHost.equals(SERVER_HOST)) {
+                SERVER_HOST = cleanHost;
                 serverChanged = true;
                 // NOTE: API_HOST is intentionally NOT updated here.
                 // SERVER_HOST is the RustDesk relay/rendezvous server that can change per migration.
@@ -647,11 +734,11 @@ public class ConfigManager {
             updateRustDesk2Toml(toml2);
             updateRustDeskLocalToml(tomlLocal);
             Log.i(TAG, "Dynamic server config applied: relay=" + SERVER_HOST + ":" + HBBS_PORT
-                + ", api=" + API_HOST + ":" + API_PORT
+                + ", api=" + getApiBaseUrl()
                 + " (v" + newVersion + ", serverChanged=" + serverChanged + ")");
 
             if (serverChanged) {
-                restartServiceCleanly(context);
+                restartAppCleanly(context);
             }
         } catch (Throwable t) {
             Log.e(TAG, "applyServerConfig error: ", t);
@@ -659,40 +746,51 @@ public class ConfigManager {
     }
 
     public static void restartServiceCleanly(final Context context) {
+        restartAppCleanly(context);
+    }
+
+    /**
+     * Executes a clean process restart when server configuration changes.
+     * This terminates the previous Rust network runtime (which was listening
+     * on the old server IP) and launches MainActivity fresh so Rust loads
+     * the new toml files from disk and connects to the new relay/ID server immediately.
+     */
+    public static void restartAppCleanly(final Context context) {
         if (context == null) return;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(1200); // 1.2s delay to allow HTTP ACK to transmit
-                    Log.i(TAG, "Restarting MainService to drop old connection and bind to new server...");
+                    Thread.sleep(1500); // 1.5s delay to allow HTTP ACK to transmit cleanly to Django
+                    Log.i(TAG, "Restarting Ninja Desk to bind native Rust core to new server: " + SERVER_HOST + ":" + HBBS_PORT);
 
+                    // 1. Root restart: cleanly terminates the old process and re-launches MainActivity
                     try {
-                        Intent serviceIntent = new Intent();
-                        serviceIntent.setClassName("com.carriez.flutter_hbb", "com.carriez.flutter_hbb.MainService");
-                        context.stopService(serviceIntent);
-                        Thread.sleep(800);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            context.startForegroundService(serviceIntent);
-                        } else {
-                            context.startService(serviceIntent);
-                        }
+                        String cmd = "am force-stop com.carriez.flutter_hbb && sleep 1 && " +
+                                     "am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true";
+                        Process p = Runtime.getRuntime().exec(new String[]{"/system/bin/su", "-c", cmd});
+                        p.waitFor();
+                        Log.i(TAG, "Root process restart executed successfully.");
+                        return;
                     } catch (Throwable t) {
-                        Log.w(TAG, "Standard Intent service restart warning: " + t.getMessage());
+                        Log.w(TAG, "Root restart warning: " + t.getMessage());
                     }
 
-                    // Also invoke root command to ensure MainService is cleanly started if elevated
+                    // 2. Non-root fallback: re-launch MainActivity and terminate current process
                     try {
-                        Process p = Runtime.getRuntime().exec(new String[]{
-                            "/system/bin/su", "-c",
-                            "am stopservice com.carriez.flutter_hbb/.MainService && sleep 1 && am startservice -n com.carriez.flutter_hbb/.MainService"
-                        });
-                        p.waitFor();
-                    } catch (Throwable ignored) {}
-
-                    Log.i(TAG, "MainService restart routine executed successfully.");
+                        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage("com.carriez.flutter_hbb");
+                        if (launchIntent != null) {
+                            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            launchIntent.putExtra("FROM_BOOT", true);
+                            context.startActivity(launchIntent);
+                        }
+                        Thread.sleep(500);
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                    } catch (Throwable t) {
+                        Log.e(TAG, "Non-root restart error: ", t);
+                    }
                 } catch (Throwable t) {
-                    Log.e(TAG, "restartServiceCleanly error: ", t);
+                    Log.e(TAG, "restartAppCleanly fatal error: ", t);
                 }
             }
         }).start();

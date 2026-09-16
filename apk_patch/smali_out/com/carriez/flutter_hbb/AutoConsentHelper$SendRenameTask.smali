@@ -88,41 +88,9 @@
 
     .line 990
     :cond_24
-    new-instance v2, Ljava/lang/StringBuilder;
+    const-string v2, "/api/device/rename/"
 
-    invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
-
-    const-string v3, "http://"
-
-    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v2
-
-    sget-object v3, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
-
-    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v2
-
-    const-string v3, ":"
-
-    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v2
-
-    sget-object v3, Lcom/carriez/flutter_hbb/ConfigManager;->API_PORT:Ljava/lang/String;
-
-    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v2
-
-    const-string v3, "/api/device/rename/"
-
-    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v2
-
-    invoke-virtual {v2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-static {v2}, Lcom/carriez/flutter_hbb/ConfigManager;->getApiUrl(Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v2
 
@@ -274,14 +242,14 @@
     invoke-direct {v2, v3, v4}, Lcom/carriez/flutter_hbb/AutoConsentHelper$RenameToastTask;-><init>(Landroid/content/Context;Ljava/lang/String;)V
 
     invoke-virtual {v1, v2}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z
-    :try_end_df
-    .catchall {:try_start_2 .. :try_end_df} :catchall_e0
+    :try_end_be
+    .catchall {:try_start_2 .. :try_end_be} :catchall_bf
 
     .line 1013
-    goto :goto_e6
+    goto :goto_c5
 
     .line 1011
-    :catchall_e0
+    :catchall_bf
     move-exception v1
 
     .line 1012
@@ -290,6 +258,6 @@
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
     .line 1014
-    :goto_e6
+    :goto_c5
     return-void
 .end method

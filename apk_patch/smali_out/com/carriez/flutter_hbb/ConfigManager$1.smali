@@ -8,7 +8,7 @@
 
 # annotations
 .annotation system Ldalvik/annotation/EnclosingMethod;
-    value = Lcom/carriez/flutter_hbb/ConfigManager;->restartServiceCleanly(Landroid/content/Context;)V
+    value = Lcom/carriez/flutter_hbb/ConfigManager;->restartAppCleanly(Landroid/content/Context;)V
 .end annotation
 
 .annotation system Ldalvik/annotation/InnerClass;
@@ -30,7 +30,7 @@
         }
     .end annotation
 
-    .line 663
+    .line 760
     iput-object p1, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -41,93 +41,42 @@
 
 # virtual methods
 .method public run()V
-    .registers 6
+    .registers 8
 
-    .line 667
+    .line 764
     const-string v0, "ConfigManager"
 
-    const-wide/16 v1, 0x4b0
+    const-wide/16 v1, 0x5dc
 
     :try_start_4
     invoke-static {v1, v2}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 668
-    const-string v1, "Restarting MainService to drop old connection and bind to new server..."
+    .line 765
+    new-instance v1, Ljava/lang/StringBuilder;
 
-    invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
-    :try_end_c
-    .catchall {:try_start_4 .. :try_end_c} :catchall_75
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
 
-    .line 671
-    :try_start_c
-    new-instance v1, Landroid/content/Intent;
+    const-string v2, "Restarting Ninja Desk to bind native Rust core to new server: "
 
-    invoke-direct {v1}, Landroid/content/Intent;-><init>()V
-
-    .line 672
-    const-string v2, "com.carriez.flutter_hbb"
-
-    const-string v3, "com.carriez.flutter_hbb.MainService"
-
-    invoke-virtual {v1, v2, v3}, Landroid/content/Intent;->setClassName(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;
-
-    .line 673
-    iget-object v2, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
-
-    invoke-virtual {v2, v1}, Landroid/content/Context;->stopService(Landroid/content/Intent;)Z
-
-    .line 674
-    const-wide/16 v2, 0x320
-
-    invoke-static {v2, v3}, Ljava/lang/Thread;->sleep(J)V
-
-    .line 675
-    sget v2, Landroid/os/Build$VERSION;->SDK_INT:I
-
-    const/16 v3, 0x1a
-
-    if-lt v2, v3, :cond_2e
-
-    .line 676
-    iget-object v2, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
-
-    invoke-virtual {v2, v1}, Landroid/content/Context;->startForegroundService(Landroid/content/Intent;)Landroid/content/ComponentName;
-
-    goto :goto_33
-
-    .line 678
-    :cond_2e
-    iget-object v2, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
-
-    invoke-virtual {v2, v1}, Landroid/content/Context;->startService(Landroid/content/Intent;)Landroid/content/ComponentName;
-    :try_end_33
-    .catchall {:try_start_c .. :try_end_33} :catchall_34
-
-    .line 682
-    :goto_33
-    goto :goto_4f
-
-    .line 680
-    :catchall_34
-    move-exception v1
-
-    .line 681
-    :try_start_35
-    new-instance v2, Ljava/lang/StringBuilder;
-
-    invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
-
-    const-string v3, "Standard Intent service restart warning: "
-
-    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v2
-
-    invoke-virtual {v1}, Ljava/lang/Throwable;->getMessage()Ljava/lang/String;
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v1
 
-    invoke-virtual {v2, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    sget-object v2, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v1
+
+    const-string v2, ":"
+
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v1
+
+    sget-object v2, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
+
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v1
 
@@ -135,78 +84,164 @@
 
     move-result-object v1
 
-    invoke-static {v0, v1}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
-    :try_end_4f
-    .catchall {:try_start_35 .. :try_end_4f} :catchall_75
+    invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+    :try_end_2b
+    .catchall {:try_start_4 .. :try_end_2b} :catchall_9a
 
-    .line 686
-    :goto_4f
-    :try_start_4f
+    .line 769
+    const/4 v1, 0x1
+
+    :try_start_2c
+    const-string v2, "am force-stop com.carriez.flutter_hbb && sleep 1 && am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true"
+
+    .line 771
     invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
 
-    move-result-object v1
+    move-result-object v3
 
-    const/4 v2, 0x3
+    const/4 v4, 0x3
 
-    new-array v2, v2, [Ljava/lang/String;
+    new-array v4, v4, [Ljava/lang/String;
 
-    const-string v3, "/system/bin/su"
+    const-string v5, "/system/bin/su"
 
-    const/4 v4, 0x0
+    const/4 v6, 0x0
 
-    aput-object v3, v2, v4
+    aput-object v5, v4, v6
 
-    const-string v3, "-c"
+    const-string v5, "-c"
 
-    const/4 v4, 0x1
+    aput-object v5, v4, v1
 
-    aput-object v3, v2, v4
+    const/4 v5, 0x2
 
-    const-string v3, "am stopservice com.carriez.flutter_hbb/.MainService && sleep 1 && am startservice -n com.carriez.flutter_hbb/.MainService"
+    aput-object v2, v4, v5
 
-    const/4 v4, 0x2
+    invoke-virtual {v3, v4}, Ljava/lang/Runtime;->exec([Ljava/lang/String;)Ljava/lang/Process;
 
-    aput-object v3, v2, v4
+    move-result-object v2
 
-    invoke-virtual {v1, v2}, Ljava/lang/Runtime;->exec([Ljava/lang/String;)Ljava/lang/Process;
+    .line 772
+    invoke-virtual {v2}, Ljava/lang/Process;->waitFor()I
 
-    move-result-object v1
+    .line 773
+    const-string v2, "Root process restart executed successfully."
 
-    .line 690
-    invoke-virtual {v1}, Ljava/lang/Process;->waitFor()I
-    :try_end_6c
-    .catchall {:try_start_4f .. :try_end_6c} :catchall_6d
+    invoke-static {v0, v2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+    :try_end_4d
+    .catchall {:try_start_2c .. :try_end_4d} :catchall_4e
 
-    goto :goto_6e
+    .line 774
+    return-void
 
-    .line 691
-    :catchall_6d
+    .line 775
+    :catchall_4e
+    move-exception v2
+
+    .line 776
+    :try_start_4f
+    new-instance v3, Ljava/lang/StringBuilder;
+
+    invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
+
+    const-string v4, "Root restart warning: "
+
+    invoke-virtual {v3, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v3
+
+    invoke-virtual {v2}, Ljava/lang/Throwable;->getMessage()Ljava/lang/String;
+
+    move-result-object v2
+
+    invoke-virtual {v3, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v2
+
+    invoke-virtual {v2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v2
+
+    invoke-static {v0, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
+    :try_end_69
+    .catchall {:try_start_4f .. :try_end_69} :catchall_9a
+
+    .line 781
+    :try_start_69
+    iget-object v2, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
+
+    invoke-virtual {v2}, Landroid/content/Context;->getPackageManager()Landroid/content/pm/PackageManager;
+
+    move-result-object v2
+
+    const-string v3, "com.carriez.flutter_hbb"
+
+    invoke-virtual {v2, v3}, Landroid/content/pm/PackageManager;->getLaunchIntentForPackage(Ljava/lang/String;)Landroid/content/Intent;
+
+    move-result-object v2
+
+    .line 782
+    if-eqz v2, :cond_86
+
+    .line 783
+    const/high16 v3, 0x14000000
+
+    invoke-virtual {v2, v3}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
+
+    .line 784
+    const-string v3, "FROM_BOOT"
+
+    invoke-virtual {v2, v3, v1}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Z)Landroid/content/Intent;
+
+    .line 785
+    iget-object v1, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
+
+    invoke-virtual {v1, v2}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
+
+    .line 787
+    :cond_86
+    const-wide/16 v1, 0x1f4
+
+    invoke-static {v1, v2}, Ljava/lang/Thread;->sleep(J)V
+
+    .line 788
+    invoke-static {}, Landroid/os/Process;->myPid()I
+
+    move-result v1
+
+    invoke-static {v1}, Landroid/os/Process;->killProcess(I)V
+    :try_end_92
+    .catchall {:try_start_69 .. :try_end_92} :catchall_93
+
+    .line 791
+    goto :goto_99
+
+    .line 789
+    :catchall_93
     move-exception v1
 
-    :goto_6e
-    nop
+    .line 790
+    :try_start_94
+    const-string v2, "Non-root restart error: "
 
-    .line 693
-    :try_start_6f
-    const-string v1, "MainService restart routine executed successfully."
+    invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+    :try_end_99
+    .catchall {:try_start_94 .. :try_end_99} :catchall_9a
 
-    invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
-    :try_end_74
-    .catchall {:try_start_6f .. :try_end_74} :catchall_75
+    .line 794
+    :goto_99
+    goto :goto_a0
 
-    .line 696
-    goto :goto_7b
-
-    .line 694
-    :catchall_75
+    .line 792
+    :catchall_9a
     move-exception v1
 
-    .line 695
-    const-string v2, "restartServiceCleanly error: "
+    .line 793
+    const-string v2, "restartAppCleanly fatal error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 697
-    :goto_7b
+    .line 795
+    :goto_a0
     return-void
 .end method

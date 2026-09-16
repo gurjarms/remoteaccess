@@ -730,13 +730,23 @@
     updateSelectionCounts();
   }
 
+  function sanitizeHostInput(raw) {
+    if (!raw) return '';
+    let s = raw.trim();
+    if (s.startsWith('http://')) s = s.substring(7);
+    if (s.startsWith('https://')) s = s.substring(8);
+    s = s.split('/')[0];
+    if (s.includes(':')) s = s.split(':')[0];
+    return s.trim();
+  }
+
   // 5. BROADCAST NEW SERVER CONFIGURATION (INCREMENTS VERSION)
   async function broadcastNewConfig(broadcastAll) {
     if (!IS_SUPERADMIN) {
       return showToast('Superadmin authorization required to broadcast configuration', true);
     }
 
-    const host = document.getElementById('target-host').value.trim();
+    let host = sanitizeHostInput(document.getElementById('target-host').value);
     const key = document.getElementById('target-key').value.trim();
     const hbbs_port = document.getElementById('target-hbbs-port').value.trim();
     const hbbr_port = document.getElementById('target-hbbr-port').value.trim();
@@ -744,6 +754,7 @@
     if (!host || !key) {
       return showToast('Server Host and Public Key are required', true);
     }
+    document.getElementById('target-host').value = host;
 
     let selectedIds = [];
     if (!broadcastAll) {

@@ -18,7 +18,10 @@ config = {
     "HBBR_PORT": "21117",
     "API_PORT": "8000",
     "API_SCHEME": "http",
-    "PERMANENT_PASSWORD": ""
+    "PERMANENT_PASSWORD": "",
+    # API_HOST: the Django management server (may differ from relay SERVER_HOST in production)
+    # Falls back to SERVER_HOST if not explicitly set
+    "API_HOST": "",
 }
 
 def parse_env_file(filepath):
@@ -47,7 +50,39 @@ if root_cfg:
 if "KEY" in config and ("SERVER_KEY" not in root_cfg or not config.get("SERVER_KEY")):
     config["SERVER_KEY"] = config["KEY"]
 
-print(f"Loaded configuration: SERVER_HOST={config['SERVER_HOST']}, KEY={config['SERVER_KEY'][:8]}...")
+# Decompose API_SERVER if present (e.g. "https://mydomain.com" or "http://192.168.1.43:8000")
+# This ensures API_HOST, API_PORT, API_SCHEME are correctly populated for production deployments
+api_server_raw = config.get("API_SERVER", "").strip()
+if api_server_raw:
+    raw = api_server_raw
+    if not raw.startswith("http://") and not raw.startswith("https://"):
+        if ":443" in raw or (not ":8000" in raw and "." in raw and not raw.split(".")[0].isdigit()):
+            raw = "https://" + raw
+        else:
+            raw = "http://" + raw
+    from urllib.parse import urlparse
+    p = urlparse(raw)
+    if p.scheme:
+        config["API_SCHEME"] = p.scheme.lower()
+    if p.hostname:
+        config["API_HOST"] = p.hostname
+    if p.port:
+        config["API_PORT"] = str(p.port)
+    else:
+        config["API_PORT"] = "443" if config["API_SCHEME"] == "https" else "80"
+
+# Sanitize SERVER_HOST so relay/rendezvous host never contains stray http:// or port
+server_host_raw = config.get("SERVER_HOST", "").strip()
+if server_host_raw.startswith("http://"):
+    server_host_raw = server_host_raw[7:]
+elif server_host_raw.startswith("https://"):
+    server_host_raw = server_host_raw[8:]
+server_host_raw = server_host_raw.split("/")[0]
+if ":" in server_host_raw:
+    server_host_raw = server_host_raw.split(":")[0]
+config["SERVER_HOST"] = server_host_raw
+
+print(f"Loaded configuration: SERVER_HOST={config['SERVER_HOST']}, API_HOST={config.get('API_HOST', config['SERVER_HOST'])}, API_PORT={config['API_PORT']}, SCHEME={config['API_SCHEME']}, KEY={config['SERVER_KEY'][:8]}...")
 
 # 2. Update constants in ConfigManager.java
 with open(java_file_path, "r", encoding="utf-8") as f:
@@ -60,6 +95,11 @@ jcontent = re.sub(r'public static String HBBR_PORT = ".*?";', f'public static St
 jcontent = re.sub(r'public static String API_PORT = ".*?";', f'public static String API_PORT = "{config["API_PORT"]}";', jcontent)
 jcontent = re.sub(r'public static String API_SCHEME = ".*?";', f'public static String API_SCHEME = "{config["API_SCHEME"]}";', jcontent)
 jcontent = re.sub(r'public static String PERMANENT_PASSWORD = ".*?";', f'public static String PERMANENT_PASSWORD = "{config["PERMANENT_PASSWORD"]}";', jcontent)
+
+# API_HOST: use explicit API_HOST from config if set, otherwise fall back to SERVER_HOST
+# This allows relay server and Django API to be on different hosts in production.
+api_host_value = config.get("API_HOST", "").strip() or config["SERVER_HOST"]
+jcontent = re.sub(r'public static String API_HOST = ".*?";', f'public static String API_HOST = "{api_host_value}";', jcontent)
 
 with open(java_file_path, "w", encoding="utf-8") as f:
     f.write(jcontent)

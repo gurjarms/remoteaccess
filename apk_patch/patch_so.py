@@ -26,11 +26,11 @@ asm = """
 test_fn:
     push {r4, lr}
     mov r4, r0
-    cmp r2, #24
-    bne not_allow
     ldrb r3, [r1]
     cmp r3, #0x61
     bne not_allow
+    cmp r2, #20
+    blo not_allow
 
     movs r0, #1
     movs r1, #1

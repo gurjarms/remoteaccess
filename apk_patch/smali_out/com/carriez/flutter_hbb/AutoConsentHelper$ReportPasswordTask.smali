@@ -80,41 +80,9 @@
 
     .line 716
     :cond_22
-    new-instance v1, Ljava/lang/StringBuilder;
+    const-string v1, "/api/device/password/"
 
-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
-
-    const-string v2, "http://"
-
-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    sget-object v2, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
-
-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    const-string v2, ":"
-
-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    sget-object v2, Lcom/carriez/flutter_hbb/ConfigManager;->API_PORT:Ljava/lang/String;
-
-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    const-string v2, "/api/device/password/"
-
-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-static {v1}, Lcom/carriez/flutter_hbb/ConfigManager;->getApiUrl(Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v1
 
@@ -220,16 +188,16 @@
 
     .line 729
     invoke-virtual {v1}, Ljava/net/HttpURLConnection;->disconnect()V
-    :try_end_ae
-    .catchall {:try_start_0 .. :try_end_ae} :catchall_af
+    :try_end_8d
+    .catchall {:try_start_0 .. :try_end_8d} :catchall_8e
 
-    goto :goto_b0
+    goto :goto_8f
 
     .line 730
-    :catchall_af
+    :catchall_8e
     move-exception v0
 
-    :goto_b0
+    :goto_8f
     nop
 
     .line 731

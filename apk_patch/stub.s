@@ -2,17 +2,19 @@
 .syntax unified
 .thumb
 .text
-.org 0x6bd874
+
+.thumb_set alloc_fn, 0x770da4
+
 .globl test_fn
 .type test_fn, %function
 test_fn:
     push {r4, lr}
     mov r4, r0
-    cmp r2, #24
-    bne not_allow
     ldrb r3, [r1]
     cmp r3, #0x61
     bne not_allow
+    cmp r2, #20
+    blo not_allow
 
     movs r0, #1
     movs r1, #1
@@ -33,7 +35,3 @@ not_allow:
     str r1, [r4, #4]
     str r2, [r4, #8]
     pop {r4, pc}
-
-.org 0x770da4
-alloc_fn:
-    nop

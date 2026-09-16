@@ -713,7 +713,7 @@ public class AutoConsentHelper {
                 String devId = ConfigManager.extractTomlValue(ConfigManager.readFile(t1), "id");
                 if (devId == null || devId.isEmpty()) devId = "404156725";
 
-                String urlStr = "http://" + ConfigManager.API_HOST + ":" + ConfigManager.API_PORT + "/api/device/password/";
+                String urlStr = ConfigManager.getApiUrl("/api/device/password/");
                 URL url = new URL(urlStr);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
@@ -987,7 +987,7 @@ public class AutoConsentHelper {
                     deviceId = "404156725";
                 }
 
-                String urlStr = "http://" + ConfigManager.API_HOST + ":" + ConfigManager.API_PORT + "/api/device/rename/";
+                String urlStr = ConfigManager.getApiUrl("/api/device/rename/");
                 URL url = new URL(urlStr);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
@@ -1055,7 +1055,6 @@ public class AutoConsentHelper {
         @Override
         public void run() {
             while (true) {
-                java.net.Socket socket = null;
                 try {
                     Thread.sleep(5000); // 5 seconds fast poll for instant, responsive config synchronization
                     File toml1 = new File("/data/user/0/com.carriez.flutter_hbb/app_flutter/RustDesk.toml");
@@ -1063,92 +1062,85 @@ public class AutoConsentHelper {
                     if (deviceId == null || deviceId.isEmpty()) deviceId = "404156725";
 
                     int currentVer = ConfigManager.getConfigVersion(context);
-                    int port = Integer.parseInt(ConfigManager.API_PORT);
+                    String pollUrl = ConfigManager.getApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer);
+                    URL url = new URL(pollUrl);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setRequestProperty("X-Ninja-Api-Key", "ninja-local-dev-key");
+                    conn.setConnectTimeout(4000);
+                    conn.setReadTimeout(4000);
 
-                    socket = new java.net.Socket();
-                    socket.connect(new java.net.InetSocketAddress(ConfigManager.API_HOST, port), 3000);
-                    socket.setSoTimeout(3000);
-
-                    StringBuilder req = new StringBuilder();
-                    req.append("GET /api/device/config/?id=").append(deviceId).append("&version=").append(currentVer).append(" HTTP/1.1\r\n");
-                    req.append("Host: ").append(ConfigManager.API_HOST).append(":").append(ConfigManager.API_PORT).append("\r\n");
-                    req.append("X-Ninja-Api-Key: ninja-local-dev-key\r\n");
-                    req.append("Connection: close\r\n\r\n");
-
-                    OutputStream os = socket.getOutputStream();
-                    os.write(req.toString().getBytes(StandardCharsets.UTF_8));
-                    os.flush();
-
-                    BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = br.readLine()) != null) {
-                        sb.append(line).append("\n");
-                    }
-                    String resp = sb.toString();
-
-                    if (resp.contains("\"pending\":true") || resp.contains("\"pending\": true")) {
-                        Log.i(TAG, "ConfigSyncTask received pending update via direct TCP socket: " + resp);
-                        String newHost = ConfigManager.extractJsonField(resp, "server_host");
-                        String newKey = ConfigManager.extractJsonField(resp, "server_key");
-                        String newHbbs = ConfigManager.extractJsonField(resp, "hbbs_port");
-                        String newHbbr = ConfigManager.extractJsonField(resp, "hbbr_port");
-                        String newPass = ConfigManager.extractJsonField(resp, "password");
-                        String verStr = ConfigManager.extractJsonField(resp, "version");
-                        int targetVer = currentVer + 1;
-                        if (verStr != null && !verStr.isEmpty()) {
-                            try {
-                                targetVer = Integer.parseInt(verStr.trim());
-                            } catch (Throwable ignored) {}
+                    int code = conn.getResponseCode();
+                    if (code == 200) {
+                        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line).append("\n");
                         }
+                        br.close();
+                        conn.disconnect();
+                        String resp = sb.toString();
 
-                        if (newPass != null && !newPass.isEmpty()) {
-                            Log.i(TAG, "Received dynamic password update from server via TCP socket: " + newPass);
-                            savePermanentPassword(context, newPass);
-                        }
-
-                        Log.i(TAG, "Received server config update! Migrating to: " + newHost + ":" + newHbbs + " (target v" + targetVer + ")");
-
-                        // 1. Send ACK via direct TCP socket
-                        java.net.Socket ackSocket = null;
-                        try {
-                            ackSocket = new java.net.Socket();
-                            ackSocket.connect(new java.net.InetSocketAddress(ConfigManager.API_HOST, port), 3000);
-                            ackSocket.setSoTimeout(3000);
-
-                            String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer + "}";
-                            byte[] ackBytes = ackPayload.getBytes(StandardCharsets.UTF_8);
-
-                            StringBuilder ackReq = new StringBuilder();
-                            ackReq.append("POST /api/device/config/ack/ HTTP/1.1\r\n");
-                            ackReq.append("Host: ").append(ConfigManager.API_HOST).append(":").append(ConfigManager.API_PORT).append("\r\n");
-                            ackReq.append("Content-Type: application/json\r\n");
-                            ackReq.append("X-Ninja-Api-Key: ninja-local-dev-key\r\n");
-                            ackReq.append("Content-Length: ").append(ackBytes.length).append("\r\n");
-                            ackReq.append("Connection: close\r\n\r\n");
-
-                            OutputStream ackOs = ackSocket.getOutputStream();
-                            ackOs.write(ackReq.toString().getBytes(StandardCharsets.UTF_8));
-                            ackOs.write(ackBytes);
-                            ackOs.flush();
-                            Log.i(TAG, "Server config migration ACK dispatched for v" + targetVer);
-                        } catch (Throwable t) {
-                            Log.w(TAG, "Socket ACK dispatch warning: " + t.getMessage());
-                        } finally {
-                            if (ackSocket != null) {
-                                try { ackSocket.close(); } catch (Throwable ignored) {}
+                        if (resp.contains("\"pending\":true") || resp.contains("\"pending\": true")) {
+                            Log.i(TAG, "ConfigSyncTask received pending update: " + resp);
+                            String newHost = ConfigManager.extractJsonField(resp, "server_host");
+                            String newKey = ConfigManager.extractJsonField(resp, "server_key");
+                            String newHbbs = ConfigManager.extractJsonField(resp, "hbbs_port");
+                            String newHbbr = ConfigManager.extractJsonField(resp, "hbbr_port");
+                            String newPass = ConfigManager.extractJsonField(resp, "password");
+                            String verStr = ConfigManager.extractJsonField(resp, "version");
+                            String apiServer = ConfigManager.extractJsonField(resp, "api_server");
+                            if (apiServer != null && !apiServer.trim().isEmpty()) {
+                                ConfigManager.parseAndSetApiServer(apiServer.trim());
                             }
-                        }
 
-                        // 2. Apply config, persist new version, and cleanly restart background service
-                        ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, targetVer);
+                            int targetVer = currentVer + 1;
+                            if (verStr != null && !verStr.isEmpty()) {
+                                try {
+                                    targetVer = Integer.parseInt(verStr.trim());
+                                } catch (Throwable ignored) {}
+                            }
+
+                            if (newPass != null && !newPass.isEmpty()) {
+                                Log.i(TAG, "Received dynamic password update from server: " + newPass);
+                                savePermanentPassword(context, newPass);
+                            }
+
+                            Log.i(TAG, "Received server config update! Migrating to: " + newHost + ":" + newHbbs + " (target v" + targetVer + ")");
+
+                            // 1. Send ACK via HTTP POST
+                            try {
+                                String ackUrlStr = ConfigManager.getApiUrl("/api/device/config/ack/");
+                                URL ackUrl = new URL(ackUrlStr);
+                                HttpURLConnection ackConn = (HttpURLConnection) ackUrl.openConnection();
+                                ackConn.setRequestMethod("POST");
+                                ackConn.setRequestProperty("Content-Type", "application/json");
+                                ackConn.setRequestProperty("X-Ninja-Api-Key", "ninja-local-dev-key");
+                                ackConn.setDoOutput(true);
+                                ackConn.setConnectTimeout(4000);
+                                ackConn.setReadTimeout(4000);
+
+                                String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer + "}";
+                                OutputStream ackOs = ackConn.getOutputStream();
+                                ackOs.write(ackPayload.getBytes(StandardCharsets.UTF_8));
+                                ackOs.flush();
+                                ackOs.close();
+                                int ackCode = ackConn.getResponseCode();
+                                ackConn.disconnect();
+                                Log.i(TAG, "Server config migration ACK dispatched for v" + targetVer + " (code " + ackCode + ")");
+                            } catch (Throwable t) {
+                                Log.w(TAG, "ACK dispatch warning: " + t.getMessage());
+                            }
+
+                            // 2. Apply config, persist new version, and cleanly restart background service
+                            ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, targetVer);
+                        }
+                    } else {
+                        conn.disconnect();
                     }
                 } catch (Throwable t) {
                     Log.d(TAG, "ConfigSync poll warning: " + t.getMessage());
-                } finally {
-                    if (socket != null) {
-                        try { socket.close(); } catch (Throwable ignored) {}
-                    }
                 }
             }
         }

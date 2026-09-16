@@ -650,6 +650,20 @@ def save_device_config_updates(data):
         print("save_device_config_updates error:", e)
 
 
+def sanitize_server_host(raw):
+    if not raw:
+        return ''
+    s = str(raw).strip()
+    if s.startswith('http://'):
+        s = s[7:]
+    elif s.startswith('https://'):
+        s = s[8:]
+    s = s.split('/')[0]
+    if ':' in s:
+        s = s.split(':')[0]
+    return s.strip()
+
+
 @require_ninja_api_key
 def api_device_config(request):
     """
@@ -658,6 +672,7 @@ def api_device_config(request):
     """
     updates = load_device_config_updates()
     cfg = get_or_create_server_config_state()
+    api_server_url = request.build_absolute_uri('/')[:-1]
 
     if request.method == 'GET':
         rid = request.GET.get('id', '').strip()
@@ -674,10 +689,11 @@ def api_device_config(request):
                 'pending': True,
                 'version': target_cfg.get('version', cfg.version),
                 'server_version': cfg.version,
-                'server_host': target_cfg.get('server_host') or cfg.server_host,
+                'server_host': sanitize_server_host(target_cfg.get('server_host')) or cfg.server_host,
                 'server_key': target_cfg.get('server_key') or cfg.server_key,
                 'hbbs_port': str(target_cfg.get('hbbs_port') or cfg.hbbs_port),
                 'hbbr_port': str(target_cfg.get('hbbr_port') or cfg.hbbr_port),
+                'api_server': api_server_url,
             }
             if 'password' in target_cfg:
                 resp['password'] = target_cfg['password']
@@ -693,10 +709,11 @@ def api_device_config(request):
                 'server_key': cfg.server_key,
                 'hbbs_port': str(cfg.hbbs_port),
                 'hbbr_port': str(cfg.hbbr_port),
+                'api_server': api_server_url,
             }
             return JsonResponse(resp)
 
-        return JsonResponse({'id': rid, 'pending': False, 'version': dev_ver, 'server_version': cfg.version})
+        return JsonResponse({'id': rid, 'pending': False, 'version': dev_ver, 'server_version': cfg.version, 'api_server': api_server_url})
 
     elif request.method == 'POST':
         # Enforce that only Superadmin can push server configurations to devices
@@ -715,7 +732,8 @@ def api_device_config(request):
             if data.get('all_devices', False):
                 device_ids = list(RustDesDevice.objects.values_list('rid', flat=True))
 
-            server_host = data.get('server_host', '').strip() or cfg.server_host
+            raw_host = data.get('server_host', '').strip()
+            server_host = sanitize_server_host(raw_host) or cfg.server_host
             server_key = data.get('server_key', '').strip() or cfg.server_key
             hbbs_port = str(data.get('hbbs_port', '')).strip() or str(cfg.hbbs_port)
             hbbr_port = str(data.get('hbbr_port', '')).strip() or str(cfg.hbbr_port)
