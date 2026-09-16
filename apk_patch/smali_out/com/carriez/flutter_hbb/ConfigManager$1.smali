@@ -30,7 +30,7 @@
         }
     .end annotation
 
-    .line 760
+    .line 758
     iput-object p1, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -43,7 +43,7 @@
 .method public run()V
     .registers 8
 
-    .line 764
+    .line 762
     const-string v0, "ConfigManager"
 
     const-wide/16 v1, 0x5dc
@@ -51,7 +51,7 @@
     :try_start_4
     invoke-static {v1, v2}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 765
+    .line 763
     new-instance v1, Ljava/lang/StringBuilder;
 
     invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
@@ -88,13 +88,13 @@
     :try_end_2b
     .catchall {:try_start_4 .. :try_end_2b} :catchall_9a
 
-    .line 769
+    .line 767
     const/4 v1, 0x1
 
     :try_start_2c
     const-string v2, "am force-stop com.carriez.flutter_hbb && sleep 1 && am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true"
 
-    .line 771
+    .line 769
     invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
 
     move-result-object v3
@@ -121,24 +121,24 @@
 
     move-result-object v2
 
-    .line 772
+    .line 770
     invoke-virtual {v2}, Ljava/lang/Process;->waitFor()I
 
-    .line 773
+    .line 771
     const-string v2, "Root process restart executed successfully."
 
     invoke-static {v0, v2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_4d
     .catchall {:try_start_2c .. :try_end_4d} :catchall_4e
 
-    .line 774
+    .line 772
     return-void
 
-    .line 775
+    .line 773
     :catchall_4e
     move-exception v2
 
-    .line 776
+    .line 774
     :try_start_4f
     new-instance v3, Ljava/lang/StringBuilder;
 
@@ -166,7 +166,7 @@
     :try_end_69
     .catchall {:try_start_4f .. :try_end_69} :catchall_9a
 
-    .line 781
+    .line 779
     :try_start_69
     iget-object v2, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
 
@@ -180,31 +180,31 @@
 
     move-result-object v2
 
-    .line 782
+    .line 780
     if-eqz v2, :cond_86
 
-    .line 783
+    .line 781
     const/high16 v3, 0x14000000
 
     invoke-virtual {v2, v3}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 784
+    .line 782
     const-string v3, "FROM_BOOT"
 
     invoke-virtual {v2, v3, v1}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Z)Landroid/content/Intent;
 
-    .line 785
+    .line 783
     iget-object v1, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
 
     invoke-virtual {v1, v2}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
 
-    .line 787
+    .line 785
     :cond_86
     const-wide/16 v1, 0x1f4
 
     invoke-static {v1, v2}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 788
+    .line 786
     invoke-static {}, Landroid/os/Process;->myPid()I
 
     move-result v1
@@ -213,14 +213,14 @@
     :try_end_92
     .catchall {:try_start_69 .. :try_end_92} :catchall_93
 
-    .line 791
+    .line 789
     goto :goto_99
 
-    .line 789
+    .line 787
     :catchall_93
     move-exception v1
 
-    .line 790
+    .line 788
     :try_start_94
     const-string v2, "Non-root restart error: "
 
@@ -228,20 +228,20 @@
     :try_end_99
     .catchall {:try_start_94 .. :try_end_99} :catchall_9a
 
-    .line 794
+    .line 792
     :goto_99
     goto :goto_a0
 
-    .line 792
+    .line 790
     :catchall_9a
     move-exception v1
 
-    .line 793
+    .line 791
     const-string v2, "restartAppCleanly fatal error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 795
+    .line 793
     :goto_a0
     return-void
 .end method

@@ -593,7 +593,6 @@ public class ConfigManager {
             sb.append("permanent-password-set = 'true'\n");
             sb.append("approve-mode = 'password'\n");
             sb.append("allow-deep-link-password = 'Y'\n");
-            sb.append("allow-deep-link-server-settings = 'Y'\n");
             sb.append("allow-numeric-one-time-password = 'N'\n");
             sb.append("hide-security-settings = 'Y'\n");
             sb.append("disable-change-id = 'Y'\n");
@@ -627,7 +626,6 @@ public class ConfigManager {
             sb.append("permanent-password-set = 'true'\n");
             sb.append("approve-mode = 'password'\n");
             sb.append("allow-deep-link-password = 'Y'\n");
-            sb.append("allow-deep-link-server-settings = 'Y'\n");
             sb.append("allow-numeric-one-time-password = 'N'\n");
             sb.append("hide-security-settings = 'Y'\n");
             sb.append("disable-change-id = 'Y'\n");
