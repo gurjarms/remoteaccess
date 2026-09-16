@@ -25,13 +25,13 @@
 .method constructor <init>(Ljava/lang/String;)V
     .registers 2
 
-    .line 704
+    .line 755
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 705
+    .line 756
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$ReportPasswordTask;->newPass:Ljava/lang/String;
 
-    .line 706
+    .line 757
     return-void
 .end method
 
@@ -40,7 +40,7 @@
 .method public run()V
     .registers 6
 
-    .line 711
+    .line 762
     :try_start_0
     new-instance v0, Ljava/io/File;
 
@@ -48,14 +48,14 @@
 
     invoke-direct {v0, v1}, Ljava/io/File;-><init>(Ljava/lang/String;)V
 
-    .line 712
+    .line 763
     new-instance v1, Ljava/io/File;
 
     const-string v2, "RustDesk.toml"
 
     invoke-direct {v1, v0, v2}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 713
+    .line 764
     invoke-static {v1}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
     move-result-object v0
@@ -66,7 +66,7 @@
 
     move-result-object v0
 
-    .line 714
+    .line 765
     if-eqz v0, :cond_20
 
     invoke-virtual {v0}, Ljava/lang/String;->isEmpty()Z
@@ -78,7 +78,7 @@
     :cond_20
     const-string v0, "404156725"
 
-    .line 716
+    .line 767
     :cond_22
     const-string v1, "/api/device/password/"
 
@@ -86,26 +86,26 @@
 
     move-result-object v1
 
-    .line 717
+    .line 768
     new-instance v2, Ljava/util/HashMap;
 
     invoke-direct {v2}, Ljava/util/HashMap;-><init>()V
 
-    .line 718
+    .line 769
     const-string v3, "Content-Type"
 
     const-string v4, "application/json"
 
     invoke-interface {v2, v3, v4}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 719
+    .line 770
     const-string v3, "X-Ninja-Api-Key"
 
     const-string v4, "ninja-local-dev-key"
 
     invoke-interface {v2, v3, v4}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 720
+    .line 771
     new-instance v3, Ljava/lang/StringBuilder;
 
     invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
@@ -142,7 +142,7 @@
 
     move-result-object v0
 
-    .line 721
+    .line 772
     const-string v3, "POST"
 
     invoke-static {v3, v1, v0, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->httpRequest(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;
@@ -151,13 +151,13 @@
 
     goto :goto_67
 
-    .line 722
+    .line 773
     :catchall_66
     move-exception v0
 
     :goto_67
     nop
 
-    .line 723
+    .line 774
     return-void
 .end method

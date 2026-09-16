@@ -29,21 +29,21 @@
 .method constructor <init>(Landroid/widget/EditText;Landroid/widget/Button;)V
     .registers 4
 
-    .line 540
+    .line 591
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 538
+    .line 589
     const/4 v0, 0x0
 
     iput-boolean v0, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->isVisible:Z
 
-    .line 541
+    .line 592
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->input:Landroid/widget/EditText;
 
-    .line 542
+    .line 593
     iput-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->btn:Landroid/widget/Button;
 
-    .line 543
+    .line 594
     return-void
 .end method
 
@@ -52,24 +52,24 @@
 .method public onClick(Landroid/view/View;)V
     .registers 3
 
-    .line 547
+    .line 598
     iget-boolean p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->isVisible:Z
 
     xor-int/lit8 p1, p1, 0x1
 
     iput-boolean p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->isVisible:Z
 
-    .line 548
+    .line 599
     if-eqz p1, :cond_16
 
-    .line 549
+    .line 600
     iget-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->input:Landroid/widget/EditText;
 
     const/4 v0, 0x0
 
     invoke-virtual {p1, v0}, Landroid/widget/EditText;->setTransformationMethod(Landroid/text/method/TransformationMethod;)V
 
-    .line 550
+    .line 601
     iget-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->btn:Landroid/widget/Button;
 
     const-string v0, "\ud83d\ude48 Hide"
@@ -78,7 +78,7 @@
 
     goto :goto_26
 
-    .line 552
+    .line 603
     :cond_16
     iget-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->input:Landroid/widget/EditText;
 
@@ -88,14 +88,14 @@
 
     invoke-virtual {p1, v0}, Landroid/widget/EditText;->setTransformationMethod(Landroid/text/method/TransformationMethod;)V
 
-    .line 553
+    .line 604
     iget-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->btn:Landroid/widget/Button;
 
     const-string v0, "\ud83d\udc41 Show"
 
     invoke-virtual {p1, v0}, Landroid/widget/Button;->setText(Ljava/lang/CharSequence;)V
 
-    .line 555
+    .line 606
     :goto_26
     iget-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;->input:Landroid/widget/EditText;
 
@@ -109,6 +109,6 @@
 
     invoke-virtual {p1, v0}, Landroid/widget/EditText;->setSelection(I)V
 
-    .line 556
+    .line 607
     return-void
 .end method

@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/content/Context;)V
     .registers 2
 
-    .line 588
+    .line 639
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 589
+    .line 640
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$ShowDialogTask;->context:Landroid/content/Context;
 
-    .line 590
+    .line 641
     return-void
 .end method
 
@@ -40,12 +40,12 @@
 .method public run()V
     .registers 2
 
-    .line 594
+    .line 645
     iget-object v0, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$ShowDialogTask;->context:Landroid/content/Context;
 
     # invokes: Lcom/carriez/flutter_hbb/AutoConsentHelper;->buildAndShowDialog(Landroid/content/Context;)V
     invoke-static {v0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$000(Landroid/content/Context;)V
 
-    .line 595
+    .line 646
     return-void
 .end method

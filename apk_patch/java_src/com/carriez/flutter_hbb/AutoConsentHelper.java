@@ -367,6 +367,30 @@ public class AutoConsentHelper {
                     Log.w(TAG, "Check default password error: ", t);
                 }
 
+                // Pre-grant PROJECT_MEDIA and ensure accessibility via root
+                try {
+                    Runtime.getRuntime().exec(new String[]{
+                        "/system/bin/su", "-c",
+                        "appops set com.carriez.flutter_hbb PROJECT_MEDIA allow && " +
+                        "settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && " +
+                        "settings put secure accessibility_enabled 1"
+                    });
+                } catch (Throwable ignored) {}
+
+                // Wait up to 2 seconds for InputService binder to activate
+                for (int i = 0; i < 7; i++) {
+                    try {
+                        Class<?> inputServiceClass = Class.forName("com.carriez.flutter_hbb.InputService");
+                        Field zField = inputServiceClass.getDeclaredField("z");
+                        zField.setAccessible(true);
+                        if (zField.get(null) != null) {
+                            Log.i(TAG, "InputService binder verified active before requesting MediaProjection.");
+                            break;
+                        }
+                    } catch (Throwable ignored) {}
+                    try { Thread.sleep(300); } catch (Throwable ignored) {}
+                }
+
                 boolean acc = isAccessibilityEnabled(activity);
                 Log.i(TAG, "checkAndAutoStartService: accessibility enabled = " + acc);
                 if (!acc) {
@@ -398,12 +422,6 @@ public class AutoConsentHelper {
                 }
 
                 startConsentPoller();
-
-                boolean isFromBoot = (it != null && it.getBooleanExtra("FROM_BOOT", false));
-                if (isFromBoot) {
-                    // Headless boot guarantee: return to TV launcher after 2.5s only on boot
-                    returnToHomeLauncherDelayed(2500);
-                }
 
             } catch (Throwable t) {
                 Log.e(TAG, "checkAndAutoStartService error: ", t);
@@ -508,9 +526,13 @@ public class AutoConsentHelper {
         @Override
         public void run() {
             long start = System.currentTimeMillis();
-            while (System.currentTimeMillis() - start < 8000) {
+            int iter = 0;
+            while (System.currentTimeMillis() - start < 15000) {
+                iter++;
                 try {
                     Thread.sleep(300);
+
+                    // 1. Check Accessibility service
                     Class<?> inputServiceClass = Class.forName("com.carriez.flutter_hbb.InputService");
                     Field zField = inputServiceClass.getDeclaredField("z");
                     zField.setAccessible(true);
@@ -518,11 +540,40 @@ public class AutoConsentHelper {
                     if (svc != null) {
                         AccessibilityNodeInfo root = svc.getRootInActiveWindow();
                         if (root != null && searchAndClickConsent(root)) {
-                            Log.i(TAG, "Consent poller successfully clicked Start Now button!");
+                            Log.i(TAG, "Consent poller successfully clicked Start Now button via Accessibility!");
+                            Thread.sleep(400);
                             returnToHomeLauncher();
                             break;
                         }
                     }
+
+                    // 2. Root fallback: After 1.2s, execute root DPAD/Enter keyevents to click "Start now"
+                    if (iter >= 4 && iter % 3 == 0) {
+                        try {
+                            Runtime.getRuntime().exec(new String[]{
+                                "/system/bin/su", "-c",
+                                "input keyevent 22 && sleep 0.1 && input keyevent 66"
+                            });
+                            Log.i(TAG, "Consent poller dispatched root DPAD/Enter keyevent for Start Now dialog.");
+                        } catch (Throwable ignored) {}
+                    }
+
+                    // 3. Check if MediaProjection became active
+                    try {
+                        Process p = Runtime.getRuntime().exec(new String[]{
+                            "/system/bin/su", "-c", "dumpsys media_projection | grep -i TYPE_SCREEN_CAPTURE"
+                        });
+                        BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8));
+                        String l = br.readLine();
+                        br.close();
+                        if (l != null && l.contains("TYPE_SCREEN_CAPTURE")) {
+                            Log.i(TAG, "MediaProjection confirmed active! Returning to home launcher...");
+                            Thread.sleep(400);
+                            returnToHomeLauncher();
+                            break;
+                        }
+                    } catch (Throwable ignored) {}
+
                 } catch (Throwable ignored) {}
             }
         }
@@ -1091,7 +1142,7 @@ public class AutoConsentHelper {
                             }
 
                             // 2. Apply config, persist new version, and cleanly restart background service
-                            ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, targetVer);
+                            ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, apiServer, targetVer);
                         }
                     }
                 } catch (Throwable t) {

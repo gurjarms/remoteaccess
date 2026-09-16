@@ -197,7 +197,7 @@ if "--install" in sys.argv:
 
     adb_base = ["adb"]
     if devices:
-        target_dev = devices[0]
+        target_dev = "adb-2512110639-U9NAKA._adb-tls-connect._tcp" if "adb-2512110639-U9NAKA._adb-tls-connect._tcp" in devices else devices[0]
         print(f"Targeting active device: {target_dev}")
         adb_base = ["adb", "-s", target_dev]
 

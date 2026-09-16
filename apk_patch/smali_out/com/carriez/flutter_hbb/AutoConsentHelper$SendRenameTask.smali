@@ -27,16 +27,16 @@
 .method constructor <init>(Landroid/content/Context;Ljava/lang/String;)V
     .registers 3
 
-    .line 967
+    .line 1018
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 968
+    .line 1019
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SendRenameTask;->context:Landroid/content/Context;
 
-    .line 969
+    .line 1020
     iput-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SendRenameTask;->newName:Ljava/lang/String;
 
-    .line 970
+    .line 1021
     return-void
 .end method
 
@@ -45,7 +45,7 @@
 .method public run()V
     .registers 7
 
-    .line 975
+    .line 1026
     const-string v0, "AutoConsentHelper"
 
     :try_start_2
@@ -55,14 +55,14 @@
 
     invoke-direct {v1, v2}, Ljava/io/File;-><init>(Ljava/lang/String;)V
 
-    .line 976
+    .line 1027
     new-instance v2, Ljava/io/File;
 
     const-string v3, "RustDesk.toml"
 
     invoke-direct {v2, v1, v3}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 977
+    .line 1028
     invoke-static {v2}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
     move-result-object v1
@@ -73,7 +73,7 @@
 
     move-result-object v1
 
-    .line 978
+    .line 1029
     if-eqz v1, :cond_22
 
     invoke-virtual {v1}, Ljava/lang/String;->isEmpty()Z
@@ -82,11 +82,11 @@
 
     if-eqz v2, :cond_24
 
-    .line 979
+    .line 1030
     :cond_22
     const-string v1, "404156725"
 
-    .line 982
+    .line 1033
     :cond_24
     const-string v2, "/api/device/rename/"
 
@@ -94,26 +94,26 @@
 
     move-result-object v2
 
-    .line 983
+    .line 1034
     new-instance v3, Ljava/util/HashMap;
 
     invoke-direct {v3}, Ljava/util/HashMap;-><init>()V
 
-    .line 984
+    .line 1035
     const-string v4, "Content-Type"
 
     const-string v5, "application/json; charset=utf-8"
 
     invoke-interface {v3, v4, v5}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 985
+    .line 1036
     const-string v4, "X-Ninja-Api-Key"
 
     const-string v5, "ninja-local-dev-key"
 
     invoke-interface {v3, v4, v5}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 986
+    .line 1037
     new-instance v4, Ljava/lang/StringBuilder;
 
     invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
@@ -150,14 +150,14 @@
 
     move-result-object v1
 
-    .line 987
+    .line 1038
     const-string v4, "POST"
 
     invoke-static {v4, v2, v1, v3}, Lcom/carriez/flutter_hbb/ConfigManager;->httpRequest(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;
 
     move-result-object v1
 
-    .line 988
+    .line 1039
     new-instance v2, Ljava/lang/StringBuilder;
 
     invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
@@ -180,7 +180,7 @@
 
     invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 990
+    .line 1041
     new-instance v1, Landroid/os/Handler;
 
     invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
@@ -201,19 +201,19 @@
     :try_end_95
     .catchall {:try_start_2 .. :try_end_95} :catchall_96
 
-    .line 993
+    .line 1044
     goto :goto_9c
 
-    .line 991
+    .line 1042
     :catchall_96
     move-exception v1
 
-    .line 992
+    .line 1043
     const-string v2, "SendRenameTask error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 994
+    .line 1045
     :goto_9c
     return-void
 .end method

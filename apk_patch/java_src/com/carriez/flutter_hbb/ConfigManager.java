@@ -366,7 +366,47 @@ public class ConfigManager {
         if (spVer > CONFIG_VERSION) {
             CONFIG_VERSION = spVer;
         }
-        Log.i(TAG, "Initialized active config version on device: v" + CONFIG_VERSION);
+
+        // Load persisted server and API configuration if available
+        if (context != null) {
+            try {
+                SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
+                String spHost = sp.getString("server_host", null);
+                String spKey = sp.getString("server_key", null);
+                String spHbbs = sp.getString("hbbs_port", null);
+                String spHbbr = sp.getString("hbbr_port", null);
+                String spApi = sp.getString("api_server", null);
+                String spApiHost = sp.getString("api_host", null);
+                String spApiPort = sp.getString("api_port", null);
+                String spApiScheme = sp.getString("api_scheme", null);
+
+                if (spHost != null && !spHost.trim().isEmpty()) SERVER_HOST = spHost.trim();
+                if (spKey != null && !spKey.trim().isEmpty()) SERVER_KEY = spKey.trim();
+                if (spHbbs != null && !spHbbs.trim().isEmpty()) HBBS_PORT = spHbbs.trim();
+                if (spHbbr != null && !spHbbr.trim().isEmpty()) HBBR_PORT = spHbbr.trim();
+                if (spApi != null && !spApi.trim().isEmpty()) {
+                    parseAndSetApiServer(spApi.trim());
+                } else {
+                    if (spApiHost != null && !spApiHost.trim().isEmpty()) API_HOST = spApiHost.trim();
+                    if (spApiPort != null && !spApiPort.trim().isEmpty()) API_PORT = spApiPort.trim();
+                    if (spApiScheme != null && !spApiScheme.trim().isEmpty()) API_SCHEME = spApiScheme.trim();
+                }
+            } catch (Throwable ignored) {}
+        }
+
+        if (savedContent != null && !savedContent.isEmpty()) {
+            String piHost = extractTomlValue(savedContent, "server_host");
+            String piKey = extractTomlValue(savedContent, "server_key");
+            String piHbbs = extractTomlValue(savedContent, "hbbs_port");
+            String piHbbr = extractTomlValue(savedContent, "hbbr_port");
+            String piApi = extractTomlValue(savedContent, "api_server");
+            if (piHost != null && !piHost.trim().isEmpty()) SERVER_HOST = piHost.trim();
+            if (piKey != null && !piKey.trim().isEmpty()) SERVER_KEY = piKey.trim();
+            if (piHbbs != null && !piHbbs.trim().isEmpty()) HBBS_PORT = piHbbs.trim();
+            if (piHbbr != null && !piHbbr.trim().isEmpty()) HBBR_PORT = piHbbr.trim();
+            if (piApi != null && !piApi.trim().isEmpty()) parseAndSetApiServer(piApi.trim());
+        }
+        Log.i(TAG, "Initialized active config: relay=" + SERVER_HOST + ":" + HBBS_PORT + ", api=" + getApiBaseUrl() + " (v" + CONFIG_VERSION + ")");
 
         // Ask server to create / assign permanent device ID
         String assignedId = null;
@@ -808,19 +848,20 @@ public class ConfigManager {
     }
 
     public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort) {
-        applyServerConfig(context, newHost, newKey, newHbbsPort, newHbbrPort, getConfigVersion(context) + 1);
+        applyServerConfig(context, newHost, newKey, newHbbsPort, newHbbrPort, null, getConfigVersion(context) + 1);
     }
 
     public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort, int newVersion) {
+        applyServerConfig(context, newHost, newKey, newHbbsPort, newHbbrPort, null, newVersion);
+    }
+
+    public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort, String newApiServer, int newVersion) {
         try {
             boolean serverChanged = false;
             String cleanHost = sanitizeHost(newHost);
             if (!cleanHost.isEmpty() && !cleanHost.equals(SERVER_HOST)) {
                 SERVER_HOST = cleanHost;
                 serverChanged = true;
-                // NOTE: API_HOST is intentionally NOT updated here.
-                // SERVER_HOST is the RustDesk relay/rendezvous server that can change per migration.
-                // API_HOST always points to the Django management server and must remain stable.
             }
             if (newKey != null && !newKey.trim().isEmpty() && !newKey.trim().equals(SERVER_KEY)) {
                 SERVER_KEY = newKey.trim();
@@ -834,10 +875,59 @@ public class ConfigManager {
                 HBBR_PORT = newHbbrPort.trim();
                 serverChanged = true;
             }
+            if (newApiServer != null && !newApiServer.trim().isEmpty()) {
+                parseAndSetApiServer(newApiServer.trim());
+                serverChanged = true;
+            }
 
             if (newVersion >= 0) {
                 setConfigVersion(context, newVersion);
             }
+
+            // Persist all server and API settings to SharedPreferences so they survive cold boots
+            if (context != null) {
+                try {
+                    SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
+                    sp.edit()
+                        .putString("server_host", SERVER_HOST)
+                        .putString("server_key", SERVER_KEY)
+                        .putString("hbbs_port", HBBS_PORT)
+                        .putString("hbbr_port", HBBR_PORT)
+                        .putString("api_server", getApiBaseUrl())
+                        .putString("api_host", API_HOST)
+                        .putString("api_port", API_PORT)
+                        .putString("api_scheme", API_SCHEME)
+                        .putInt("config_version", newVersion)
+                        .apply();
+                } catch (Throwable ignored) {}
+            }
+
+            // Also persist to persistent identity file on SD card
+            try {
+                File persistentIdentity = new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml");
+                if (persistentIdentity.exists()) {
+                    String c = readFile(persistentIdentity);
+                    StringBuilder sb = new StringBuilder();
+                    for (String line : c.split("\n")) {
+                        String t = line.trim();
+                        if (!t.startsWith("server_host =") && !t.startsWith("server_host=") &&
+                            !t.startsWith("server_key =") && !t.startsWith("server_key=") &&
+                            !t.startsWith("hbbs_port =") && !t.startsWith("hbbs_port=") &&
+                            !t.startsWith("hbbr_port =") && !t.startsWith("hbbr_port=") &&
+                            !t.startsWith("api_server =") && !t.startsWith("api_server=") &&
+                            !t.startsWith("config_version =") && !t.startsWith("config_version=")) {
+                            sb.append(line).append("\n");
+                        }
+                    }
+                    sb.append("server_host = '").append(SERVER_HOST).append("'\n");
+                    sb.append("server_key = '").append(SERVER_KEY).append("'\n");
+                    sb.append("hbbs_port = '").append(HBBS_PORT).append("'\n");
+                    sb.append("hbbr_port = '").append(HBBR_PORT).append("'\n");
+                    sb.append("api_server = '").append(getApiBaseUrl()).append("'\n");
+                    sb.append("config_version = '").append(newVersion).append("'\n");
+                    writeToFile(persistentIdentity, sb.toString());
+                }
+            } catch (Throwable ignored) {}
 
             File appFlutterDir = getAppFlutterDir(context);
             File toml1 = new File(appFlutterDir, "RustDesk.toml");
@@ -852,7 +942,7 @@ public class ConfigManager {
             }
             updateRustDesk2Toml(toml2);
             updateRustDeskLocalToml(tomlLocal);
-            Log.i(TAG, "Dynamic server config applied: relay=" + SERVER_HOST + ":" + HBBS_PORT
+            Log.i(TAG, "Dynamic server config applied & persisted: relay=" + SERVER_HOST + ":" + HBBS_PORT
                 + ", api=" + getApiBaseUrl()
                 + " (v" + newVersion + ", serverChanged=" + serverChanged + ")");
 
@@ -870,9 +960,8 @@ public class ConfigManager {
 
     /**
      * Executes a clean process restart when server configuration changes.
-     * This terminates the previous Rust network runtime (which was listening
-     * on the old server IP) and launches MainActivity fresh so Rust loads
-     * the new toml files from disk and connects to the new relay/ID server immediately.
+     * Pre-grants MediaProjection and re-enables Accessibility via root before
+     * launching MainActivity so screen capture starts completely unattended.
      */
     public static void restartAppCleanly(final Context context) {
         if (context == null) return;
@@ -883,13 +972,17 @@ public class ConfigManager {
                     Thread.sleep(1500); // 1.5s delay to allow HTTP ACK to transmit cleanly to Django
                     Log.i(TAG, "Restarting Ninja Desk to bind native Rust core to new server: " + SERVER_HOST + ":" + HBBS_PORT);
 
-                    // 1. Root restart: cleanly terminates the old process and re-launches MainActivity
+                    // 1. Root restart: pre-grant PROJECT_MEDIA and re-enable accessibility before starting activity
                     try {
-                        String cmd = "am force-stop com.carriez.flutter_hbb && sleep 1 && " +
+                        String cmd = "am force-stop com.carriez.flutter_hbb && " +
+                                     "appops set com.carriez.flutter_hbb PROJECT_MEDIA allow && " +
+                                     "settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && " +
+                                     "settings put secure accessibility_enabled 1 && " +
+                                     "sleep 1 && " +
                                      "am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true";
                         Process p = Runtime.getRuntime().exec(new String[]{"/system/bin/su", "-c", cmd});
                         p.waitFor();
-                        Log.i(TAG, "Root process restart executed successfully.");
+                        Log.i(TAG, "Root process restart with pre-granted accessibility executed successfully.");
                         return;
                     } catch (Throwable t) {
                         Log.w(TAG, "Root restart warning: " + t.getMessage());
