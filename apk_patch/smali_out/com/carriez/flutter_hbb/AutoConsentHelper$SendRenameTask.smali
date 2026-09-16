@@ -27,25 +27,25 @@
 .method constructor <init>(Landroid/content/Context;Ljava/lang/String;)V
     .registers 3
 
-    .line 975
+    .line 967
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 976
+    .line 968
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SendRenameTask;->context:Landroid/content/Context;
 
-    .line 977
+    .line 969
     iput-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SendRenameTask;->newName:Ljava/lang/String;
 
-    .line 978
+    .line 970
     return-void
 .end method
 
 
 # virtual methods
 .method public run()V
-    .registers 6
+    .registers 7
 
-    .line 983
+    .line 975
     const-string v0, "AutoConsentHelper"
 
     :try_start_2
@@ -55,14 +55,14 @@
 
     invoke-direct {v1, v2}, Ljava/io/File;-><init>(Ljava/lang/String;)V
 
-    .line 984
+    .line 976
     new-instance v2, Ljava/io/File;
 
     const-string v3, "RustDesk.toml"
 
     invoke-direct {v2, v1, v3}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 985
+    .line 977
     invoke-static {v2}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
     move-result-object v1
@@ -73,7 +73,7 @@
 
     move-result-object v1
 
-    .line 986
+    .line 978
     if-eqz v1, :cond_22
 
     invoke-virtual {v1}, Ljava/lang/String;->isEmpty()Z
@@ -82,11 +82,11 @@
 
     if-eqz v2, :cond_24
 
-    .line 987
+    .line 979
     :cond_22
     const-string v1, "404156725"
 
-    .line 990
+    .line 982
     :cond_24
     const-string v2, "/api/device/rename/"
 
@@ -94,80 +94,55 @@
 
     move-result-object v2
 
-    .line 991
-    new-instance v3, Ljava/net/URL;
+    .line 983
+    new-instance v3, Ljava/util/HashMap;
 
-    invoke-direct {v3, v2}, Ljava/net/URL;-><init>(Ljava/lang/String;)V
+    invoke-direct {v3}, Ljava/util/HashMap;-><init>()V
 
-    .line 992
-    invoke-virtual {v3}, Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+    .line 984
+    const-string v4, "Content-Type"
 
-    move-result-object v2
+    const-string v5, "application/json; charset=utf-8"
 
-    check-cast v2, Ljava/net/HttpURLConnection;
+    invoke-interface {v3, v4, v5}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 993
-    const-string v3, "POST"
+    .line 985
+    const-string v4, "X-Ninja-Api-Key"
 
-    invoke-virtual {v2, v3}, Ljava/net/HttpURLConnection;->setRequestMethod(Ljava/lang/String;)V
+    const-string v5, "ninja-local-dev-key"
 
-    .line 994
-    const-string v3, "Content-Type"
+    invoke-interface {v3, v4, v5}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    const-string v4, "application/json; charset=utf-8"
+    .line 986
+    new-instance v4, Ljava/lang/StringBuilder;
 
-    invoke-virtual {v2, v3, v4}, Ljava/net/HttpURLConnection;->setRequestProperty(Ljava/lang/String;Ljava/lang/String;)V
+    invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
 
-    .line 995
-    const-string v3, "X-Ninja-Api-Key"
+    const-string v5, "{\"id\":\""
 
-    const-string v4, "ninja-local-dev-key"
+    invoke-virtual {v4, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    invoke-virtual {v2, v3, v4}, Ljava/net/HttpURLConnection;->setRequestProperty(Ljava/lang/String;Ljava/lang/String;)V
+    move-result-object v4
 
-    .line 996
-    const/4 v3, 0x1
-
-    invoke-virtual {v2, v3}, Ljava/net/HttpURLConnection;->setDoOutput(Z)V
-
-    .line 997
-    const/16 v3, 0xfa0
-
-    invoke-virtual {v2, v3}, Ljava/net/HttpURLConnection;->setConnectTimeout(I)V
-
-    .line 998
-    invoke-virtual {v2, v3}, Ljava/net/HttpURLConnection;->setReadTimeout(I)V
-
-    .line 1000
-    new-instance v3, Ljava/lang/StringBuilder;
-
-    invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
-
-    const-string v4, "{\"id\":\""
-
-    invoke-virtual {v3, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v3
-
-    invoke-virtual {v3, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v4, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v1
 
-    const-string v3, "\",\"name\":\""
+    const-string v4, "\",\"name\":\""
 
-    invoke-virtual {v1, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    iget-object v3, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SendRenameTask;->newName:Ljava/lang/String;
-
-    invoke-virtual {v1, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v1
 
-    const-string v3, "\"}"
+    iget-object v4, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SendRenameTask;->newName:Ljava/lang/String;
 
-    invoke-virtual {v1, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v1
+
+    const-string v4, "\"}"
+
+    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v1
 
@@ -175,43 +150,27 @@
 
     move-result-object v1
 
-    .line 1001
-    invoke-virtual {v2}, Ljava/net/HttpURLConnection;->getOutputStream()Ljava/io/OutputStream;
+    .line 987
+    const-string v4, "POST"
 
-    move-result-object v3
-
-    .line 1002
-    sget-object v4, Ljava/nio/charset/StandardCharsets;->UTF_8:Ljava/nio/charset/Charset;
-
-    invoke-virtual {v1, v4}, Ljava/lang/String;->getBytes(Ljava/nio/charset/Charset;)[B
+    invoke-static {v4, v2, v1, v3}, Lcom/carriez/flutter_hbb/ConfigManager;->httpRequest(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;
 
     move-result-object v1
 
-    invoke-virtual {v3, v1}, Ljava/io/OutputStream;->write([B)V
+    .line 988
+    new-instance v2, Ljava/lang/StringBuilder;
 
-    .line 1003
-    invoke-virtual {v3}, Ljava/io/OutputStream;->flush()V
+    invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
 
-    .line 1004
-    invoke-virtual {v3}, Ljava/io/OutputStream;->close()V
+    const-string v3, "sendRenameToServer response code: "
 
-    .line 1006
-    invoke-virtual {v2}, Ljava/net/HttpURLConnection;->getResponseCode()I
+    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result v1
+    move-result-object v2
 
-    .line 1007
-    new-instance v3, Ljava/lang/StringBuilder;
+    iget v1, v1, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->statusCode:I
 
-    invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
-
-    const-string v4, "sendRenameToServer response code: "
-
-    invoke-virtual {v3, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v3
-
-    invoke-virtual {v3, v1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+    invoke-virtual {v2, v1}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
 
     move-result-object v1
 
@@ -221,10 +180,7 @@
 
     invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1008
-    invoke-virtual {v2}, Ljava/net/HttpURLConnection;->disconnect()V
-
-    .line 1010
+    .line 990
     new-instance v1, Landroid/os/Handler;
 
     invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
@@ -242,22 +198,22 @@
     invoke-direct {v2, v3, v4}, Lcom/carriez/flutter_hbb/AutoConsentHelper$RenameToastTask;-><init>(Landroid/content/Context;Ljava/lang/String;)V
 
     invoke-virtual {v1, v2}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z
-    :try_end_be
-    .catchall {:try_start_2 .. :try_end_be} :catchall_bf
+    :try_end_95
+    .catchall {:try_start_2 .. :try_end_95} :catchall_96
 
-    .line 1013
-    goto :goto_c5
+    .line 993
+    goto :goto_9c
 
-    .line 1011
-    :catchall_bf
+    .line 991
+    :catchall_96
     move-exception v1
 
-    .line 1012
+    .line 992
     const-string v2, "SendRenameTask error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1014
-    :goto_c5
+    .line 994
+    :goto_9c
     return-void
 .end method

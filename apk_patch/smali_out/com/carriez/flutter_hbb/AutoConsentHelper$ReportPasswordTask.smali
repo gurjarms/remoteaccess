@@ -87,52 +87,25 @@
     move-result-object v1
 
     .line 717
-    new-instance v2, Ljava/net/URL;
+    new-instance v2, Ljava/util/HashMap;
 
-    invoke-direct {v2, v1}, Ljava/net/URL;-><init>(Ljava/lang/String;)V
+    invoke-direct {v2}, Ljava/util/HashMap;-><init>()V
 
     .line 718
-    invoke-virtual {v2}, Ljava/net/URL;->openConnection()Ljava/net/URLConnection;
+    const-string v3, "Content-Type"
 
-    move-result-object v1
+    const-string v4, "application/json"
 
-    check-cast v1, Ljava/net/HttpURLConnection;
+    invoke-interface {v2, v3, v4}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
     .line 719
-    const-string v2, "POST"
+    const-string v3, "X-Ninja-Api-Key"
 
-    invoke-virtual {v1, v2}, Ljava/net/HttpURLConnection;->setRequestMethod(Ljava/lang/String;)V
+    const-string v4, "ninja-local-dev-key"
+
+    invoke-interface {v2, v3, v4}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
     .line 720
-    const-string v2, "Content-Type"
-
-    const-string v3, "application/json"
-
-    invoke-virtual {v1, v2, v3}, Ljava/net/HttpURLConnection;->setRequestProperty(Ljava/lang/String;Ljava/lang/String;)V
-
-    .line 721
-    const-string v2, "X-Ninja-Api-Key"
-
-    const-string v3, "ninja-local-dev-key"
-
-    invoke-virtual {v1, v2, v3}, Ljava/net/HttpURLConnection;->setRequestProperty(Ljava/lang/String;Ljava/lang/String;)V
-
-    .line 722
-    const/4 v2, 0x1
-
-    invoke-virtual {v1, v2}, Ljava/net/HttpURLConnection;->setDoOutput(Z)V
-
-    .line 723
-    const/16 v2, 0xbb8
-
-    invoke-virtual {v1, v2}, Ljava/net/HttpURLConnection;->setConnectTimeout(I)V
-
-    .line 724
-    invoke-virtual {v1}, Ljava/net/HttpURLConnection;->getOutputStream()Ljava/io/OutputStream;
-
-    move-result-object v2
-
-    .line 725
     new-instance v3, Ljava/lang/StringBuilder;
 
     invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
@@ -169,37 +142,22 @@
 
     move-result-object v0
 
-    sget-object v3, Ljava/nio/charset/StandardCharsets;->UTF_8:Ljava/nio/charset/Charset;
+    .line 721
+    const-string v3, "POST"
 
-    invoke-virtual {v0, v3}, Ljava/lang/String;->getBytes(Ljava/nio/charset/Charset;)[B
+    invoke-static {v3, v1, v0, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->httpRequest(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;
+    :try_end_65
+    .catchall {:try_start_0 .. :try_end_65} :catchall_66
 
-    move-result-object v0
+    goto :goto_67
 
-    invoke-virtual {v2, v0}, Ljava/io/OutputStream;->write([B)V
-
-    .line 726
-    invoke-virtual {v2}, Ljava/io/OutputStream;->flush()V
-
-    .line 727
-    invoke-virtual {v2}, Ljava/io/OutputStream;->close()V
-
-    .line 728
-    invoke-virtual {v1}, Ljava/net/HttpURLConnection;->getResponseCode()I
-
-    .line 729
-    invoke-virtual {v1}, Ljava/net/HttpURLConnection;->disconnect()V
-    :try_end_8d
-    .catchall {:try_start_0 .. :try_end_8d} :catchall_8e
-
-    goto :goto_8f
-
-    .line 730
-    :catchall_8e
+    .line 722
+    :catchall_66
     move-exception v0
 
-    :goto_8f
+    :goto_67
     nop
 
-    .line 731
+    .line 723
     return-void
 .end method

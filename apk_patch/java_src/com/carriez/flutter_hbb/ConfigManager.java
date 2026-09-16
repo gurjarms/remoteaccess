@@ -101,6 +101,127 @@ public class ConfigManager {
         }
     }
 
+    public static class HttpResponse {
+        public final int statusCode;
+        public final String body;
+
+        public HttpResponse(int statusCode, String body) {
+            this.statusCode = statusCode;
+            this.body = body != null ? body : "";
+        }
+
+        public boolean isSuccess() {
+            return statusCode >= 200 && statusCode < 300;
+        }
+    }
+
+    /**
+     * Universal HTTP request dispatcher:
+     * - Uses HttpsURLConnection for "https://" endpoints (encrypted TLS, fully supported by Android OS).
+     * - Uses direct TCP Socket for "http://" endpoints (completely bypasses Android 9+ Cleartext restrictions).
+     * Ensures reliable communication in both local dev (http://192.168.1.43:8000) and production (https://mydomain.com).
+     */
+    public static HttpResponse httpRequest(String method, String urlStr, String jsonBody, java.util.Map<String, String> headers) throws Exception {
+        if (urlStr == null || urlStr.isEmpty()) {
+            throw new IllegalArgumentException("URL cannot be empty");
+        }
+
+        if (urlStr.toLowerCase().startsWith("https://")) {
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod(method);
+            conn.setConnectTimeout(4000);
+            conn.setReadTimeout(4000);
+            if (headers != null) {
+                for (java.util.Map.Entry<String, String> entry : headers.entrySet()) {
+                    conn.setRequestProperty(entry.getKey(), entry.getValue());
+                }
+            }
+            if (jsonBody != null && !jsonBody.isEmpty()) {
+                conn.setDoOutput(true);
+                OutputStream os = conn.getOutputStream();
+                os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+                os.flush();
+                os.close();
+            }
+            int code = conn.getResponseCode();
+            java.io.InputStream is = (code >= 200 && code < 400) ? conn.getInputStream() : conn.getErrorStream();
+            StringBuilder sb = new StringBuilder();
+            if (is != null) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
+                String line;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line).append("\n");
+                }
+                br.close();
+            }
+            conn.disconnect();
+            return new HttpResponse(code, sb.toString());
+        } else {
+            // Direct TCP socket implementation for plain HTTP to completely bypass Android Cleartext restrictions
+            URL url = new URL(urlStr);
+            String host = url.getHost();
+            int port = url.getPort();
+            if (port == -1) port = 80;
+            String path = url.getPath();
+            if (path == null || path.isEmpty()) path = "/";
+            if (url.getQuery() != null) path += "?" + url.getQuery();
+
+            java.net.Socket socket = new java.net.Socket();
+            socket.connect(new java.net.InetSocketAddress(host, port), 4000);
+            socket.setSoTimeout(4000);
+
+            StringBuilder req = new StringBuilder();
+            req.append(method).append(" ").append(path).append(" HTTP/1.1\r\n");
+            req.append("Host: ").append(host);
+            if (port != 80) req.append(":").append(port);
+            req.append("\r\n");
+            if (headers != null) {
+                for (java.util.Map.Entry<String, String> entry : headers.entrySet()) {
+                    req.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n");
+                }
+            }
+            byte[] bodyBytes = (jsonBody != null && !jsonBody.isEmpty()) ? jsonBody.getBytes(StandardCharsets.UTF_8) : null;
+            if (bodyBytes != null) {
+                req.append("Content-Length: ").append(bodyBytes.length).append("\r\n");
+            }
+            req.append("Connection: close\r\n\r\n");
+
+            OutputStream os = socket.getOutputStream();
+            os.write(req.toString().getBytes(StandardCharsets.UTF_8));
+            if (bodyBytes != null) {
+                os.write(bodyBytes);
+            }
+            os.flush();
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            String statusLine = in.readLine();
+            int statusCode = 500;
+            if (statusLine != null && statusLine.startsWith("HTTP/")) {
+                String[] parts = statusLine.split(" ");
+                if (parts.length >= 2) {
+                    try {
+                        statusCode = Integer.parseInt(parts[1]);
+                    } catch (Throwable ignored) {}
+                }
+            }
+
+            // Skip response headers
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.isEmpty() || line.equals("\r")) break;
+            }
+
+            // Read response body
+            StringBuilder bodySb = new StringBuilder();
+            while ((line = in.readLine()) != null) {
+                bodySb.append(line).append("\n");
+            }
+            socket.close();
+            return new HttpResponse(statusCode, bodySb.toString());
+        }
+    }
+
     /**
      * Strips http://, https://, ports, and slashes from a host string
      * so RustDesk relay/rendezvous servers always receive a clean IP or domain.

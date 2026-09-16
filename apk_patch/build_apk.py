@@ -188,12 +188,27 @@ print("================================================================")
 # Step 4: Optional install if --install passed or device connected
 if "--install" in sys.argv:
     print("\nDeploying to connected Android device via ADB...")
-    res = subprocess.run(["adb", "install", "-r", out_signed_apk], capture_output=True, text=True)
+    dev_res = subprocess.run(["adb", "devices"], capture_output=True, text=True)
+    devices = []
+    for line in dev_res.stdout.splitlines():
+        line = line.strip()
+        if line and not line.startswith("List of devices") and "\tdevice" in line:
+            devices.append(line.split("\t")[0])
+
+    adb_base = ["adb"]
+    if devices:
+        target_dev = devices[0]
+        print(f"Targeting active device: {target_dev}")
+        adb_base = ["adb", "-s", target_dev]
+
+    res = subprocess.run(adb_base + ["install", "-r", out_signed_apk], capture_output=True, text=True)
     print(res.stdout)
     if res.returncode == 0:
         print("Enabling Accessibility Service...")
-        subprocess.run(["adb", "shell", "settings", "put", "secure", "enabled_accessibility_services", "com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService"])
-        subprocess.run(["adb", "shell", "settings", "put", "secure", "accessibility_enabled", "1"])
+        subprocess.run(adb_base + ["shell", "settings", "put", "secure", "enabled_accessibility_services", "com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService"])
+        subprocess.run(adb_base + ["shell", "settings", "put", "secure", "accessibility_enabled", "1"])
         print("Starting RustDesk...")
-        subprocess.run(["adb", "shell", "am", "start", "-n", "com.carriez.flutter_hbb/.MainActivity"])
+        subprocess.run(adb_base + ["shell", "am", "start", "-n", "com.carriez.flutter_hbb/.MainActivity"])
         print("App started on device successfully!")
+    else:
+        print("ADB install failed:", res.stderr)

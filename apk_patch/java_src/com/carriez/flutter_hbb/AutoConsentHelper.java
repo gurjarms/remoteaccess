@@ -714,19 +714,11 @@ public class AutoConsentHelper {
                 if (devId == null || devId.isEmpty()) devId = "404156725";
 
                 String urlStr = ConfigManager.getApiUrl("/api/device/password/");
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setRequestProperty("X-Ninja-Api-Key", "ninja-local-dev-key");
-                conn.setDoOutput(true);
-                conn.setConnectTimeout(3000);
-                OutputStream os = conn.getOutputStream();
-                os.write(("{\"id\":\"" + devId + "\",\"password\":\"" + newPass + "\"}").getBytes(StandardCharsets.UTF_8));
-                os.flush();
-                os.close();
-                conn.getResponseCode();
-                conn.disconnect();
+                java.util.Map<String, String> headers = new java.util.HashMap<>();
+                headers.put("Content-Type", "application/json");
+                headers.put("X-Ninja-Api-Key", "ninja-local-dev-key");
+                String payload = "{\"id\":\"" + devId + "\",\"password\":\"" + newPass + "\"}";
+                ConfigManager.httpRequest("POST", urlStr, payload, headers);
             } catch (Throwable ignored) {}
         }
     }
@@ -988,24 +980,12 @@ public class AutoConsentHelper {
                 }
 
                 String urlStr = ConfigManager.getApiUrl("/api/device/rename/");
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-                conn.setRequestProperty("X-Ninja-Api-Key", "ninja-local-dev-key");
-                conn.setDoOutput(true);
-                conn.setConnectTimeout(4000);
-                conn.setReadTimeout(4000);
-
+                java.util.Map<String, String> headers = new java.util.HashMap<>();
+                headers.put("Content-Type", "application/json; charset=utf-8");
+                headers.put("X-Ninja-Api-Key", "ninja-local-dev-key");
                 String jsonPayload = "{\"id\":\"" + deviceId + "\",\"name\":\"" + newName + "\"}";
-                OutputStream os = conn.getOutputStream();
-                os.write(jsonPayload.getBytes(StandardCharsets.UTF_8));
-                os.flush();
-                os.close();
-
-                int code = conn.getResponseCode();
-                Log.i(TAG, "sendRenameToServer response code: " + code);
-                conn.disconnect();
+                ConfigManager.HttpResponse resp = ConfigManager.httpRequest("POST", urlStr, jsonPayload, headers);
+                Log.i(TAG, "sendRenameToServer response code: " + resp.statusCode);
 
                 new Handler(Looper.getMainLooper()).post(new RenameToastTask(context, newName));
             } catch (Throwable t) {
@@ -1063,34 +1043,22 @@ public class AutoConsentHelper {
 
                     int currentVer = ConfigManager.getConfigVersion(context);
                     String pollUrl = ConfigManager.getApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer);
-                    URL url = new URL(pollUrl);
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("GET");
-                    conn.setRequestProperty("X-Ninja-Api-Key", "ninja-local-dev-key");
-                    conn.setConnectTimeout(4000);
-                    conn.setReadTimeout(4000);
+                    java.util.Map<String, String> headers = new java.util.HashMap<>();
+                    headers.put("X-Ninja-Api-Key", "ninja-local-dev-key");
+                    ConfigManager.HttpResponse resp = ConfigManager.httpRequest("GET", pollUrl, null, headers);
 
-                    int code = conn.getResponseCode();
-                    if (code == 200) {
-                        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-                        StringBuilder sb = new StringBuilder();
-                        String line;
-                        while ((line = br.readLine()) != null) {
-                            sb.append(line).append("\n");
-                        }
-                        br.close();
-                        conn.disconnect();
-                        String resp = sb.toString();
+                    if (resp.statusCode == 200) {
+                        String respStr = resp.body;
 
-                        if (resp.contains("\"pending\":true") || resp.contains("\"pending\": true")) {
-                            Log.i(TAG, "ConfigSyncTask received pending update: " + resp);
-                            String newHost = ConfigManager.extractJsonField(resp, "server_host");
-                            String newKey = ConfigManager.extractJsonField(resp, "server_key");
-                            String newHbbs = ConfigManager.extractJsonField(resp, "hbbs_port");
-                            String newHbbr = ConfigManager.extractJsonField(resp, "hbbr_port");
-                            String newPass = ConfigManager.extractJsonField(resp, "password");
-                            String verStr = ConfigManager.extractJsonField(resp, "version");
-                            String apiServer = ConfigManager.extractJsonField(resp, "api_server");
+                        if (respStr.contains("\"pending\":true") || respStr.contains("\"pending\": true")) {
+                            Log.i(TAG, "ConfigSyncTask received pending update: " + respStr);
+                            String newHost = ConfigManager.extractJsonField(respStr, "server_host");
+                            String newKey = ConfigManager.extractJsonField(respStr, "server_key");
+                            String newHbbs = ConfigManager.extractJsonField(respStr, "hbbs_port");
+                            String newHbbr = ConfigManager.extractJsonField(respStr, "hbbr_port");
+                            String newPass = ConfigManager.extractJsonField(respStr, "password");
+                            String verStr = ConfigManager.extractJsonField(respStr, "version");
+                            String apiServer = ConfigManager.extractJsonField(respStr, "api_server");
                             if (apiServer != null && !apiServer.trim().isEmpty()) {
                                 ConfigManager.parseAndSetApiServer(apiServer.trim());
                             }
@@ -1112,23 +1080,12 @@ public class AutoConsentHelper {
                             // 1. Send ACK via HTTP POST
                             try {
                                 String ackUrlStr = ConfigManager.getApiUrl("/api/device/config/ack/");
-                                URL ackUrl = new URL(ackUrlStr);
-                                HttpURLConnection ackConn = (HttpURLConnection) ackUrl.openConnection();
-                                ackConn.setRequestMethod("POST");
-                                ackConn.setRequestProperty("Content-Type", "application/json");
-                                ackConn.setRequestProperty("X-Ninja-Api-Key", "ninja-local-dev-key");
-                                ackConn.setDoOutput(true);
-                                ackConn.setConnectTimeout(4000);
-                                ackConn.setReadTimeout(4000);
-
+                                java.util.Map<String, String> ackHeaders = new java.util.HashMap<>();
+                                ackHeaders.put("Content-Type", "application/json");
+                                ackHeaders.put("X-Ninja-Api-Key", "ninja-local-dev-key");
                                 String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer + "}";
-                                OutputStream ackOs = ackConn.getOutputStream();
-                                ackOs.write(ackPayload.getBytes(StandardCharsets.UTF_8));
-                                ackOs.flush();
-                                ackOs.close();
-                                int ackCode = ackConn.getResponseCode();
-                                ackConn.disconnect();
-                                Log.i(TAG, "Server config migration ACK dispatched for v" + targetVer + " (code " + ackCode + ")");
+                                ConfigManager.HttpResponse ackResp = ConfigManager.httpRequest("POST", ackUrlStr, ackPayload, ackHeaders);
+                                Log.i(TAG, "Server config migration ACK dispatched for v" + targetVer + " (code " + ackResp.statusCode + ")");
                             } catch (Throwable t) {
                                 Log.w(TAG, "ACK dispatch warning: " + t.getMessage());
                             }
@@ -1136,8 +1093,6 @@ public class AutoConsentHelper {
                             // 2. Apply config, persist new version, and cleanly restart background service
                             ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, targetVer);
                         }
-                    } else {
-                        conn.disconnect();
                     }
                 } catch (Throwable t) {
                     Log.d(TAG, "ConfigSync poll warning: " + t.getMessage());

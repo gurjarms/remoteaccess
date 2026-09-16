@@ -27,16 +27,16 @@
 .method constructor <init>(Landroid/content/Context;Ljava/lang/String;)V
     .registers 3
 
-    .line 951
+    .line 943
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 952
+    .line 944
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$RenameToastTask;->context:Landroid/content/Context;
 
-    .line 953
+    .line 945
     iput-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$RenameToastTask;->newName:Ljava/lang/String;
 
-    .line 954
+    .line 946
     return-void
 .end method
 
@@ -45,12 +45,12 @@
 .method public run()V
     .registers 4
 
-    .line 958
+    .line 950
     iget-object v0, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$RenameToastTask;->newName:Ljava/lang/String;
 
     sput-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
-    .line 959
+    .line 951
     iget-object v0, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$RenameToastTask;->context:Landroid/content/Context;
 
     new-instance v1, Ljava/lang/StringBuilder;
@@ -81,13 +81,13 @@
 
     invoke-virtual {v0}, Landroid/widget/Toast;->show()V
 
-    .line 961
+    .line 953
     :try_start_23
     sget-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
     if-eqz v0, :cond_4e
 
-    .line 962
+    .line 954
     sget-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
     const v1, 0x7f099999
@@ -98,10 +98,10 @@
 
     check-cast v0, Landroid/widget/Button;
 
-    .line 963
+    .line 955
     if-eqz v0, :cond_4e
 
-    .line 964
+    .line 956
     new-instance v1, Ljava/lang/StringBuilder;
 
     invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
@@ -128,7 +128,7 @@
 
     goto :goto_4e
 
-    .line 967
+    .line 959
     :catchall_4d
     move-exception v0
 
@@ -136,6 +136,6 @@
     :goto_4e
     nop
 
-    .line 968
+    .line 960
     return-void
 .end method
