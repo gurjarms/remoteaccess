@@ -1,0 +1,65 @@
+.class public Lw/a$b;
+.super Ljava/lang/Object;
+.source "SourceFile"
+
+
+# annotations
+.annotation system Ldalvik/annotation/EnclosingClass;
+    value = Lw/a;
+.end annotation
+
+.annotation system Ldalvik/annotation/InnerClass;
+    accessFlags = 0x9
+    name = "b"
+.end annotation
+
+
+# direct methods
+.method public static a(Landroid/content/Context;I)I
+    .registers 2
+
+    invoke-static {p0, p1}, Lw/c;->a(Landroid/content/Context;I)I
+
+    move-result p0
+
+    return p0
+.end method
+
+.method public static b(Landroid/content/Context;Ljava/lang/Class;)Ljava/lang/Object;
+    .registers 2
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "<T:",
+            "Ljava/lang/Object;",
+            ">(",
+            "Landroid/content/Context;",
+            "Ljava/lang/Class<",
+            "TT;>;)TT;"
+        }
+    .end annotation
+
+    invoke-static {p0, p1}, Ln/t0;->a(Landroid/content/Context;Ljava/lang/Class;)Ljava/lang/Object;
+
+    move-result-object p0
+
+    return-object p0
+.end method
+
+.method public static c(Landroid/content/Context;Ljava/lang/Class;)Ljava/lang/String;
+    .registers 2
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "(",
+            "Landroid/content/Context;",
+            "Ljava/lang/Class<",
+            "*>;)",
+            "Ljava/lang/String;"
+        }
+    .end annotation
+
+    invoke-static {p0, p1}, Lw/b;->a(Landroid/content/Context;Ljava/lang/Class;)Ljava/lang/String;
+
+    move-result-object p0
+
+    return-object p0
+.end method

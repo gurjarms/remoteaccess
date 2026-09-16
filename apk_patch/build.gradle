@@ -1,0 +1,35 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+configurations {
+    smali
+}
+
+dependencies {
+    smali 'org.smali:baksmali:2.5.2'
+    smali 'org.smali:smali:2.5.2'
+}
+
+tasks.register('disassemble', JavaExec) {
+    classpath = configurations.smali
+    mainClass = 'org.jf.baksmali.Main'
+    args 'd', 'classes.dex', '-o', 'smali_out'
+}
+
+tasks.register('assembleDex', JavaExec) {
+    classpath = configurations.smali
+    mainClass = 'org.jf.smali.Main'
+    args 'a', 'smali_out', '-o', 'classes_patched.dex'
+}
+
+tasks.register('disassembleConfig', JavaExec) {
+    classpath = configurations.smali
+    mainClass = 'org.jf.baksmali.Main'
+    args 'd', 'dex_out/classes.dex', '-o', 'temp_smali'
+}

@@ -1,0 +1,39 @@
+
+.syntax unified
+.thumb
+.text
+.org 0x6bd874
+.globl test_fn
+.type test_fn, %function
+test_fn:
+    push {r4, lr}
+    mov r4, r0
+    cmp r2, #24
+    bne not_allow
+    ldrb r3, [r1]
+    cmp r3, #0x61
+    bne not_allow
+
+    movs r0, #1
+    movs r1, #1
+    bl alloc_fn
+    movs r1, #0x59
+    strb r1, [r0]
+    movs r1, #1
+    str r0, [r4]
+    str r1, [r4, #4]
+    str r1, [r4, #8]
+    pop {r4, pc}
+
+not_allow:
+    movs r3, #1
+    movs r1, #0
+    movs r2, #0
+    str r3, [r4]
+    str r1, [r4, #4]
+    str r2, [r4, #8]
+    pop {r4, pc}
+
+.org 0x770da4
+alloc_fn:
+    nop

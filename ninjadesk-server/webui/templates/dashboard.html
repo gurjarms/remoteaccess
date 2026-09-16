@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NinjaDesk Central Control & Migration Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card-bg: rgba(22, 30, 46, 0.85);
+      --card-border: rgba(45, 60, 90, 0.6);
+      --card-hover: rgba(30, 42, 65, 0.95);
+      --accent: #00d2ff;
+      --accent-gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.25);
+      --rose: #f43f5e;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --input-bg: #111827;
+      --input-border: #334155;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      background-image: 
+        radial-gradient(at 10% 20%, rgba(0, 210, 255, 0.08) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(58, 123, 213, 0.08) 0px, transparent 50%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 30px 20px;
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+    }
+
+    .brand-text h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .server-status-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #34d399;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--emerald); }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    /* GRID LAYOUT */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 25px;
+    }
+
+    /* CARD STYLING */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .device-count-badge {
+      background: #1e293b;
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid rgba(0, 210, 255, 0.2);
+    }
+
+    /* TABLE */
+    .table-container {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    th {
+      background: #111827;
+      padding: 14px 16px;
+      color: #94a3b8;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid rgba(45, 60, 90, 0.3);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(30, 42, 65, 0.4);
+    }
+
+    .custom-checkbox {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .device-id-code {
+      font-family: monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+    }
+
+    .device-name-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .device-alias {
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .btn-icon-edit {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 3px;
+      transition: color 0.15s;
+    }
+
+    .btn-icon-edit:hover {
+      color: var(--accent);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-online {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-offline {
+      background: rgba(148, 163, 184, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: #0b0f17;
+      box-shadow: 0 4px 12px rgba(0, 210, 255, 0.25);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 4px 20px rgba(0, 210, 255, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid var(--input-border);
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+    }
+
+    /* MIGRATION PANEL */
+    .migration-panel {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .panel-subtitle {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 210, 255, 0.2);
+    }
+
+    /* MODAL */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 24px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .btn-icon-eye {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      padding: 4px;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+    }
+
+    .btn-icon-eye:hover {
+      opacity: 1;
+    }
+
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .spec-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .spec-val {
+      color: #ffffff;
+      font-weight: 600;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- HEADER -->
+    <header>
+      <div class="brand">
+        <div class="logo-badge">⚡</div>
+        <div class="brand-text">
+          <h1>NinjaDesk Central Console</h1>
+          <p>Centralized Device Management & Dynamic Server Migration</p>
+        </div>
+      </div>
+      <div class="server-status-pill">
+        <div class="pulse-dot"></div>
+        <span>Active Server: <strong>{{ domain }}</strong></span>
+      </div>
+    </header>
+
+    <div class="grid">
+      
+      <!-- DEVICE TABLE CARD -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <span>Registered Remote Endpoints</span>
+            <span class="device-count-badge" id="device-count-label">Loading...</span>
+          </div>
+          <div>
+            <button class="btn btn-secondary" onclick="loadDevices()">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px;"><input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"></th>
+                <th>Device ID</th>
+                <th>Custom Name / Alias</th>
+                <th>Platform / Model</th>
+                <th>IP Address</th>
+                <th>Status</th>
+                <th>Last Seen</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="deviceTableBody">
+              <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading devices from server...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DYNAMIC CONFIG MIGRATION PANEL -->
+      <div class="card migration-panel">
+        <div class="card-header">
+          <div class="card-title">
+            <span>🚀 Dynamic Remote Server Configuration</span>
+          </div>
+          <div id="selection-summary" style="font-size: 13px; color: var(--accent); font-weight: 500;">
+            0 devices selected
+          </div>
+        </div>
+        <p class="panel-subtitle">
+          Migrate selected TV boxes and endpoints to a new server IP or domain on-the-fly. Devices receive this update dynamically in background and reconnect automatically without user action.
+        </p>
+
+        <form id="migrationForm" onsubmit="applyMigration(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Target Server Host / Domain</label>
+              <input type="text" class="form-input" id="migServerHost" value="{{ domain }}" required>
+            </div>
+            <div class="form-group">
+              <label>Target Server Public Key</label>
+              <input type="text" class="form-input" id="migServerKey" value="DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=" required>
+            </div>
+            <div class="form-group">
+              <label>HBBS Port</label>
+              <input type="text" class="form-input" id="migHbbsPort" value="21116" required>
+            </div>
+            <div class="form-group">
+              <label>HBBR Port</label>
+              <input type="text" class="form-input" id="migHbbrPort" value="21117" required>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <button type="submit" class="btn btn-primary" id="btnApplyMigration">
+              ⚡ Apply Server Config to Selected Devices
+            </button>
+            <span id="migrationStatusMsg" style="font-size: 13px; font-weight: 500;"></span>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RENAME MODAL -->
+  <div class="modal-backdrop" id="renameModal">
+    <div class="modal-card">
+      <h3 class="modal-title">Rename Device</h3>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label>Device ID</label>
+        <input type="text" class="form-input" id="modalDeviceId" readonly style="opacity: 0.7;">
+      </div>
+      <div class="form-group">
+        <label>Friendly Name / Alias</label>
+        <input type="text" class="form-input" id="modalDeviceName" placeholder="e.g. Living Room TV Box">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeRenameModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitRename()">Save Name</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD MODAL -->
+  <div class="modal-backdrop" id="passwordModal">
+    <div class="modal-card">
+      <h3 class="modal-title">🔐 Change Device Password</h3>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        Requires Superadmin authorization. This will update the unattended password for this device.
+      </p>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label>Target Device</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" class="form-input" id="pwModalDeviceId" readonly style="opacity: 0.7; width: 120px;">
+          <input type="text" class="form-input" id="pwModalDeviceName" readonly style="opacity: 0.7; flex: 1;">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label>New Device Password</label>
+        <div style="position: relative;">
+          <input type="password" class="form-input" id="pwModalNewPassword" placeholder="Enter new device password" style="width: 100%; padding-right: 38px;">
+          <button type="button" class="btn-icon-eye" onclick="togglePasswordVisibility('pwModalNewPassword', this)">👁️</button>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label>Confirm New Password</label>
+        <div style="position: relative;">
+          <input type="password" class="form-input" id="pwModalConfirmPassword" placeholder="Confirm new device password" style="width: 100%; padding-right: 38px;">
+          <button type="button" class="btn-icon-eye" onclick="togglePasswordVisibility('pwModalConfirmPassword', this)">👁️</button>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label style="color: #f59e0b;">Superadmin Password (Required)</label>
+        <div style="position: relative;">
+          <input type="password" class="form-input" id="pwModalSuperadminPassword" placeholder="Enter Superadmin Password" style="width: 100%; padding-right: 38px; border-color: rgba(245, 158, 11, 0.4);">
+          <button type="button" class="btn-icon-eye" onclick="togglePasswordVisibility('pwModalSuperadminPassword', this)">👁️</button>
+        </div>
+      </div>
+      <div id="pwModalStatus" style="font-size: 13px; font-weight: 500; margin-bottom: 14px; display: none;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+        <button class="btn btn-primary" id="btnSubmitPassword" onclick="submitPasswordChange()">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEVICE DETAILS MODAL -->
+  <div class="modal-backdrop" id="detailsModal">
+    <div class="modal-card" style="max-width: 500px;">
+      <h3 class="modal-title">ℹ️ Device Telemetry & Specs</h3>
+      <div id="detailsContent" style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeDetailsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = "ninja-local-dev-key";
+    let devices = [];
+
+    async function loadDevices() {
+      try {
+        const res = await fetch('/api/devices/', {
+          headers: { 'X-Ninja-Api-Key': API_KEY }
+        });
+        const data = await res.json();
+        devices = data.devices || [];
+        renderTable();
+      } catch (err) {
+        console.error("Error loading devices:", err);
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('deviceTableBody');
+      document.getElementById('device-count-label').textContent = `${devices.length} Devices`;
+
+      if (devices.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No registered devices found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = devices.map(d => {
+        const isOnline = d.online;
+        const statusHtml = isOnline
+          ? `<span class="status-badge status-online"><span class="pulse-dot"></span> Online</span>`
+          : `<span class="status-badge status-offline">Offline</span>`;
+
+        return `
+          <tr>
+            <td><input type="checkbox" class="custom-checkbox device-chk" data-id="${d.id}" onchange="updateSelectionSummary()"></td>
+            <td><span class="device-id-code">${d.id}</span></td>
+            <td>
+              <div class="device-name-wrap">
+                <span class="device-alias">${escapeHtml(d.name || d.hostname)}</span>
+                <button class="btn-icon-edit" title="Rename Device" onclick="openRenameModal('${d.id}', '${escapeHtml(d.name || d.hostname)}')">✏️</button>
+              </div>
+            </td>
+            <td>${escapeHtml(d.hostname || 'Unknown Model')}</td>
+            <td>${escapeHtml(d.ip_address || '—')}</td>
+            <td>${statusHtml}</td>
+            <td>${d.last_seen ? formatTime(d.last_seen) : 'Never'}</td>
+            <td style="text-align: right; white-space: nowrap;">
+              <a href="/webui/?peer=${d.id}&alias=${encodeURIComponent(d.name || d.hostname)}" target="_blank" class="btn btn-primary" style="padding: 6px 10px; font-size: 12.5px;">
+                📺 Connect
+              </a>
+              <button class="btn btn-secondary" onclick="openPasswordModal('${d.id}', '${escapeHtml(d.name || d.hostname)}')" style="padding: 6px 10px; font-size: 12.5px;" title="Change Device Password">
+                🔑 Password
+              </button>
+              <button class="btn btn-secondary" onclick="openDetailsModal('${d.id}')" style="padding: 6px 8px; font-size: 12.5px;" title="View Hardware Specs">
+                ℹ️
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      updateSelectionSummary();
+    }
+
+    function toggleSelectAll(master) {
+      document.querySelectorAll('.device-chk').forEach(c => c.checked = master.checked);
+      updateSelectionSummary();
+    }
+
+    function updateSelectionSummary() {
+      const selected = getSelectedIds();
+      document.getElementById('selection-summary').textContent = `${selected.length} device${selected.length === 1 ? '' : 's'} selected`;
+    }
+
+    function getSelectedIds() {
+      return Array.from(document.querySelectorAll('.device-chk:checked')).map(c => c.dataset.id);
+    }
+
+    function openRenameModal(id, currentName) {
+      document.getElementById('modalDeviceId').value = id;
+      document.getElementById('modalDeviceName').value = currentName;
+      document.getElementById('renameModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('modalDeviceName').focus(), 100);
+    }
+
+    function closeRenameModal() {
+      document.getElementById('renameModal').style.display = 'none';
+    }
+
+    async function submitRename() {
+      const id = document.getElementById('modalDeviceId').value;
+      const name = document.getElementById('modalDeviceName').value.trim();
+      if (!name) return;
+
+      try {
+        const res = await fetch('/api/device/rename/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Ninja-Api-Key': API_KEY,
+          },
+          body: JSON.stringify({ id, name })
+        });
+        if (res.ok) {
+          closeRenameModal();
+          loadDevices();
+        } else {
+          alert('Failed to rename device');
+        }
+      } catch (err) {
+        alert('Rename error: ' + err.message);
+      }
+    }
+
+    function openPasswordModal(id, name) {
+      document.getElementById('pwModalDeviceId').value = id;
+      document.getElementById('pwModalDeviceName').value = name;
+      document.getElementById('pwModalNewPassword').value = '';
+      document.getElementById('pwModalConfirmPassword').value = '';
+      document.getElementById('pwModalSuperadminPassword').value = '';
+      const statusDiv = document.getElementById('pwModalStatus');
+      statusDiv.style.display = 'none';
+      statusDiv.textContent = '';
+      document.getElementById('passwordModal').style.display = 'flex';
+      setTimeout(() => document.getElementById('pwModalNewPassword').focus(), 100);
+    }
+
+    function closePasswordModal() {
+      document.getElementById('passwordModal').style.display = 'none';
+    }
+
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    async function submitPasswordChange() {
+      const id = document.getElementById('pwModalDeviceId').value;
+      const newPass = document.getElementById('pwModalNewPassword').value;
+      const confirmPass = document.getElementById('pwModalConfirmPassword').value;
+      const superadminPass = document.getElementById('pwModalSuperadminPassword').value;
+      const statusDiv = document.getElementById('pwModalStatus');
+      const btn = document.getElementById('btnSubmitPassword');
+
+      if (!newPass) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.color = '#f43f5e';
+        statusDiv.textContent = 'Please enter a new password.';
+        return;
+      }
+      if (newPass !== confirmPass) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.color = '#f43f5e';
+        statusDiv.textContent = 'Passwords do not match.';
+        return;
+      }
+      if (!superadminPass) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.color = '#f43f5e';
+        statusDiv.textContent = 'Superadmin password is required.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Verifying...';
+      statusDiv.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/device/password/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Ninja-Api-Key': API_KEY,
+          },
+          body: JSON.stringify({
+            id: id,
+            password: newPass,
+            superadmin_password: superadminPass
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.status === 'ok') {
+          statusDiv.style.display = 'block';
+          statusDiv.style.color = '#34d399';
+          statusDiv.textContent = '✓ Password updated successfully! Queued for device sync.';
+          setTimeout(() => {
+            closePasswordModal();
+            loadDevices();
+          }, 1500);
+        } else {
+          statusDiv.style.display = 'block';
+          statusDiv.style.color = '#f43f5e';
+          statusDiv.textContent = data.error || 'Failed to update password.';
+        }
+      } catch (err) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.color = '#f43f5e';
+        statusDiv.textContent = 'Error: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Update Password';
+      }
+    }
+
+    function openDetailsModal(id) {
+      const d = devices.find(x => x.id === id);
+      if (!d) return;
+      const content = document.getElementById('detailsContent');
+      const info = d.info || {};
+      content.innerHTML = `
+        <div class="spec-row"><span class="spec-label">Device ID:</span><span class="spec-val">${escapeHtml(d.id)}</span></div>
+        <div class="spec-row"><span class="spec-label">Assigned Name:</span><span class="spec-val">${escapeHtml(d.name)}</span></div>
+        <div class="spec-row"><span class="spec-label">Model / Hostname:</span><span class="spec-val">${escapeHtml(d.hostname)}</span></div>
+        <div class="spec-row"><span class="spec-label">Platform:</span><span class="spec-val">${escapeHtml(d.platform)}</span></div>
+        <div class="spec-row"><span class="spec-label">OS Version:</span><span class="spec-val">${escapeHtml(d.os_version || '—')}</span></div>
+        <div class="spec-row"><span class="spec-label">IP Address:</span><span class="spec-val">${escapeHtml(d.ip_address || '—')}</span></div>
+        <div class="spec-row"><span class="spec-label">Status:</span><span class="spec-val" style="color: ${d.online ? '#34d399' : '#94a3b8'}">${d.online ? 'Online' : 'Offline'}</span></div>
+        <div class="spec-row"><span class="spec-label">Last Seen:</span><span class="spec-val">${d.last_seen ? formatTime(d.last_seen) : 'Never'}</span></div>
+        <div class="spec-row"><span class="spec-label">CPU:</span><span class="spec-val">${escapeHtml(info.cpu || '—')}</span></div>
+        <div class="spec-row"><span class="spec-label">Memory:</span><span class="spec-val">${escapeHtml(info.memory || '—')}</span></div>
+        <div class="spec-row"><span class="spec-label">Client Version:</span><span class="spec-val">${escapeHtml(info.version || '—')}</span></div>
+        <div class="spec-row"><span class="spec-label">Hardware UUID:</span><span class="spec-val" style="font-size: 11px;">${escapeHtml(info.uuid || '—')}</span></div>
+      `;
+      document.getElementById('detailsModal').style.display = 'flex';
+    }
+
+    function closeDetailsModal() {
+      document.getElementById('detailsModal').style.display = 'none';
+    }
+
+    async function applyMigration(e) {
+      e.preventDefault();
+      const selectedIds = getSelectedIds();
+      if (selectedIds.length === 0) {
+        alert('Please select at least one device to migrate.');
+        return;
+      }
+
+      const host = document.getElementById('migServerHost').value.trim();
+      const key = document.getElementById('migServerKey').value.trim();
+      const hbbs = document.getElementById('migHbbsPort').value.trim();
+      const hbbr = document.getElementById('migHbbrPort').value.trim();
+
+      const btn = document.getElementById('btnApplyMigration');
+      const msg = document.getElementById('migrationStatusMsg');
+      btn.disabled = true;
+      btn.textContent = 'Pushing configuration...';
+
+      try {
+        const res = await fetch('/api/device/config/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Ninja-Api-Key': API_KEY,
+          },
+          body: JSON.stringify({
+            device_ids: selectedIds,
+            server_host: host,
+            server_key: key,
+            hbbs_port: hbbs,
+            hbbr_port: hbbr
+          })
+        });
+        const resp = await res.json();
+        if (res.ok && resp.status === 'ok') {
+          msg.style.color = '#34d399';
+          msg.textContent = `✓ Queued migration for ${resp.targeted_devices} device(s) to ${resp.server_host}`;
+        } else {
+          msg.style.color = '#f43f5e';
+          msg.textContent = resp.error || 'Failed to push configuration';
+        }
+      } catch (err) {
+        msg.style.color = '#f43f5e';
+        msg.textContent = 'Error: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '⚡ Apply Server Config to Selected Devices';
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function formatTime(iso) {
+      try {
+        const d = new Date(iso);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      } catch (e) {
+        return iso;
+      }
+    }
+
+    loadDevices();
+    setInterval(loadDevices, 6000);
+  </script>
+</body>
+</html>

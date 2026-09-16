@@ -1,0 +1,70 @@
+# ==============================================================================
+# Ninja Desk - Git Ignore Rules
+# ==============================================================================
+
+# Confidential & Secrets
+.env
+*.env
+apk_patch/config.env
+relayserver/id_ed25519
+relayserver/id_ed25519.pub
+*.keystore
+*.jks
+*.key
+*.pem
+ninjadesk-server/db/device_passwords.json
+ninjadesk-server/db/device_config_updates.json
+
+# Large External Repositories & Unnecessary Folders
+rustdesk/
+rustdesk-1.4.9-src/
+backup_before_rollback/
+.claude/
+.idea/
+.vscode/
+
+# Python Virtual Environments & Cache
+ninjadesk-server/env/
+env/
+venv/
+.venv/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.log
+
+# Databases
+*.sqlite3
+*.sqlite3-journal
+ninjadesk-server/db/*.sqlite3
+relayserver/*.sqlite3
+
+# Executables & Third-party Binaries
+relayserver/*.exe
+bin/*.exe
+*.jar
+
+# APK Build Artifacts & Intermediate Temporary Files
+apk_patch/.gradle/
+apk_patch/build/
+apk_patch/java_build/
+apk_patch/dex_out/
+apk_patch/temp_smali/
+apk_patch/extracted/
+apk_patch/temp_lib/
+apk_patch/lib/
+apk_patch/test_classes/
+apk_patch/libapp_extracted.so
+apk_patch/temp_aligned.apk
+apk_patch/temp_unsigned.apk
+apk_patch/temp_unsigned_new.apk
+apk_patch/rustdesk-final.apk
+apk_patch/rustdesk-final.apk.idsig
+apk_patch/rustdesk-patched-release.apk
+apk_patch/rustdesk-patched-release.apk.idsig
+apk_patch/classes.dex
+apk_patch/classes_patched.dex
+apk_patch/*.bin
+apk_patch/*.o
+apk_patch/*.bak
+apk_patch/*.so.bak

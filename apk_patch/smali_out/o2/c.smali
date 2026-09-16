@@ -1,0 +1,67 @@
+.class public abstract Lo2/c;
+.super Ljava/lang/Object;
+.source "SourceFile"
+
+# interfaces
+.implements Lo2/a;
+
+
+# direct methods
+.method public constructor <init>()V
+    .registers 1
+
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public final a(Lo2/b;)La1/w;
+    .registers 4
+
+    iget-object v0, p1, Lg1/g;->k:Ljava/nio/ByteBuffer;
+
+    invoke-static {v0}, Ld1/a;->e(Ljava/lang/Object;)Ljava/lang/Object;
+
+    move-result-object v0
+
+    check-cast v0, Ljava/nio/ByteBuffer;
+
+    invoke-virtual {v0}, Ljava/nio/Buffer;->position()I
+
+    move-result v1
+
+    if-nez v1, :cond_1c
+
+    invoke-virtual {v0}, Ljava/nio/ByteBuffer;->hasArray()Z
+
+    move-result v1
+
+    if-eqz v1, :cond_1c
+
+    invoke-virtual {v0}, Ljava/nio/ByteBuffer;->arrayOffset()I
+
+    move-result v1
+
+    if-nez v1, :cond_1c
+
+    const/4 v1, 0x1
+
+    goto :goto_1d
+
+    :cond_1c
+    const/4 v1, 0x0
+
+    :goto_1d
+    invoke-static {v1}, Ld1/a;->a(Z)V
+
+    invoke-virtual {p0, p1, v0}, Lo2/c;->b(Lo2/b;Ljava/nio/ByteBuffer;)La1/w;
+
+    move-result-object p1
+
+    return-object p1
+.end method
+
+.method public abstract b(Lo2/b;Ljava/nio/ByteBuffer;)La1/w;
+.end method
