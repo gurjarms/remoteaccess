@@ -98,7 +98,7 @@
 
     move-result-object v2
 
-    sget-object v3, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    sget-object v3, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
 
     invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 

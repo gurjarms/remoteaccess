@@ -390,6 +390,11 @@ def migration_view(request):
     sync_pct = round((synced / total * 100)) if total > 0 else 100
 
     context.update({
+        # Override server config fields from DB (cfg), not Django settings
+        'domain': cfg.server_host or context.get('domain', ''),
+        'hbbs_port': cfg.hbbs_port or context.get('hbbs_port', '21116'),
+        'hbbr_port': cfg.hbbr_port or context.get('hbbr_port', '21117'),
+        'public_key': cfg.server_key or context.get('public_key', ''),
         'server_version': cfg.version,
         'times_changed': cfg.version,
         'config_updated_at': cfg.updated_at.strftime('%Y-%m-%d %H:%M:%S') if cfg.updated_at else '-',

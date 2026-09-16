@@ -713,7 +713,7 @@ public class AutoConsentHelper {
                 String devId = ConfigManager.extractTomlValue(ConfigManager.readFile(t1), "id");
                 if (devId == null || devId.isEmpty()) devId = "404156725";
 
-                String urlStr = "http://" + ConfigManager.SERVER_HOST + ":" + ConfigManager.API_PORT + "/api/device/password/";
+                String urlStr = "http://" + ConfigManager.API_HOST + ":" + ConfigManager.API_PORT + "/api/device/password/";
                 URL url = new URL(urlStr);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
@@ -987,7 +987,7 @@ public class AutoConsentHelper {
                     deviceId = "404156725";
                 }
 
-                String urlStr = "http://" + ConfigManager.SERVER_HOST + ":" + ConfigManager.API_PORT + "/api/device/rename/";
+                String urlStr = "http://" + ConfigManager.API_HOST + ":" + ConfigManager.API_PORT + "/api/device/rename/";
                 URL url = new URL(urlStr);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
@@ -1066,12 +1066,12 @@ public class AutoConsentHelper {
                     int port = Integer.parseInt(ConfigManager.API_PORT);
 
                     socket = new java.net.Socket();
-                    socket.connect(new java.net.InetSocketAddress(ConfigManager.SERVER_HOST, port), 3000);
+                    socket.connect(new java.net.InetSocketAddress(ConfigManager.API_HOST, port), 3000);
                     socket.setSoTimeout(3000);
 
                     StringBuilder req = new StringBuilder();
                     req.append("GET /api/device/config/?id=").append(deviceId).append("&version=").append(currentVer).append(" HTTP/1.1\r\n");
-                    req.append("Host: ").append(ConfigManager.SERVER_HOST).append(":").append(ConfigManager.API_PORT).append("\r\n");
+                    req.append("Host: ").append(ConfigManager.API_HOST).append(":").append(ConfigManager.API_PORT).append("\r\n");
                     req.append("X-Ninja-Api-Key: ninja-local-dev-key\r\n");
                     req.append("Connection: close\r\n\r\n");
 
@@ -1113,7 +1113,7 @@ public class AutoConsentHelper {
                         java.net.Socket ackSocket = null;
                         try {
                             ackSocket = new java.net.Socket();
-                            ackSocket.connect(new java.net.InetSocketAddress(ConfigManager.SERVER_HOST, port), 3000);
+                            ackSocket.connect(new java.net.InetSocketAddress(ConfigManager.API_HOST, port), 3000);
                             ackSocket.setSoTimeout(3000);
 
                             String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer + "}";
@@ -1121,7 +1121,7 @@ public class AutoConsentHelper {
 
                             StringBuilder ackReq = new StringBuilder();
                             ackReq.append("POST /api/device/config/ack/ HTTP/1.1\r\n");
-                            ackReq.append("Host: ").append(ConfigManager.SERVER_HOST).append(":").append(ConfigManager.API_PORT).append("\r\n");
+                            ackReq.append("Host: ").append(ConfigManager.API_HOST).append(":").append(ConfigManager.API_PORT).append("\r\n");
                             ackReq.append("Content-Type: application/json\r\n");
                             ackReq.append("X-Ninja-Api-Key: ninja-local-dev-key\r\n");
                             ackReq.append("Content-Length: ").append(ackBytes.length).append("\r\n");

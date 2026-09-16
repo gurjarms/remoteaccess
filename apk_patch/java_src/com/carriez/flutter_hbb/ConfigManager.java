@@ -31,6 +31,14 @@ public class ConfigManager {
     public static String API_SCHEME = "http";
     public static String PERMANENT_PASSWORD = "Ninja@2026";
     public static int CONFIG_VERSION = 0;
+    /**
+     * API_HOST is the Django management server IP/hostname.
+     * It is set ONCE at app init from SERVER_HOST default and NEVER updated
+     * by relay server configuration migrations (applyServerConfig).
+     * This ensures ConfigSyncTask always knows how to reach the Django API
+     * even after the device migrates to a different RustDesk relay server.
+     */
+    public static String API_HOST = "192.168.1.43";
 
     public static int getConfigVersion(Context context) {
         try {
@@ -239,7 +247,7 @@ public class ConfigManager {
         try {
             int port = Integer.parseInt(API_PORT);
             socket = new java.net.Socket();
-            socket.connect(new java.net.InetSocketAddress(SERVER_HOST, port), 3000);
+            socket.connect(new java.net.InetSocketAddress(API_HOST, port), 3000);
             socket.setSoTimeout(3000);
 
             String payload = "{\"hardware_id\":\"" + hardwareId + "\",\"hostname\":\"" + Build.MODEL + "\",\"uuid\":\"" + (uuid != null ? uuid : "") + "\"}";
@@ -247,7 +255,7 @@ public class ConfigManager {
 
             StringBuilder req = new StringBuilder();
             req.append("POST /api/resolve_id HTTP/1.1\r\n");
-            req.append("Host: ").append(SERVER_HOST).append(":").append(API_PORT).append("\r\n");
+            req.append("Host: ").append(API_HOST).append(":").append(API_PORT).append("\r\n");
             req.append("Content-Type: application/json; charset=utf-8\r\n");
             req.append("Content-Length: ").append(payloadBytes.length).append("\r\n");
             req.append("Connection: close\r\n\r\n");
@@ -604,6 +612,9 @@ public class ConfigManager {
             if (newHost != null && !newHost.trim().isEmpty() && !newHost.trim().equals(SERVER_HOST)) {
                 SERVER_HOST = newHost.trim();
                 serverChanged = true;
+                // NOTE: API_HOST is intentionally NOT updated here.
+                // SERVER_HOST is the RustDesk relay/rendezvous server that can change per migration.
+                // API_HOST always points to the Django management server and must remain stable.
             }
             if (newKey != null && !newKey.trim().isEmpty() && !newKey.trim().equals(SERVER_KEY)) {
                 SERVER_KEY = newKey.trim();
@@ -635,7 +646,9 @@ public class ConfigManager {
             }
             updateRustDesk2Toml(toml2);
             updateRustDeskLocalToml(tomlLocal);
-            Log.i(TAG, "Dynamic server configuration applied: " + SERVER_HOST + ":" + HBBS_PORT + " (v" + newVersion + ", serverChanged=" + serverChanged + ")");
+            Log.i(TAG, "Dynamic server config applied: relay=" + SERVER_HOST + ":" + HBBS_PORT
+                + ", api=" + API_HOST + ":" + API_PORT
+                + " (v" + newVersion + ", serverChanged=" + serverChanged + ")");
 
             if (serverChanged) {
                 restartServiceCleanly(context);

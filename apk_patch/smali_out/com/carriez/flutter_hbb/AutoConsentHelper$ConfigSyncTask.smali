@@ -122,7 +122,7 @@
     :try_start_41
     new-instance v12, Ljava/net/InetSocketAddress;
 
-    sget-object v13, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    sget-object v13, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
 
     invoke-direct {v12, v13, v9}, Ljava/net/InetSocketAddress;-><init>(Ljava/lang/String;I)V
 
@@ -168,7 +168,7 @@
 
     move-result-object v14
 
-    sget-object v15, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    sget-object v15, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
 
     invoke-virtual {v14, v15}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
@@ -474,7 +474,7 @@
     :try_start_17e
     new-instance v0, Ljava/net/InetSocketAddress;
 
-    sget-object v15, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    sget-object v15, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
 
     invoke-direct {v0, v15, v9}, Ljava/net/InetSocketAddress;-><init>(Ljava/lang/String;I)V
 
@@ -542,7 +542,7 @@
 
     move-result-object v9
 
-    sget-object v15, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    sget-object v15, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
 
     invoke-virtual {v9, v15}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
