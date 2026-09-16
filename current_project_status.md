@@ -1,17 +1,16 @@
 # Ninja Desk - Current Project Status & Git Commit Ledger
 
-**Last Updated**: 2026-09-16 13:40  
-**Workspace Root**: `d:\NMC\remoteAccess`
+**Last Updated**: 2026-09-16 13:50  
+**Workspace Root**: `d:\NMC\remoteAccess`  
+**Git Author**: Mahendra Singh <gurjarmahising33@gmail.com>
 
 ---
 
 ## 1. Git Commit History & Working Features Ledger
 
-| Commit Hash | Date & Time | Description | Working Features Implemented |
+| Commit Hash | Date & Time | Commit Title | Verified Working Features Implemented |
 | :--- | :--- | :--- | :--- |
-| *(Pending Initial Commit)* | 2026-09-16 | Initial baseline of fully verified Ninja Desk suite | • Dynamic in-memory password reload (`librustdesk_patched.so` Thumb-2 option patch + deep link dispatch)<br>• Auto-close back to previous screen/app (`activity.moveTaskToBack(true)` without home screen kick)<br>• MediaProjection "Start now" auto-consent via root accessibility<br>• Full remote touch & swipe gestures via `InputService`<br>• Direct raw TCP socket config sync polling Django server<br>• Skeuomorphic Django management dashboard on port 8000 |
-
-*(Note: Commit hash will be updated immediately upon commit execution.)*
+| [`2fa52e4`](file:///d:/NMC/remoteAccess) (`2fa52e4490fe5629103f7d48ffecba5934dcffb4`) | 2026-09-16 13:48:38 +0530 | `feat(ninja-desk): initial baseline with remote password sync & auto-close` | • **Dynamic In-Memory Password Reload**: Patched `librustdesk_patched.so` ARM Thumb-2 option stub (`allow-deep-link-password` -> `"Y"`) and deep link `ninjadesk://password/<pass>` trigger calling `bind.mainSetPermanentPasswordWithResult`. Native Rust engine immediately authenticates with the new password without restarting services or interrupting screen capture.<br>• **Auto-Close to Previous Screen/App**: Replaced `CATEGORY_HOME` and `KEYCODE_HOME` (keyevent 3) with `activity.moveTaskToBack(true)` in `AutoConsentHelper.java`. Returns user cleanly to active TV video/app instead of kicking to launcher.<br>• **Unattended MediaProjection Auto-Consent**: Root accessibility interception automatically auto-clicks "Start now" (`android:id/button1`) on device boot / app launch.<br>• **Remote Touch Gestures**: Restored `InputService` tap (`input tap x y`) and swipe (`input swipe x1 y1 x2 y2 duration`) via root injection.<br>• **Direct Raw TCP Socket Config Poller**: Android background task queries Django server `GET /api/device/config/` over raw TCP socket, bypassing Android 11 cleartext HTTP restrictions.<br>• **Skeuomorphic Django Management Dashboard**: Device management, credential vault, server migration, and activity log tracking running on port 8000.<br>• **Security & Clean Packaging**: Configured `.gitignore` excluding all confidential credentials (`.env`, `id_ed25519`, `device_passwords.json`, SQLite databases) and large desktop repo directories (`rustdesk/`, `rustdesk-1.4.9-src/`). |
 
 ---
 
