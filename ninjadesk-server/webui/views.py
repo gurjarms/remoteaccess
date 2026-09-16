@@ -367,13 +367,26 @@ def migration_view(request):
         return redirect('/webui/login/?next=/webui/migration/')
     context = get_server_context(request, active_nav='migration')
 
-    from api.views_api import get_or_create_server_config_state
+    from api.views_api import get_or_create_server_config_state, load_device_config_updates
     cfg = get_or_create_server_config_state()
+    updates = load_device_config_updates()
 
     devices = RustDesDevice.objects.all().order_by('-update_time')
     total = devices.count()
-    synced = sum(1 for d in devices if d.config_version == cfg.version)
-    outdated = total - synced
+    synced = 0
+    pending_count = 0
+    outdated = 0
+
+    for d in devices:
+        t_entry = updates.get(d.rid, {})
+        is_p = bool(t_entry.get('pending', False))
+        if d.config_version == cfg.version and not is_p:
+            synced += 1
+        elif is_p:
+            pending_count += 1
+        else:
+            outdated += 1
+
     sync_pct = round((synced / total * 100)) if total > 0 else 100
 
     context.update({
@@ -383,6 +396,7 @@ def migration_view(request):
         'config_updated_by': cfg.updated_by or 'System',
         'total_devices_count': total,
         'synced_devices_count': synced,
+        'pending_devices_count': pending_count,
         'outdated_devices_count': outdated,
         'sync_percentage': sync_pct,
     })

@@ -711,23 +711,46 @@ def api_device_config(request):
             if not device_ids and 'id' in data:
                 device_ids = [data['id']]
 
-            server_host = data.get('server_host', '').strip()
-            server_key = data.get('server_key', '').strip()
-            hbbs_port = str(data.get('hbbs_port', '21116')).strip()
-            hbbr_port = str(data.get('hbbr_port', '21117')).strip()
+            # If broadcast to all registered devices requested
+            if data.get('all_devices', False):
+                device_ids = list(RustDesDevice.objects.values_list('rid', flat=True))
+
+            server_host = data.get('server_host', '').strip() or cfg.server_host
+            server_key = data.get('server_key', '').strip() or cfg.server_key
+            hbbs_port = str(data.get('hbbs_port', '')).strip() or str(cfg.hbbs_port)
+            hbbr_port = str(data.get('hbbr_port', '')).strip() or str(cfg.hbbr_port)
 
             if not server_host or not server_key:
                 return JsonResponse({'error': 'server_host and server_key required'}, status=400)
 
-            # Increment global server configuration version
-            cfg.version += 1
-            cfg.server_host = server_host
-            cfg.server_key = server_key
-            cfg.hbbs_port = hbbs_port
-            cfg.hbbr_port = hbbr_port
-            username_str = user.username if (user and user.is_authenticated) else 'Superadmin'
-            cfg.updated_by = username_str
-            cfg.save()
+            increment_version = data.get('increment_version', False)
+            push_current = data.get('push_current', False)
+
+            is_config_changed = (
+                server_host != cfg.server_host or
+                server_key != cfg.server_key or
+                hbbs_port != str(cfg.hbbs_port) or
+                hbbr_port != str(cfg.hbbr_port)
+            )
+
+            # Only increment global version if explicitly requested or if saving a brand new server configuration
+            if increment_version or (is_config_changed and not push_current):
+                cfg.version += 1
+                cfg.server_host = server_host
+                cfg.server_key = server_key
+                cfg.hbbs_port = hbbs_port
+                cfg.hbbr_port = hbbr_port
+                username_str = user.username if (user and user.is_authenticated) else 'Superadmin'
+                cfg.updated_by = username_str
+                cfg.save()
+            else:
+                # Use current active server parameters without bumping version number
+                server_host = cfg.server_host
+                server_key = cfg.server_key
+                hbbs_port = str(cfg.hbbs_port)
+                hbbr_port = str(cfg.hbbr_port)
+
+            target_version = cfg.version
 
             for did in device_ids:
                 did_str = str(did).strip()
@@ -737,13 +760,15 @@ def api_device_config(request):
                 dev_entry['server_key'] = server_key
                 dev_entry['hbbs_port'] = hbbs_port
                 dev_entry['hbbr_port'] = hbbr_port
-                dev_entry['version'] = cfg.version
+                dev_entry['version'] = target_version
                 dev_entry['updated_at'] = datetime.datetime.now().isoformat()
                 updates[did_str] = dev_entry
+
             save_device_config_updates(updates)
             return JsonResponse({
                 'status': 'ok',
-                'version': cfg.version,
+                'version': target_version,
+                'version_incremented': bool(increment_version or (is_config_changed and not push_current)),
                 'targeted_devices': len(device_ids),
                 'server_host': server_host,
             })
@@ -792,6 +817,7 @@ def api_device_sync_status(request):
     Returns complete synchronization metrics of all devices vs server configuration version.
     """
     cfg = get_or_create_server_config_state()
+    updates = load_device_config_updates()
     devices = RustDesDevice.objects.all().order_by('-update_time')
 
     now = datetime.datetime.now()
@@ -799,17 +825,29 @@ def api_device_sync_status(request):
 
     total = devices.count()
     synced = 0
+    pending_count = 0
     outdated = 0
 
     device_list = []
     for d in devices:
         is_online = bool(d.update_time and d.update_time >= cutoff)
         dev_ver = d.config_version
-        is_synced = (dev_ver == cfg.version)
+        target_entry = updates.get(d.rid, {})
+        is_pending = bool(target_entry.get('pending', False))
+
+        is_synced = (dev_ver == cfg.version and not is_pending)
         if is_synced:
             synced += 1
+            status_label = 'synced'
+        elif is_pending:
+            pending_count += 1
+            status_label = 'pending'
         else:
             outdated += 1
+            status_label = 'outdated'
+
+        target_version = target_entry.get('version', cfg.version) if is_pending else cfg.version
+        ack_time = target_entry.get('acknowledged_at')
 
         device_list.append({
             'id': d.rid,
@@ -818,7 +856,11 @@ def api_device_sync_status(request):
             'ip_address': d.ip_address,
             'online': is_online,
             'config_version': dev_ver,
+            'target_version': target_version,
             'is_synced': is_synced,
+            'is_pending': is_pending,
+            'status': status_label,
+            'acknowledged_at': ack_time,
             'config_updated_at': d.config_updated_at.strftime('%Y-%m-%d %H:%M:%S') if d.config_updated_at else None,
             'last_seen': d.update_time.strftime('%Y-%m-%d %H:%M:%S') if d.update_time else None,
         })
@@ -836,6 +878,7 @@ def api_device_sync_status(request):
         'updated_by': cfg.updated_by,
         'total_devices': total,
         'synced_devices': synced,
+        'pending_devices': pending_count,
         'outdated_devices': outdated,
         'sync_percentage': sync_pct,
         'devices': device_list,
