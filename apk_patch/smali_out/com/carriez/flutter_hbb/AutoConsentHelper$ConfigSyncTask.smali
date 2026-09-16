@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/content/Context;)V
     .registers 2
 
-    .line 1060
+    .line 1051
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 1061
+    .line 1052
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->context:Landroid/content/Context;
 
-    .line 1062
+    .line 1053
     return-void
 .end method
 
@@ -40,7 +40,7 @@
 .method public run()V
     .registers 23
 
-    .line 1067
+    .line 1058
     move-object/from16 v1, p0
 
     const-string v2, "Connection: close\r\n\r\n"
@@ -58,20 +58,20 @@
     :goto_e
     nop
 
-    .line 1069
+    .line 1060
     const-wide/16 v8, 0x1388
 
     :try_start_11
     invoke-static {v8, v9}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 1070
+    .line 1061
     new-instance v0, Ljava/io/File;
 
     const-string v8, "/data/user/0/com.carriez.flutter_hbb/app_flutter/RustDesk.toml"
 
     invoke-direct {v0, v8}, Ljava/io/File;-><init>(Ljava/lang/String;)V
 
-    .line 1071
+    .line 1062
     invoke-static {v0}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
     move-result-object v0
@@ -82,7 +82,7 @@
 
     move-result-object v0
 
-    .line 1072
+    .line 1063
     if-eqz v0, :cond_2d
 
     invoke-virtual {v0}, Ljava/lang/String;->isEmpty()Z
@@ -97,28 +97,28 @@
     :cond_2f
     move-object v8, v0
 
-    .line 1074
+    .line 1065
     iget-object v0, v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->context:Landroid/content/Context;
 
     invoke-static {v0}, Lcom/carriez/flutter_hbb/ConfigManager;->getConfigVersion(Landroid/content/Context;)I
 
     move-result v0
 
-    .line 1075
+    .line 1066
     sget-object v9, Lcom/carriez/flutter_hbb/ConfigManager;->API_PORT:Ljava/lang/String;
 
     invoke-static {v9}, Ljava/lang/Integer;->parseInt(Ljava/lang/String;)I
 
     move-result v9
 
-    .line 1077
+    .line 1068
     new-instance v11, Ljava/net/Socket;
 
     invoke-direct {v11}, Ljava/net/Socket;-><init>()V
     :try_end_41
     .catchall {:try_start_11 .. :try_end_41} :catchall_268
 
-    .line 1078
+    .line 1069
     :try_start_41
     new-instance v12, Ljava/net/InetSocketAddress;
 
@@ -130,15 +130,15 @@
 
     invoke-virtual {v11, v12, v13}, Ljava/net/Socket;->connect(Ljava/net/SocketAddress;I)V
 
-    .line 1079
+    .line 1070
     invoke-virtual {v11, v13}, Ljava/net/Socket;->setSoTimeout(I)V
 
-    .line 1081
+    .line 1072
     new-instance v12, Ljava/lang/StringBuilder;
 
     invoke-direct {v12}, Ljava/lang/StringBuilder;-><init>()V
 
-    .line 1082
+    .line 1073
     const-string v14, "GET /api/device/config/?id="
 
     invoke-virtual {v12, v14}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
@@ -163,7 +163,7 @@
 
     invoke-virtual {v14, v15}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1083
+    .line 1074
     invoke-virtual {v12, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v14
@@ -186,18 +186,18 @@
 
     invoke-virtual {v14, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1084
+    .line 1075
     invoke-virtual {v12, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1085
+    .line 1076
     invoke-virtual {v12, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1087
+    .line 1078
     invoke-virtual {v11}, Ljava/net/Socket;->getOutputStream()Ljava/io/OutputStream;
 
     move-result-object v14
 
-    .line 1088
+    .line 1079
     invoke-virtual {v12}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
     move-result-object v12
@@ -210,10 +210,10 @@
 
     invoke-virtual {v14, v12}, Ljava/io/OutputStream;->write([B)V
 
-    .line 1089
+    .line 1080
     invoke-virtual {v14}, Ljava/io/OutputStream;->flush()V
 
-    .line 1091
+    .line 1082
     new-instance v12, Ljava/io/BufferedReader;
 
     new-instance v14, Ljava/io/InputStreamReader;
@@ -228,12 +228,12 @@
 
     invoke-direct {v12, v14}, Ljava/io/BufferedReader;-><init>(Ljava/io/Reader;)V
 
-    .line 1092
+    .line 1083
     new-instance v10, Ljava/lang/StringBuilder;
 
     invoke-direct {v10}, Ljava/lang/StringBuilder;-><init>()V
 
-    .line 1094
+    .line 1085
     :goto_b4
     invoke-virtual {v12}, Ljava/io/BufferedReader;->readLine()Ljava/lang/String;
 
@@ -241,7 +241,7 @@
 
     if-eqz v14, :cond_c4
 
-    .line 1095
+    .line 1086
     invoke-virtual {v10, v14}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v14
@@ -252,13 +252,13 @@
 
     goto :goto_b4
 
-    .line 1097
+    .line 1088
     :cond_c4
     invoke-virtual {v10}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
     move-result-object v10
 
-    .line 1099
+    .line 1090
     const-string v12, "\"pending\":true"
 
     invoke-virtual {v10, v12}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
@@ -275,7 +275,7 @@
 
     if-eqz v12, :cond_254
 
-    .line 1100
+    .line 1091
     :cond_d8
     new-instance v12, Ljava/lang/StringBuilder;
 
@@ -297,52 +297,52 @@
 
     invoke-static {v7, v12}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1101
+    .line 1092
     const-string v12, "server_host"
 
     invoke-static {v10, v12}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v12
 
-    .line 1102
+    .line 1093
     const-string v14, "server_key"
 
     invoke-static {v10, v14}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v18
 
-    .line 1103
+    .line 1094
     const-string v14, "hbbs_port"
 
     invoke-static {v10, v14}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v14
 
-    .line 1104
+    .line 1095
     const-string v15, "hbbr_port"
 
     invoke-static {v10, v15}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v20
 
-    .line 1105
+    .line 1096
     const-string v15, "password"
 
     invoke-static {v10, v15}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v15
 
-    .line 1106
+    .line 1097
     const-string v13, "version"
 
     invoke-static {v10, v13}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v10
 
-    .line 1107
+    .line 1098
     add-int/lit8 v13, v0, 0x1
 
-    .line 1108
+    .line 1099
     if-eqz v10, :cond_127
 
     invoke-virtual {v10}, Ljava/lang/String;->isEmpty()Z
@@ -353,7 +353,7 @@
 
     if-nez v0, :cond_127
 
-    .line 1110
+    .line 1101
     :try_start_11c
     invoke-virtual {v10}, Ljava/lang/String;->trim()Ljava/lang/String;
 
@@ -365,7 +365,7 @@
     :try_end_124
     .catchall {:try_start_11c .. :try_end_124} :catchall_126
 
-    .line 1111
+    .line 1102
     move v13, v0
 
     goto :goto_127
@@ -373,7 +373,7 @@
     :catchall_126
     move-exception v0
 
-    .line 1114
+    .line 1105
     :cond_127
     :goto_127
     if-eqz v15, :cond_14a
@@ -385,7 +385,7 @@
 
     if-nez v0, :cond_14a
 
-    .line 1115
+    .line 1106
     new-instance v0, Ljava/lang/StringBuilder;
 
     invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
@@ -406,12 +406,12 @@
 
     invoke-static {v7, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1116
+    .line 1107
     iget-object v0, v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->context:Landroid/content/Context;
 
     invoke-static {v0, v15}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->savePermanentPassword(Landroid/content/Context;Ljava/lang/String;)V
 
-    .line 1119
+    .line 1110
     :cond_14a
     new-instance v0, Ljava/lang/StringBuilder;
 
@@ -459,10 +459,10 @@
     :try_end_178
     .catchall {:try_start_129 .. :try_end_178} :catchall_265
 
-    .line 1122
+    .line 1113
     nop
 
-    .line 1124
+    .line 1115
     :try_start_179
     new-instance v10, Ljava/net/Socket;
 
@@ -470,7 +470,7 @@
     :try_end_17e
     .catchall {:try_start_179 .. :try_end_17e} :catchall_226
 
-    .line 1125
+    .line 1116
     :try_start_17e
     new-instance v0, Ljava/net/InetSocketAddress;
 
@@ -482,10 +482,10 @@
 
     invoke-virtual {v10, v0, v9}, Ljava/net/Socket;->connect(Ljava/net/SocketAddress;I)V
 
-    .line 1126
+    .line 1117
     invoke-virtual {v10, v9}, Ljava/net/Socket;->setSoTimeout(I)V
 
-    .line 1128
+    .line 1119
     new-instance v0, Ljava/lang/StringBuilder;
 
     invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
@@ -520,24 +520,24 @@
 
     move-result-object v0
 
-    .line 1129
+    .line 1120
     sget-object v8, Ljava/nio/charset/StandardCharsets;->UTF_8:Ljava/nio/charset/Charset;
 
     invoke-virtual {v0, v8}, Ljava/lang/String;->getBytes(Ljava/nio/charset/Charset;)[B
 
     move-result-object v0
 
-    .line 1131
+    .line 1122
     new-instance v8, Ljava/lang/StringBuilder;
 
     invoke-direct {v8}, Ljava/lang/StringBuilder;-><init>()V
 
-    .line 1132
+    .line 1123
     const-string v9, "POST /api/device/config/ack/ HTTP/1.1\r\n"
 
     invoke-virtual {v8, v9}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1133
+    .line 1124
     invoke-virtual {v8, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v9
@@ -560,15 +560,15 @@
 
     invoke-virtual {v9, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1134
+    .line 1125
     const-string v9, "Content-Type: application/json\r\n"
 
     invoke-virtual {v8, v9}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1135
+    .line 1126
     invoke-virtual {v8, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1136
+    .line 1127
     const-string v9, "Content-Length: "
 
     invoke-virtual {v8, v9}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
@@ -583,15 +583,15 @@
 
     invoke-virtual {v9, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1137
+    .line 1128
     invoke-virtual {v8, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 1139
+    .line 1130
     invoke-virtual {v10}, Ljava/net/Socket;->getOutputStream()Ljava/io/OutputStream;
 
     move-result-object v9
 
-    .line 1140
+    .line 1131
     invoke-virtual {v8}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
     move-result-object v8
@@ -604,13 +604,13 @@
 
     invoke-virtual {v9, v8}, Ljava/io/OutputStream;->write([B)V
 
-    .line 1141
+    .line 1132
     invoke-virtual {v9, v0}, Ljava/io/OutputStream;->write([B)V
 
-    .line 1142
+    .line 1133
     invoke-virtual {v9}, Ljava/io/OutputStream;->flush()V
 
-    .line 1143
+    .line 1134
     new-instance v0, Ljava/lang/StringBuilder;
 
     invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
@@ -633,10 +633,10 @@
     :try_end_21d
     .catchall {:try_start_17e .. :try_end_21d} :catchall_224
 
-    .line 1147
+    .line 1138
     nop
 
-    .line 1148
+    .line 1139
     :try_start_21e
     invoke-virtual {v10}, Ljava/net/Socket;->close()V
     :try_end_221
@@ -649,7 +649,7 @@
 
     goto :goto_247
 
-    .line 1144
+    .line 1135
     :catchall_224
     move-exception v0
 
@@ -660,7 +660,7 @@
 
     const/4 v10, 0x0
 
-    .line 1145
+    .line 1136
     :goto_228
     :try_start_228
     new-instance v8, Ljava/lang/StringBuilder;
@@ -689,16 +689,16 @@
     :try_end_242
     .catchall {:try_start_228 .. :try_end_242} :catchall_25b
 
-    .line 1147
+    .line 1138
     if-eqz v10, :cond_247
 
-    .line 1148
+    .line 1139
     :try_start_244
     invoke-virtual {v10}, Ljava/net/Socket;->close()V
     :try_end_247
     .catchall {:try_start_244 .. :try_end_247} :catchall_222
 
-    .line 1153
+    .line 1144
     :cond_247
     :goto_247
     :try_start_247
@@ -716,11 +716,11 @@
     :try_end_254
     .catchall {:try_start_247 .. :try_end_254} :catchall_265
 
-    .line 1158
+    .line 1149
     :cond_254
     nop
 
-    .line 1159
+    .line 1150
     :try_start_255
     invoke-virtual {v11}, Ljava/net/Socket;->close()V
     :try_end_258
@@ -733,7 +733,7 @@
 
     goto :goto_289
 
-    .line 1147
+    .line 1138
     :catchall_25b
     move-exception v0
 
@@ -741,7 +741,7 @@
 
     if-eqz v10, :cond_264
 
-    .line 1148
+    .line 1139
     :try_start_25f
     invoke-virtual {v10}, Ljava/net/Socket;->close()V
     :try_end_262
@@ -752,7 +752,7 @@
     :catchall_263
     move-exception v0
 
-    .line 1150
+    .line 1141
     :cond_264
     :goto_264
     :try_start_264
@@ -760,7 +760,7 @@
     :try_end_265
     .catchall {:try_start_264 .. :try_end_265} :catchall_265
 
-    .line 1155
+    .line 1146
     :catchall_265
     move-exception v0
 
@@ -773,7 +773,7 @@
 
     const/4 v10, 0x0
 
-    .line 1156
+    .line 1147
     :goto_26a
     :try_start_26a
     new-instance v8, Ljava/lang/StringBuilder;
@@ -802,21 +802,21 @@
     :try_end_284
     .catchall {:try_start_26a .. :try_end_284} :catchall_28b
 
-    .line 1158
+    .line 1149
     if-eqz v10, :cond_289
 
-    .line 1159
+    .line 1150
     :try_start_286
     invoke-virtual {v10}, Ljava/net/Socket;->close()V
     :try_end_289
     .catchall {:try_start_286 .. :try_end_289} :catchall_259
 
-    .line 1162
+    .line 1153
     :cond_289
     :goto_289
     goto/16 :goto_e
 
-    .line 1158
+    .line 1149
     :catchall_28b
     move-exception v0
 
@@ -824,7 +824,7 @@
 
     if-eqz v10, :cond_294
 
-    .line 1159
+    .line 1150
     :try_start_28f
     invoke-virtual {v10}, Ljava/net/Socket;->close()V
     :try_end_292
@@ -835,7 +835,7 @@
     :catchall_293
     move-exception v0
 
-    .line 1161
+    .line 1152
     :cond_294
     :goto_294
     throw v2

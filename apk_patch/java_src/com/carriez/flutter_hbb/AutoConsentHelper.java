@@ -846,16 +846,7 @@ public class AutoConsentHelper {
             // Auto-close back to previous app after Flutter completes in-memory password update
             returnToHomeLauncherDelayed(1500);
 
-            try {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            Toast.makeText(context, "Ninja Desk password set to: " + newPass, Toast.LENGTH_SHORT).show();
-                        } catch (Throwable ignored) {}
-                    }
-                });
-            } catch (Throwable ignored) {}
+            // Password toast removed for confidentiality - no plaintext password shown on screen
 
             new Thread(new ReportPasswordTask(newPass)).start();
 

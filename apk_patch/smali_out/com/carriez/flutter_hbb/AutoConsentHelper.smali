@@ -467,7 +467,7 @@
 .method private static buildAndShowRenameDialog(Landroid/content/Context;)V
     .registers 7
 
-    .line 920
+    .line 911
     :try_start_0
     new-instance v0, Landroid/app/AlertDialog$Builder;
 
@@ -475,22 +475,22 @@
 
     invoke-direct {v0, p0, v1}, Landroid/app/AlertDialog$Builder;-><init>(Landroid/content/Context;I)V
 
-    .line 921
+    .line 912
     const-string v1, "\u270f\ufe0f Rename Device"
 
     invoke-virtual {v0, v1}, Landroid/app/AlertDialog$Builder;->setTitle(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
 
-    .line 923
+    .line 914
     new-instance v1, Landroid/widget/LinearLayout;
 
     invoke-direct {v1, p0}, Landroid/widget/LinearLayout;-><init>(Landroid/content/Context;)V
 
-    .line 924
+    .line 915
     const/4 v2, 0x1
 
     invoke-virtual {v1, v2}, Landroid/widget/LinearLayout;->setOrientation(I)V
 
-    .line 925
+    .line 916
     const/16 v2, 0x14
 
     const/16 v3, 0xa
@@ -499,35 +499,35 @@
 
     invoke-virtual {v1, v4, v2, v4, v3}, Landroid/widget/LinearLayout;->setPadding(IIII)V
 
-    .line 927
+    .line 918
     new-instance v2, Landroid/widget/TextView;
 
     invoke-direct {v2, p0}, Landroid/widget/TextView;-><init>(Landroid/content/Context;)V
 
-    .line 928
+    .line 919
     const-string v3, "Enter friendly name for this TV Box:"
 
     invoke-virtual {v2, v3}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
-    .line 929
+    .line 920
     const/high16 v3, 0x41600000    # 14.0f
 
     invoke-virtual {v2, v3}, Landroid/widget/TextView;->setTextSize(F)V
 
-    .line 930
+    .line 921
     const v3, -0xcccccd
 
     invoke-virtual {v2, v3}, Landroid/widget/TextView;->setTextColor(I)V
 
-    .line 931
+    .line 922
     invoke-virtual {v1, v2}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 933
+    .line 924
     new-instance v2, Landroid/widget/EditText;
 
     invoke-direct {v2, p0}, Landroid/widget/EditText;-><init>(Landroid/content/Context;)V
 
-    .line 934
+    .line 925
     new-instance v3, Landroid/widget/LinearLayout$LayoutParams;
 
     const/4 v4, -0x1
@@ -538,12 +538,12 @@
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setLayoutParams(Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 937
+    .line 928
     const-string v3, "e.g. Living Room TV Box"
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setHint(Ljava/lang/CharSequence;)V
 
-    .line 938
+    .line 929
     sget-object v3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
     invoke-virtual {v3}, Ljava/lang/String;->isEmpty()Z
@@ -552,12 +552,12 @@
 
     if-nez v3, :cond_61
 
-    .line 939
+    .line 930
     sget-object v3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setText(Ljava/lang/CharSequence;)V
 
-    .line 940
+    .line 931
     sget-object v3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
     invoke-virtual {v3}, Ljava/lang/String;->length()I
@@ -566,19 +566,19 @@
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setSelection(I)V
 
-    .line 942
+    .line 933
     :cond_61
     const/high16 v3, 0x41800000    # 16.0f
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setTextSize(F)V
 
-    .line 943
+    .line 934
     invoke-virtual {v1, v2}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 945
+    .line 936
     invoke-virtual {v0, v1}, Landroid/app/AlertDialog$Builder;->setView(Landroid/view/View;)Landroid/app/AlertDialog$Builder;
 
-    .line 946
+    .line 937
     const-string v1, "Save"
 
     new-instance v3, Lcom/carriez/flutter_hbb/AutoConsentHelper$SaveNameClickListener;
@@ -587,38 +587,38 @@
 
     invoke-virtual {v0, v1, v3}, Landroid/app/AlertDialog$Builder;->setPositiveButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
-    .line 947
+    .line 938
     const-string p0, "Cancel"
 
     const/4 v1, 0x0
 
     invoke-virtual {v0, p0, v1}, Landroid/app/AlertDialog$Builder;->setNegativeButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
-    .line 949
+    .line 940
     invoke-virtual {v0}, Landroid/app/AlertDialog$Builder;->create()Landroid/app/AlertDialog;
 
     move-result-object p0
 
-    .line 950
+    .line 941
     invoke-virtual {p0}, Landroid/app/AlertDialog;->show()V
     :try_end_83
     .catchall {:try_start_0 .. :try_end_83} :catchall_84
 
-    .line 953
+    .line 944
     goto :goto_8c
 
-    .line 951
+    .line 942
     :catchall_84
     move-exception p0
 
-    .line 952
+    .line 943
     const-string v0, "AutoConsentHelper"
 
     const-string v1, "buildAndShowRenameDialog error: "
 
     invoke-static {v0, v1, p0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 954
+    .line 945
     :goto_8c
     return-void
 .end method
@@ -1076,14 +1076,14 @@
 .method public static onFlutterTextUpdated(Ljava/lang/Object;)V
     .registers 1
 
-    .line 1174
+    .line 1165
     return-void
 .end method
 
 .method public static registerCommandReceiver(Landroid/content/Context;)V
     .registers 5
 
-    .line 1042
+    .line 1033
     const-string v0, "AutoConsentHelper"
 
     sget-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->receiverRegistered:Z
@@ -1094,69 +1094,69 @@
 
     goto :goto_39
 
-    .line 1044
+    .line 1035
     :cond_9
     :try_start_9
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$CommandReceiver;
 
     invoke-direct {v1}, Lcom/carriez/flutter_hbb/AutoConsentHelper$CommandReceiver;-><init>()V
 
-    .line 1045
+    .line 1036
     new-instance v2, Landroid/content/IntentFilter;
 
     invoke-direct {v2}, Landroid/content/IntentFilter;-><init>()V
 
-    .line 1046
+    .line 1037
     const-string v3, "com.carriez.flutter_hbb.SHOW_PASSWORD_DIALOG"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1047
+    .line 1038
     const-string v3, "com.carriez.flutter_hbb.RENAME_DEVICE"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1048
+    .line 1039
     const-string v3, "com.carriez.flutter_hbb.RETURN_HOME"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1049
+    .line 1040
     invoke-virtual {p0}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
 
     move-result-object p0
 
     invoke-virtual {p0, v1, v2}, Landroid/content/Context;->registerReceiver(Landroid/content/BroadcastReceiver;Landroid/content/IntentFilter;)Landroid/content/Intent;
 
-    .line 1050
+    .line 1041
     const/4 p0, 0x1
 
     sput-boolean p0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->receiverRegistered:Z
 
-    .line 1051
+    .line 1042
     const-string p0, "Command BroadcastReceiver registered successfully!"
 
     invoke-static {v0, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_31
     .catchall {:try_start_9 .. :try_end_31} :catchall_32
 
-    .line 1054
+    .line 1045
     goto :goto_38
 
-    .line 1052
+    .line 1043
     :catchall_32
     move-exception p0
 
-    .line 1053
+    .line 1044
     const-string v1, "registerCommandReceiver error: "
 
     invoke-static {v0, v1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1055
+    .line 1046
     :goto_38
     return-void
 
-    .line 1042
+    .line 1033
     :cond_39
     :goto_39
     return-void
@@ -1199,578 +1199,572 @@
 .end method
 
 .method public static savePermanentPassword(Landroid/content/Context;Ljava/lang/String;)V
-    .registers 21
+    .registers 20
 
     .line 736
-    move-object/from16 v1, p0
+    move-object/from16 v1, p1
 
-    move-object/from16 v2, p1
+    const-string v2, "verification-method = \'use-permanent-password\'"
 
-    const-string v3, "verification-method = \'use-permanent-password\'"
+    const-string v3, "\n"
 
-    const-string v4, "\n"
+    const-string v4, "AutoConsentHelper"
 
-    const-string v5, "AutoConsentHelper"
-
-    :try_start_a
-    sput-object v2, Lcom/carriez/flutter_hbb/ConfigManager;->PERMANENT_PASSWORD:Ljava/lang/String;
-    :try_end_c
-    .catchall {:try_start_a .. :try_end_c} :catchall_2a9
+    :try_start_8
+    sput-object v1, Lcom/carriez/flutter_hbb/ConfigManager;->PERMANENT_PASSWORD:Ljava/lang/String;
+    :try_end_a
+    .catchall {:try_start_8 .. :try_end_a} :catchall_291
 
     .line 737
     nop
 
     .line 739
-    :try_start_d
+    :try_start_b
     new-instance v0, Ljava/io/File;
 
     invoke-virtual/range {p0 .. p0}, Landroid/content/Context;->getFilesDir()Ljava/io/File;
 
-    move-result-object v6
+    move-result-object v5
 
-    invoke-virtual {v6}, Ljava/io/File;->getParentFile()Ljava/io/File;
+    invoke-virtual {v5}, Ljava/io/File;->getParentFile()Ljava/io/File;
 
-    move-result-object v6
+    move-result-object v5
 
-    const-string v7, "app_flutter"
+    const-string v6, "app_flutter"
 
-    invoke-direct {v0, v6, v7}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
-    :try_end_1c
-    .catchall {:try_start_d .. :try_end_1c} :catchall_1d
+    invoke-direct {v0, v5, v6}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
+    :try_end_1a
+    .catchall {:try_start_b .. :try_end_1a} :catchall_1b
 
     .line 740
-    goto :goto_1f
+    goto :goto_1d
 
-    :catchall_1d
+    :catchall_1b
     move-exception v0
 
     const/4 v0, 0x0
 
     .line 741
-    :goto_1f
-    if-eqz v0, :cond_27
+    :goto_1d
+    if-eqz v0, :cond_25
 
-    :try_start_21
+    :try_start_1f
     invoke-virtual {v0}, Ljava/io/File;->exists()Z
 
-    move-result v6
+    move-result v5
 
-    if-nez v6, :cond_2e
+    if-nez v5, :cond_2c
 
     .line 742
-    :cond_27
+    :cond_25
     new-instance v0, Ljava/io/File;
 
-    const-string v6, "/data/user/0/com.carriez.flutter_hbb/app_flutter"
+    const-string v5, "/data/user/0/com.carriez.flutter_hbb/app_flutter"
 
-    invoke-direct {v0, v6}, Ljava/io/File;-><init>(Ljava/lang/String;)V
+    invoke-direct {v0, v5}, Ljava/io/File;-><init>(Ljava/lang/String;)V
 
     .line 744
-    :cond_2e
+    :cond_2c
+    new-instance v5, Ljava/io/File;
+
+    const-string v6, "RustDesk.toml"
+
+    invoke-direct {v5, v0, v6}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
+
+    .line 745
     new-instance v6, Ljava/io/File;
 
-    const-string v7, "RustDesk.toml"
+    const-string v7, "RustDesk2.toml"
 
     invoke-direct {v6, v0, v7}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 745
-    new-instance v7, Ljava/io/File;
-
-    const-string v8, "RustDesk2.toml"
-
-    invoke-direct {v7, v0, v8}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
-
     .line 747
-    invoke-virtual {v6}, Ljava/io/File;->exists()Z
+    invoke-virtual {v5}, Ljava/io/File;->exists()Z
 
-    move-result v8
+    move-result v7
 
-    if-eqz v8, :cond_152
+    if-eqz v7, :cond_14c
 
     .line 748
-    invoke-static {v6}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
+    invoke-static {v5}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
-    move-result-object v8
+    move-result-object v7
 
     .line 749
-    invoke-virtual {v8, v4}, Ljava/lang/String;->split(Ljava/lang/String;)[Ljava/lang/String;
+    invoke-virtual {v7, v3}, Ljava/lang/String;->split(Ljava/lang/String;)[Ljava/lang/String;
 
-    move-result-object v11
+    move-result-object v10
 
     .line 750
-    new-instance v12, Ljava/lang/StringBuilder;
+    new-instance v11, Ljava/lang/StringBuilder;
 
-    invoke-direct {v12}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {v11}, Ljava/lang/StringBuilder;-><init>()V
 
     .line 752
-    invoke-static {v8}, Lcom/carriez/flutter_hbb/ConfigManager;->extractPublicKey(Ljava/lang/String;)[B
+    invoke-static {v7}, Lcom/carriez/flutter_hbb/ConfigManager;->extractPublicKey(Ljava/lang/String;)[B
+
+    move-result-object v12
+
+    .line 753
+    const-string v13, "salt"
+
+    invoke-static {v7, v13}, Lcom/carriez/flutter_hbb/ConfigManager;->extractTomlValue(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v7
+
+    .line 754
+    if-eqz v7, :cond_63
+
+    invoke-virtual {v7}, Ljava/lang/String;->trim()Ljava/lang/String;
 
     move-result-object v13
 
-    .line 753
-    const-string v14, "salt"
+    invoke-virtual {v13}, Ljava/lang/String;->isEmpty()Z
 
-    invoke-static {v8, v14}, Lcom/carriez/flutter_hbb/ConfigManager;->extractTomlValue(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+    move-result v13
 
-    move-result-object v8
-
-    .line 754
-    if-eqz v8, :cond_65
-
-    invoke-virtual {v8}, Ljava/lang/String;->trim()Ljava/lang/String;
-
-    move-result-object v14
-
-    invoke-virtual {v14}, Ljava/lang/String;->isEmpty()Z
-
-    move-result v14
-
-    if-eqz v14, :cond_67
+    if-eqz v13, :cond_65
 
     .line 755
-    :cond_65
-    const-string v8, "xcv4kvqg2n6mix9bsx8frphhsdy5p4vk"
+    :cond_63
+    const-string v7, "xcv4kvqg2n6mix9bsx8frphhsdy5p4vk"
 
     .line 757
-    :cond_67
-    invoke-static {v2, v8, v13}, Lcom/carriez/flutter_hbb/ConfigManager;->computeEncryptedPermanentPassword(Ljava/lang/String;Ljava/lang/String;[B)Ljava/lang/String;
+    :cond_65
+    invoke-static {v1, v7, v12}, Lcom/carriez/flutter_hbb/ConfigManager;->computeEncryptedPermanentPassword(Ljava/lang/String;Ljava/lang/String;[B)Ljava/lang/String;
 
-    move-result-object v8
+    move-result-object v7
 
     .line 759
+    new-instance v12, Ljava/util/ArrayList;
+
+    invoke-direct {v12}, Ljava/util/ArrayList;-><init>()V
+
+    .line 760
     new-instance v13, Ljava/util/ArrayList;
 
     invoke-direct {v13}, Ljava/util/ArrayList;-><init>()V
-
-    .line 760
-    new-instance v14, Ljava/util/ArrayList;
-
-    invoke-direct {v14}, Ljava/util/ArrayList;-><init>()V
 
     .line 761
     nop
 
     .line 763
-    array-length v15, v11
+    array-length v14, v10
 
-    const/4 v9, 0x0
+    const/4 v15, 0x0
 
     const/16 v16, 0x0
 
-    :goto_7a
-    if-ge v9, v15, :cond_d1
+    :goto_78
+    if-ge v15, v14, :cond_cb
 
-    aget-object v10, v11, v9
+    aget-object v8, v10, v15
 
     .line 764
-    move-object/from16 v17, v11
+    invoke-virtual {v8}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    invoke-virtual {v10}, Ljava/lang/String;->trim()Ljava/lang/String;
-
-    move-result-object v11
+    move-result-object v9
 
     .line 765
-    if-nez v16, :cond_a3
+    if-nez v16, :cond_9f
 
-    move/from16 v18, v15
+    move-object/from16 v17, v10
 
-    const-string v15, "["
+    const-string v10, "["
 
-    invoke-virtual {v11, v15}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+    invoke-virtual {v9, v10}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
 
-    move-result v15
+    move-result v10
 
-    if-eqz v15, :cond_a5
+    if-eqz v10, :cond_a1
 
-    const-string v15, "]"
+    const-string v10, "]"
 
-    invoke-virtual {v11, v15}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
+    invoke-virtual {v9, v10}, Ljava/lang/String;->endsWith(Ljava/lang/String;)Z
 
-    move-result v15
+    move-result v10
 
-    if-eqz v15, :cond_a5
+    if-eqz v10, :cond_a1
 
-    const-string v15, "="
+    const-string v10, "="
 
-    invoke-virtual {v11, v15}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+    invoke-virtual {v9, v10}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
-    move-result v15
+    move-result v10
 
-    if-nez v15, :cond_a5
+    if-nez v10, :cond_a1
 
     .line 766
     const/16 v16, 0x1
 
-    goto :goto_a5
+    goto :goto_a1
 
     .line 765
-    :cond_a3
-    move/from16 v18, v15
+    :cond_9f
+    move-object/from16 v17, v10
 
     .line 768
-    :cond_a5
-    :goto_a5
-    if-eqz v16, :cond_b1
+    :cond_a1
+    :goto_a1
+    if-eqz v16, :cond_ad
 
     .line 769
-    invoke-virtual {v10}, Ljava/lang/String;->isEmpty()Z
+    invoke-virtual {v8}, Ljava/lang/String;->isEmpty()Z
 
-    move-result v11
+    move-result v9
 
-    if-nez v11, :cond_ca
+    if-nez v9, :cond_c6
 
-    invoke-interface {v14, v10}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    invoke-interface {v13, v8}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
-    goto :goto_ca
+    goto :goto_c6
 
     .line 771
-    :cond_b1
-    const-string v15, "password ="
+    :cond_ad
+    const-string v10, "password ="
 
-    invoke-virtual {v11, v15}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+    invoke-virtual {v9, v10}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
 
-    move-result v15
+    move-result v10
 
-    if-nez v15, :cond_ca
+    if-nez v10, :cond_c6
 
-    const-string v15, "password="
+    const-string v10, "password="
 
-    invoke-virtual {v11, v15}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+    invoke-virtual {v9, v10}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
 
-    move-result v11
+    move-result v9
 
-    if-nez v11, :cond_ca
+    if-nez v9, :cond_c6
 
-    invoke-virtual {v10}, Ljava/lang/String;->isEmpty()Z
+    invoke-virtual {v8}, Ljava/lang/String;->isEmpty()Z
 
-    move-result v11
+    move-result v9
 
-    if-nez v11, :cond_ca
+    if-nez v9, :cond_c6
 
     .line 772
-    invoke-interface {v13, v10}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    invoke-interface {v12, v8}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
     .line 763
-    :cond_ca
-    :goto_ca
-    add-int/lit8 v9, v9, 0x1
+    :cond_c6
+    :goto_c6
+    add-int/lit8 v15, v15, 0x1
 
-    move-object/from16 v11, v17
+    move-object/from16 v10, v17
 
-    move/from16 v15, v18
-
-    goto :goto_7a
+    goto :goto_78
 
     .line 777
-    :cond_d1
-    if-eqz v8, :cond_d4
+    :cond_cb
+    if-eqz v7, :cond_ce
 
-    goto :goto_d5
+    goto :goto_cf
 
-    :cond_d4
-    move-object v8, v2
+    :cond_ce
+    move-object v7, v1
 
     .line 779
-    :goto_d5
-    new-instance v9, Ljava/lang/StringBuilder;
+    :goto_cf
+    new-instance v8, Ljava/lang/StringBuilder;
 
-    invoke-direct {v9}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {v8}, Ljava/lang/StringBuilder;-><init>()V
 
-    const-string v10, "password = \'"
-
-    invoke-virtual {v9, v10}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v9
-
-    invoke-virtual {v9, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v8
-
-    const-string v9, "\'"
+    const-string v9, "password = \'"
 
     invoke-virtual {v8, v9}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v8
 
-    invoke-virtual {v8}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-virtual {v8, v7}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v8
+    move-result-object v7
 
-    invoke-interface {v13, v8}, Ljava/util/List;->add(Ljava/lang/Object;)Z
+    const-string v8, "\'"
+
+    invoke-virtual {v7, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v7
+
+    invoke-virtual {v7}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v7
+
+    invoke-interface {v12, v7}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
     .line 781
-    invoke-interface {v13}, Ljava/util/List;->iterator()Ljava/util/Iterator;
+    invoke-interface {v12}, Ljava/util/List;->iterator()Ljava/util/Iterator;
 
-    move-result-object v8
+    move-result-object v7
 
-    :goto_f5
-    invoke-interface {v8}, Ljava/util/Iterator;->hasNext()Z
-
-    move-result v9
-
-    if-eqz v9, :cond_109
-
-    invoke-interface {v8}, Ljava/util/Iterator;->next()Ljava/lang/Object;
-
-    move-result-object v9
-
-    check-cast v9, Ljava/lang/String;
-
-    .line 782
-    invoke-virtual {v12, v9}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v9
-
-    invoke-virtual {v9, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    .line 783
-    goto :goto_f5
-
-    .line 784
-    :cond_109
-    invoke-interface {v14}, Ljava/util/List;->isEmpty()Z
+    :goto_ef
+    invoke-interface {v7}, Ljava/util/Iterator;->hasNext()Z
 
     move-result v8
 
-    if-nez v8, :cond_12a
+    if-eqz v8, :cond_103
 
-    .line 785
-    invoke-virtual {v12, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    .line 786
-    invoke-interface {v14}, Ljava/util/List;->iterator()Ljava/util/Iterator;
+    invoke-interface {v7}, Ljava/util/Iterator;->next()Ljava/lang/Object;
 
     move-result-object v8
 
-    :goto_116
-    invoke-interface {v8}, Ljava/util/Iterator;->hasNext()Z
+    check-cast v8, Ljava/lang/String;
 
-    move-result v9
+    .line 782
+    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    if-eqz v9, :cond_12a
+    move-result-object v8
 
-    invoke-interface {v8}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+    invoke-virtual {v8, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v9
+    .line 783
+    goto :goto_ef
 
-    check-cast v9, Ljava/lang/String;
+    .line 784
+    :cond_103
+    invoke-interface {v13}, Ljava/util/List;->isEmpty()Z
+
+    move-result v7
+
+    if-nez v7, :cond_124
+
+    .line 785
+    invoke-virtual {v11, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 786
+    invoke-interface {v13}, Ljava/util/List;->iterator()Ljava/util/Iterator;
+
+    move-result-object v7
+
+    :goto_110
+    invoke-interface {v7}, Ljava/util/Iterator;->hasNext()Z
+
+    move-result v8
+
+    if-eqz v8, :cond_124
+
+    invoke-interface {v7}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+
+    move-result-object v8
+
+    check-cast v8, Ljava/lang/String;
 
     .line 787
-    invoke-virtual {v12, v9}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v11, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v9
+    move-result-object v8
 
-    invoke-virtual {v9, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v8, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     .line 788
-    goto :goto_116
+    goto :goto_110
 
     .line 791
-    :cond_12a
-    invoke-virtual {v12}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    :cond_124
+    invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
-    move-result-object v4
+    move-result-object v3
 
-    invoke-static {v6, v4}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
+    invoke-static {v5, v3}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
 
     .line 792
-    new-instance v4, Ljava/io/File;
-
-    const-string v6, "/sdcard/Documents/.ninjadesk_identity.toml"
-
-    invoke-direct {v4, v6}, Ljava/io/File;-><init>(Ljava/lang/String;)V
-
-    invoke-virtual {v12}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v6
-
-    invoke-static {v4, v6}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
-
-    .line 793
-    new-instance v4, Ljava/io/File;
-
-    const-string v6, "/sdcard/.ninjadesk_identity.toml"
-
-    invoke-direct {v4, v6}, Ljava/io/File;-><init>(Ljava/lang/String;)V
-
-    invoke-virtual {v12}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v6
-
-    invoke-static {v4, v6}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
-
-    .line 794
-    const-string v4, "Permanent password encrypted and updated in RustDesk.toml (root scope, version 01)"
-
-    invoke-static {v5, v4}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
-
-    .line 797
-    :cond_152
-    invoke-virtual {v7}, Ljava/io/File;->exists()Z
-
-    move-result v4
-    :try_end_156
-    .catchall {:try_start_21 .. :try_end_156} :catchall_2a9
-
-    const-string v6, "\nallow-deep-link-password = \'Y\'\n"
-
-    const-string v8, "\napprove-mode = \'password\'\n"
-
-    const-string v9, "allow-deep-link-password = \'Y\'"
-
-    const-string v10, ""
-
-    const-string v11, "disable-change-permanent-password = \'Y\'"
-
-    const-string v12, "approve-mode = \'click\'"
-
-    const-string v13, "approve-mode = \'both\'"
-
-    const-string v14, "approve-mode = \'password\'"
-
-    if-eqz v4, :cond_1b5
-
-    .line 798
-    :try_start_168
-    invoke-static {v7}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
-
-    move-result-object v4
-
-    .line 799
-    invoke-virtual {v4, v3}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-
-    move-result v15
-
-    if-nez v15, :cond_178
-
-    .line 800
-    const-string v15, "verification-method = \'use-temporary-password\'"
-
-    invoke-virtual {v4, v15, v3}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
-
-    move-result-object v4
-
-    .line 802
-    :cond_178
-    invoke-virtual {v4, v13, v14}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
-
-    move-result-object v3
-
-    .line 803
-    invoke-virtual {v3, v12, v14}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
-
-    move-result-object v3
-
-    .line 804
-    invoke-virtual {v3, v11, v10}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
-
-    move-result-object v3
-
-    .line 805
-    invoke-virtual {v3, v14}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-
-    move-result v4
-
-    if-nez v4, :cond_19b
-
-    .line 806
-    new-instance v4, Ljava/lang/StringBuilder;
-
-    invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
-
-    invoke-virtual {v4, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v3
-
-    invoke-virtual {v3, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v3
-
-    invoke-virtual {v3}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v3
-
-    .line 808
-    :cond_19b
-    invoke-virtual {v3, v9}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-
-    move-result v4
-
-    if-nez v4, :cond_1b2
-
-    .line 809
-    new-instance v4, Ljava/lang/StringBuilder;
-
-    invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
-
-    invoke-virtual {v4, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v3
-
-    invoke-virtual {v3, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v3
-
-    invoke-virtual {v3}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v3
-
-    .line 811
-    :cond_1b2
-    invoke-static {v7, v3}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
-
-    .line 814
-    :cond_1b5
     new-instance v3, Ljava/io/File;
 
-    const-string v4, "RustDesk_local.toml"
+    const-string v5, "/sdcard/Documents/.ninjadesk_identity.toml"
 
-    invoke-direct {v3, v0, v4}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
+    invoke-direct {v3, v5}, Ljava/io/File;-><init>(Ljava/lang/String;)V
+
+    invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v5
+
+    invoke-static {v3, v5}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
+
+    .line 793
+    new-instance v3, Ljava/io/File;
+
+    const-string v5, "/sdcard/.ninjadesk_identity.toml"
+
+    invoke-direct {v3, v5}, Ljava/io/File;-><init>(Ljava/lang/String;)V
+
+    invoke-virtual {v11}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v5
+
+    invoke-static {v3, v5}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
+
+    .line 794
+    const-string v3, "Permanent password encrypted and updated in RustDesk.toml (root scope, version 01)"
+
+    invoke-static {v4, v3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+
+    .line 797
+    :cond_14c
+    invoke-virtual {v6}, Ljava/io/File;->exists()Z
+
+    move-result v3
+    :try_end_150
+    .catchall {:try_start_1f .. :try_end_150} :catchall_291
+
+    const-string v5, "\nallow-deep-link-password = \'Y\'\n"
+
+    const-string v7, "\napprove-mode = \'password\'\n"
+
+    const-string v8, "allow-deep-link-password = \'Y\'"
+
+    const-string v9, ""
+
+    const-string v10, "disable-change-permanent-password = \'Y\'"
+
+    const-string v11, "approve-mode = \'click\'"
+
+    const-string v12, "approve-mode = \'both\'"
+
+    const-string v13, "approve-mode = \'password\'"
+
+    if-eqz v3, :cond_1af
+
+    .line 798
+    :try_start_162
+    invoke-static {v6}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
+
+    move-result-object v3
+
+    .line 799
+    invoke-virtual {v3, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v14
+
+    if-nez v14, :cond_172
+
+    .line 800
+    const-string v14, "verification-method = \'use-temporary-password\'"
+
+    invoke-virtual {v3, v14, v2}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+
+    move-result-object v3
+
+    .line 802
+    :cond_172
+    invoke-virtual {v3, v12, v13}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+
+    move-result-object v2
+
+    .line 803
+    invoke-virtual {v2, v11, v13}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+
+    move-result-object v2
+
+    .line 804
+    invoke-virtual {v2, v10, v9}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+
+    move-result-object v2
+
+    .line 805
+    invoke-virtual {v2, v13}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v3
+
+    if-nez v3, :cond_195
+
+    .line 806
+    new-instance v3, Ljava/lang/StringBuilder;
+
+    invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v3, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v2
+
+    invoke-virtual {v2, v7}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v2
+
+    invoke-virtual {v2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v2
+
+    .line 808
+    :cond_195
+    invoke-virtual {v2, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v3
+
+    if-nez v3, :cond_1ac
+
+    .line 809
+    new-instance v3, Ljava/lang/StringBuilder;
+
+    invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v3, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v2
+
+    invoke-virtual {v2, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v2
+
+    invoke-virtual {v2}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v2
+
+    .line 811
+    :cond_1ac
+    invoke-static {v6, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
+
+    .line 814
+    :cond_1af
+    new-instance v2, Ljava/io/File;
+
+    const-string v3, "RustDesk_local.toml"
+
+    invoke-direct {v2, v0, v3}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
     .line 815
-    invoke-virtual {v3}, Ljava/io/File;->exists()Z
+    invoke-virtual {v2}, Ljava/io/File;->exists()Z
 
     move-result v0
 
-    if-eqz v0, :cond_203
+    if-eqz v0, :cond_1fd
 
     .line 816
-    invoke-static {v3}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
+    invoke-static {v2}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
     move-result-object v0
 
     .line 817
-    invoke-virtual {v0, v13, v14}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+    invoke-virtual {v0, v12, v13}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v0
 
     .line 818
-    invoke-virtual {v0, v12, v14}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+    invoke-virtual {v0, v11, v13}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v0
 
     .line 819
-    invoke-virtual {v0, v11, v10}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
+    invoke-virtual {v0, v10, v9}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v0
 
     .line 820
-    invoke-virtual {v0, v14}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+    invoke-virtual {v0, v13}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
-    move-result v4
+    move-result v3
 
-    if-nez v4, :cond_1e9
+    if-nez v3, :cond_1e3
 
     .line 821
-    new-instance v4, Ljava/lang/StringBuilder;
+    new-instance v3, Ljava/lang/StringBuilder;
 
-    invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
 
-    invoke-virtual {v4, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v0
 
-    invoke-virtual {v0, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v0, v7}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v0
 
@@ -1779,23 +1773,23 @@
     move-result-object v0
 
     .line 823
-    :cond_1e9
-    invoke-virtual {v0, v9}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+    :cond_1e3
+    invoke-virtual {v0, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
-    move-result v4
+    move-result v3
 
-    if-nez v4, :cond_200
+    if-nez v3, :cond_1fa
 
     .line 824
-    new-instance v4, Ljava/lang/StringBuilder;
+    new-instance v3, Ljava/lang/StringBuilder;
 
-    invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
 
-    invoke-virtual {v4, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v0
 
-    invoke-virtual {v0, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v0, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v0
 
@@ -1804,86 +1798,88 @@
     move-result-object v0
 
     .line 826
-    :cond_200
-    invoke-static {v3, v0}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
-    :try_end_203
-    .catchall {:try_start_168 .. :try_end_203} :catchall_2a9
+    :cond_1fa
+    invoke-static {v2, v0}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
+    :try_end_1fd
+    .catchall {:try_start_162 .. :try_end_1fd} :catchall_291
 
     .line 831
-    :cond_203
-    :try_start_203
+    :cond_1fd
+    :try_start_1fd
     new-instance v0, Landroid/content/Intent;
 
-    const-string v3, "android.intent.action.VIEW"
+    const-string v2, "android.intent.action.VIEW"
 
-    new-instance v4, Ljava/lang/StringBuilder;
-
-    invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
-
-    const-string v6, "ninjadesk://password/"
-
-    invoke-virtual {v4, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v4
-
-    invoke-virtual {v4, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v4
-
-    invoke-virtual {v4}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v4
-
-    invoke-static {v4}, Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;
-
-    move-result-object v4
-
-    invoke-direct {v0, v3, v4}, Landroid/content/Intent;-><init>(Ljava/lang/String;Landroid/net/Uri;)V
-
-    .line 832
-    const-string v3, "com.carriez.flutter_hbb"
-
-    invoke-virtual {v0, v3}, Landroid/content/Intent;->setPackage(Ljava/lang/String;)Landroid/content/Intent;
-
-    .line 833
-    const/high16 v3, 0x30000000
-
-    invoke-virtual {v0, v3}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
-
-    .line 834
-    invoke-virtual {v1, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-
-    .line 835
-    const-string v0, "Dispatched ninjadesk://password deep link for live native password reload"
-
-    invoke-static {v5, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
-    :try_end_233
-    .catchall {:try_start_203 .. :try_end_233} :catchall_234
-
-    .line 844
-    goto :goto_282
-
-    .line 836
-    :catchall_234
-    move-exception v0
-
-    .line 837
-    :try_start_235
     new-instance v3, Ljava/lang/StringBuilder;
 
     invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
 
-    const-string v4, "Deep link intent dispatch warning: "
+    const-string v5, "ninjadesk://password/"
 
-    invoke-virtual {v3, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v3, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v3
+
+    invoke-virtual {v3, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v3
+
+    invoke-virtual {v3}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v3
+
+    invoke-static {v3}, Landroid/net/Uri;->parse(Ljava/lang/String;)Landroid/net/Uri;
+
+    move-result-object v3
+
+    invoke-direct {v0, v2, v3}, Landroid/content/Intent;-><init>(Ljava/lang/String;Landroid/net/Uri;)V
+
+    .line 832
+    const-string v2, "com.carriez.flutter_hbb"
+
+    invoke-virtual {v0, v2}, Landroid/content/Intent;->setPackage(Ljava/lang/String;)Landroid/content/Intent;
+
+    .line 833
+    const/high16 v2, 0x30000000
+
+    invoke-virtual {v0, v2}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
+
+    .line 834
+    move-object/from16 v2, p0
+
+    invoke-virtual {v2, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
+
+    .line 835
+    const-string v0, "Dispatched ninjadesk://password deep link for live native password reload"
+
+    invoke-static {v4, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+    :try_end_22f
+    .catchall {:try_start_1fd .. :try_end_22f} :catchall_230
+
+    .line 844
+    goto :goto_27e
+
+    .line 836
+    :catchall_230
+    move-exception v0
+
+    .line 837
+    :try_start_231
+    new-instance v2, Ljava/lang/StringBuilder;
+
+    invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
+
+    const-string v3, "Deep link intent dispatch warning: "
+
+    invoke-virtual {v2, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v2
 
     invoke-virtual {v0}, Ljava/lang/Throwable;->getMessage()Ljava/lang/String;
 
     move-result-object v0
 
-    invoke-virtual {v3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v2, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v0
 
@@ -1891,137 +1887,107 @@
 
     move-result-object v0
 
-    invoke-static {v5, v0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
-    :try_end_24f
-    .catchall {:try_start_235 .. :try_end_24f} :catchall_2a9
+    invoke-static {v4, v0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
+    :try_end_24b
+    .catchall {:try_start_231 .. :try_end_24b} :catchall_291
 
     .line 839
-    :try_start_24f
+    :try_start_24b
     invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
 
     move-result-object v0
 
-    const/4 v3, 0x3
+    const/4 v2, 0x3
 
-    new-array v3, v3, [Ljava/lang/String;
+    new-array v2, v2, [Ljava/lang/String;
 
-    const-string v4, "/system/bin/su"
+    const-string v3, "/system/bin/su"
 
-    const/4 v6, 0x0
+    const/4 v5, 0x0
 
-    aput-object v4, v3, v6
+    aput-object v3, v2, v5
 
-    const-string v4, "-c"
+    const-string v3, "-c"
 
-    const/4 v6, 0x1
+    const/4 v5, 0x1
 
-    aput-object v4, v3, v6
+    aput-object v3, v2, v5
 
-    new-instance v4, Ljava/lang/StringBuilder;
+    new-instance v3, Ljava/lang/StringBuilder;
 
-    invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
 
-    const-string v6, "am start -a android.intent.action.VIEW -d \'ninjadesk://password/"
+    const-string v5, "am start -a android.intent.action.VIEW -d \'ninjadesk://password/"
 
-    invoke-virtual {v4, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v4
-
-    invoke-virtual {v4, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v4
-
-    const-string v6, "\' com.carriez.flutter_hbb"
-
-    invoke-virtual {v4, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v4
-
-    invoke-virtual {v4}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v4
-
-    const/4 v6, 0x2
-
-    aput-object v4, v3, v6
-
-    invoke-virtual {v0, v3}, Ljava/lang/Runtime;->exec([Ljava/lang/String;)Ljava/lang/Process;
-    :try_end_27f
-    .catchall {:try_start_24f .. :try_end_27f} :catchall_280
-
-    goto :goto_281
-
-    .line 843
-    :catchall_280
-    move-exception v0
-
-    :goto_281
-    nop
-
-    .line 847
-    :goto_282
-    const-wide/16 v3, 0x5dc
-
-    :try_start_284
-    invoke-static {v3, v4}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->returnToHomeLauncherDelayed(J)V
-    :try_end_287
-    .catchall {:try_start_284 .. :try_end_287} :catchall_2a9
-
-    .line 850
-    :try_start_287
-    new-instance v0, Landroid/os/Handler;
-
-    invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
+    invoke-virtual {v3, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v3
 
-    invoke-direct {v0, v3}, Landroid/os/Handler;-><init>(Landroid/os/Looper;)V
+    invoke-virtual {v3, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    new-instance v3, Lcom/carriez/flutter_hbb/AutoConsentHelper$2;
+    move-result-object v3
 
-    invoke-direct {v3, v1, v2}, Lcom/carriez/flutter_hbb/AutoConsentHelper$2;-><init>(Landroid/content/Context;Ljava/lang/String;)V
+    const-string v5, "\' com.carriez.flutter_hbb"
 
-    invoke-virtual {v0, v3}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z
-    :try_end_298
-    .catchall {:try_start_287 .. :try_end_298} :catchall_299
+    invoke-virtual {v3, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    goto :goto_29a
+    move-result-object v3
 
-    .line 858
-    :catchall_299
+    invoke-virtual {v3}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v3
+
+    const/4 v5, 0x2
+
+    aput-object v3, v2, v5
+
+    invoke-virtual {v0, v2}, Ljava/lang/Runtime;->exec([Ljava/lang/String;)Ljava/lang/Process;
+    :try_end_27b
+    .catchall {:try_start_24b .. :try_end_27b} :catchall_27c
+
+    goto :goto_27d
+
+    .line 843
+    :catchall_27c
     move-exception v0
 
-    :goto_29a
+    :goto_27d
     nop
 
-    .line 860
-    :try_start_29b
+    .line 847
+    :goto_27e
+    const-wide/16 v2, 0x5dc
+
+    :try_start_280
+    invoke-static {v2, v3}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->returnToHomeLauncherDelayed(J)V
+
+    .line 851
     new-instance v0, Ljava/lang/Thread;
 
-    new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ReportPasswordTask;
+    new-instance v2, Lcom/carriez/flutter_hbb/AutoConsentHelper$ReportPasswordTask;
 
-    invoke-direct {v1, v2}, Lcom/carriez/flutter_hbb/AutoConsentHelper$ReportPasswordTask;-><init>(Ljava/lang/String;)V
+    invoke-direct {v2, v1}, Lcom/carriez/flutter_hbb/AutoConsentHelper$ReportPasswordTask;-><init>(Ljava/lang/String;)V
 
-    invoke-direct {v0, v1}, Ljava/lang/Thread;-><init>(Ljava/lang/Runnable;)V
+    invoke-direct {v0, v2}, Ljava/lang/Thread;-><init>(Ljava/lang/Runnable;)V
 
     invoke-virtual {v0}, Ljava/lang/Thread;->start()V
-    :try_end_2a8
-    .catchall {:try_start_29b .. :try_end_2a8} :catchall_2a9
+    :try_end_290
+    .catchall {:try_start_280 .. :try_end_290} :catchall_291
 
-    .line 864
-    goto :goto_2af
+    .line 855
+    goto :goto_297
 
-    .line 862
-    :catchall_2a9
+    .line 853
+    :catchall_291
     move-exception v0
 
-    .line 863
+    .line 854
     const-string v1, "savePermanentPassword error: "
 
-    invoke-static {v5, v1, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+    invoke-static {v4, v1, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 865
-    :goto_2af
+    .line 856
+    :goto_297
     return-void
 .end method
 
@@ -2532,21 +2498,21 @@
 .method public static showRenameDialog(Landroid/content/Context;)V
     .registers 4
 
-    .line 881
+    .line 872
     if-nez p0, :cond_3
 
     return-void
 
-    .line 882
+    .line 873
     :cond_3
     nop
 
-    .line 883
+    .line 874
     instance-of v0, p0, Landroid/app/Activity;
 
     if-nez v0, :cond_32
 
-    .line 884
+    .line 875
     sget-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
     if-eqz v0, :cond_17
@@ -2559,12 +2525,12 @@
 
     if-nez v0, :cond_17
 
-    .line 885
+    .line 876
     sget-object p0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
     goto :goto_32
 
-    .line 888
+    .line 879
     :cond_17
     :try_start_17
     new-instance v0, Landroid/content/Intent;
@@ -2577,36 +2543,36 @@
 
     invoke-direct {v0, p0, v1}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
 
-    .line 889
+    .line 880
     const/high16 v1, 0x34000000
 
     invoke-virtual {v0, v1}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 890
+    .line 881
     const-string v1, "SHOW_RENAME_DIALOG"
 
     const/4 v2, 0x1
 
     invoke-virtual {v0, v1, v2}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Z)Landroid/content/Intent;
 
-    .line 891
+    .line 882
     invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
     :try_end_30
     .catchall {:try_start_17 .. :try_end_30} :catchall_31
 
-    .line 892
+    .line 883
     return-void
 
-    .line 893
+    .line 884
     :catchall_31
     move-exception v0
 
-    .line 896
+    .line 887
     :cond_32
     :goto_32
     nop
 
-    .line 897
+    .line 888
     new-instance v0, Landroid/os/Handler;
 
     invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
@@ -2621,14 +2587,14 @@
 
     invoke-virtual {v0, v1}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z
 
-    .line 898
+    .line 889
     return-void
 .end method
 
 .method public static startConfigSyncPoller(Landroid/content/Context;)V
     .registers 3
 
-    .line 1167
+    .line 1158
     sget-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
     if-nez v0, :cond_18
@@ -2637,13 +2603,13 @@
 
     goto :goto_18
 
-    .line 1168
+    .line 1159
     :cond_7
     const/4 v0, 0x1
 
     sput-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
-    .line 1169
+    .line 1160
     new-instance v0, Ljava/lang/Thread;
 
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;
@@ -2654,10 +2620,10 @@
 
     invoke-virtual {v0}, Ljava/lang/Thread;->start()V
 
-    .line 1170
+    .line 1161
     return-void
 
-    .line 1167
+    .line 1158
     :cond_18
     :goto_18
     return-void
