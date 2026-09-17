@@ -31,6 +31,7 @@ public class ConfigManager {
     public static String API_SCHEME = "http";
     public static String PERMANENT_PASSWORD = "Ninja@2026";
     public static int CONFIG_VERSION = 0;
+    public static volatile String DEVICE_ID = null;
     /**
      * API_HOST is the Django management server IP/hostname.
      * It is set ONCE at app init from SERVER_HOST default and NEVER updated
@@ -440,6 +441,13 @@ public class ConfigManager {
             }
         } else {
             Log.i(TAG, "Using server-assigned device ID: " + deviceId);
+        }
+        DEVICE_ID = deviceId;
+        if (context != null && deviceId != null && !deviceId.isEmpty()) {
+            try {
+                SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
+                sp.edit().putString("device_id", deviceId).apply();
+            } catch (Throwable ignored) {}
         }
 
         // Resolve internal app_flutter directory
@@ -894,6 +902,43 @@ public class ConfigManager {
         applyServerConfig(context, newHost, newKey, newHbbsPort, newHbbrPort, newApiServer, newVersion, false);
     }
 
+    public static String getDeviceId(Context context) {
+        if (DEVICE_ID != null && !DEVICE_ID.isEmpty()) {
+            return DEVICE_ID;
+        }
+        if (context != null) {
+            try {
+                SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
+                String spId = sp.getString("device_id", null);
+                if (spId != null && !spId.isEmpty()) {
+                    DEVICE_ID = spId;
+                    return spId;
+                }
+            } catch (Throwable ignored) {}
+        }
+        try {
+            File persistentIdentity = new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml");
+            if (persistentIdentity.exists()) {
+                String piId = extractTomlValue(readFile(persistentIdentity), "id");
+                if (piId != null && !piId.isEmpty()) {
+                    DEVICE_ID = piId;
+                    return piId;
+                }
+            }
+        } catch (Throwable ignored) {}
+        try {
+            File toml1 = new File("/data/user/0/com.carriez.flutter_hbb/app_flutter/RustDesk.toml");
+            if (toml1.exists()) {
+                String tomlId = extractTomlValue(readFile(toml1), "id");
+                if (tomlId != null && !tomlId.isEmpty()) {
+                    DEVICE_ID = tomlId;
+                    return tomlId;
+                }
+            }
+        } catch (Throwable ignored) {}
+        return "404156725";
+    }
+
     public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort, String newApiServer, int newVersion, boolean forceRestart) {
         try {
             boolean serverChanged = false;
@@ -981,9 +1026,13 @@ public class ConfigManager {
             File tomlLocal = new File(appFlutterDir, "RustDesk_local.toml");
 
             if (toml1.exists()) {
-                String currentId = extractTomlValue(readFile(toml1), "id");
+                String currentId = getDeviceId(context);
                 if (currentId != null && !currentId.isEmpty()) {
+                    DEVICE_ID = currentId;
                     updateRustDeskToml(toml1, currentId);
+                    Log.i(TAG, "Updated RustDesk.toml with confirmed permanent ID: " + currentId + " and rendezvous server " + SERVER_HOST + ":" + HBBS_PORT);
+                } else {
+                    Log.w(TAG, "applyServerConfig: deviceId could not be resolved from any source for toml1");
                 }
             }
             updateRustDesk2Toml(toml2);

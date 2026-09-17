@@ -513,7 +513,10 @@ def api_devices_list(request):
     """
     now = datetime.datetime.now()
     devices = RustDesDevice.objects.all().order_by('-update_time')
-    peers = {p.rid: p for p in RustDeskPeer.objects.all()}
+    peers = {}
+    for p in RustDeskPeer.objects.all():
+        if p.rid not in peers or (p.alias and not peers[p.rid].alias):
+            peers[p.rid] = p
     data = []
     passwords = load_device_passwords()
     seen_ids = set()
@@ -946,7 +949,10 @@ def api_device_sync_status(request):
     cfg = get_or_create_server_config_state()
     updates = load_device_config_updates()
     devices = RustDesDevice.objects.all().order_by('-update_time')
-    peers = {p.rid: p for p in RustDeskPeer.objects.all()}
+    peers = {}
+    for p in RustDeskPeer.objects.all():
+        if p.rid not in peers or (p.alias and not peers[p.rid].alias):
+            peers[p.rid] = p
 
     now = datetime.datetime.now()
     cutoff = now - datetime.timedelta(seconds=15)

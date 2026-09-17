@@ -29,19 +29,19 @@
 .method constructor <init>(Landroid/content/Context;Landroid/widget/EditText;Landroid/widget/EditText;)V
     .registers 4
 
-    .line 615
+    .line 632
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 616
+    .line 633
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SavePasswordListener;->context:Landroid/content/Context;
 
-    .line 617
+    .line 634
     iput-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SavePasswordListener;->passInput:Landroid/widget/EditText;
 
-    .line 618
+    .line 635
     iput-object p3, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SavePasswordListener;->confirmInput:Landroid/widget/EditText;
 
-    .line 619
+    .line 636
     return-void
 .end method
 
@@ -50,7 +50,7 @@
 .method public onClick(Landroid/content/DialogInterface;I)V
     .registers 4
 
-    .line 623
+    .line 640
     iget-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SavePasswordListener;->passInput:Landroid/widget/EditText;
 
     invoke-virtual {p1}, Landroid/widget/EditText;->getText()Landroid/text/Editable;
@@ -65,7 +65,7 @@
 
     move-result-object p1
 
-    .line 624
+    .line 641
     iget-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SavePasswordListener;->confirmInput:Landroid/widget/EditText;
 
     invoke-virtual {p2}, Landroid/widget/EditText;->getText()Landroid/text/Editable;
@@ -80,14 +80,14 @@
 
     move-result-object p2
 
-    .line 625
+    .line 642
     invoke-virtual {p1, p2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
     move-result p2
 
     if-nez p2, :cond_2f
 
-    .line 626
+    .line 643
     iget-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SavePasswordListener;->context:Landroid/content/Context;
 
     const-string p2, "Passwords do not match!"
@@ -100,10 +100,10 @@
 
     invoke-virtual {p1}, Landroid/widget/Toast;->show()V
 
-    .line 627
+    .line 644
     return-void
 
-    .line 629
+    .line 646
     :cond_2f
     invoke-virtual {p1}, Ljava/lang/String;->isEmpty()Z
 
@@ -111,15 +111,15 @@
 
     if-nez p2, :cond_3a
 
-    .line 630
+    .line 647
     iget-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SavePasswordListener;->context:Landroid/content/Context;
 
     invoke-static {p2, p1}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->savePermanentPassword(Landroid/content/Context;Ljava/lang/String;)V
 
-    .line 632
+    .line 649
     :cond_3a
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->returnToHomeLauncher()V
 
-    .line 633
+    .line 650
     return-void
 .end method

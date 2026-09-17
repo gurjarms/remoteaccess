@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/content/Context;)V
     .registers 2
 
-    .line 294
+    .line 295
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 295
+    .line 296
     iput-object p1, p0, Lcom/carriez/flutter_hbb/ConfigManager$InitTask;->context:Landroid/content/Context;
 
-    .line 296
+    .line 297
     return-void
 .end method
 
@@ -40,7 +40,7 @@
 .method public run()V
     .registers 4
 
-    .line 301
+    .line 302
     :try_start_0
     iget-object v0, p0, Lcom/carriez/flutter_hbb/ConfigManager$InitTask;->context:Landroid/content/Context;
 
@@ -49,21 +49,21 @@
     :try_end_5
     .catchall {:try_start_0 .. :try_end_5} :catchall_6
 
-    .line 304
+    .line 305
     goto :goto_e
 
-    .line 302
+    .line 303
     :catchall_6
     move-exception v0
 
-    .line 303
+    .line 304
     const-string v1, "ConfigManager"
 
     const-string v2, "ConfigManager background init error: "
 
     invoke-static {v1, v2, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 305
+    .line 306
     :goto_e
     return-void
 .end method

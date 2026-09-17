@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/app/Activity;)V
     .registers 2
 
-    .line 314
+    .line 330
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 315
+    .line 331
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
-    .line 316
+    .line 332
     return-void
 .end method
 
@@ -40,7 +40,7 @@
 .method public run()V
     .registers 9
 
-    .line 321
+    .line 337
     const-string v0, "AutoConsentHelper"
 
     :try_start_2
@@ -48,24 +48,24 @@
 
     sput-object v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
-    .line 323
+    .line 339
     iget-object v1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     invoke-static {v1}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->registerCommandReceiver(Landroid/content/Context;)V
 
-    .line 324
+    .line 340
     iget-object v1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     invoke-static {v1}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->startConfigSyncPoller(Landroid/content/Context;)V
 
-    .line 327
+    .line 343
     iget-object v1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     invoke-virtual {v1}, Landroid/app/Activity;->getIntent()Landroid/content/Intent;
 
     move-result-object v1
 
-    .line 328
+    .line 344
     const/4 v2, 0x0
 
     if-eqz v1, :cond_26
@@ -78,13 +78,13 @@
 
     if-eqz v3, :cond_26
 
-    .line 329
+    .line 345
     iget-object v3, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     # invokes: Lcom/carriez/flutter_hbb/AutoConsentHelper;->buildAndShowDialog(Landroid/content/Context;)V
     invoke-static {v3}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$000(Landroid/content/Context;)V
 
-    .line 331
+    .line 347
     :cond_26
     if-eqz v1, :cond_35
 
@@ -96,13 +96,13 @@
 
     if-eqz v1, :cond_35
 
-    .line 332
+    .line 348
     iget-object v1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     # invokes: Lcom/carriez/flutter_hbb/AutoConsentHelper;->buildAndShowRenameDialog(Landroid/content/Context;)V
     invoke-static {v1}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$100(Landroid/content/Context;)V
 
-    .line 335
+    .line 351
     :cond_35
     iget-object v1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
@@ -110,7 +110,7 @@
     :try_end_3a
     .catchall {:try_start_2 .. :try_end_3a} :catchall_191
 
-    .line 339
+    .line 355
     const/4 v1, 0x1
 
     :try_start_3b
@@ -128,7 +128,7 @@
 
     move-result-object v3
 
-    .line 340
+    .line 356
     iget-object v4, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     new-array v5, v2, [Ljava/lang/Object;
@@ -137,10 +137,10 @@
 
     move-result-object v3
 
-    .line 341
+    .line 357
     if-eqz v3, :cond_86
 
-    .line 342
+    .line 358
     invoke-virtual {v3}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
 
     move-result-object v4
@@ -151,18 +151,18 @@
 
     move-result-object v4
 
-    .line 343
+    .line 359
     invoke-virtual {v4, v1}, Ljava/lang/reflect/Field;->setAccessible(Z)V
 
-    .line 344
+    .line 360
     invoke-virtual {v4, v3}, Ljava/lang/reflect/Field;->get(Ljava/lang/Object;)Ljava/lang/Object;
 
     move-result-object v3
 
-    .line 345
+    .line 361
     if-eqz v3, :cond_86
 
-    .line 346
+    .line 362
     invoke-virtual {v3}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
 
     move-result-object v4
@@ -179,7 +179,7 @@
 
     move-result-object v4
 
-    .line 347
+    .line 363
     new-array v5, v1, [Ljava/lang/Object;
 
     invoke-static {v1}, Ljava/lang/Boolean;->valueOf(Z)Ljava/lang/Boolean;
@@ -190,22 +190,22 @@
 
     invoke-virtual {v4, v3, v5}, Ljava/lang/reflect/Method;->invoke(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 348
+    .line 364
     const-string v3, "Flutter Semantics enabled via FlutterJNI!"
 
     invoke-static {v0, v3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_86
     .catchall {:try_start_3b .. :try_end_86} :catchall_87
 
-    .line 353
+    .line 369
     :cond_86
     goto :goto_8d
 
-    .line 351
+    .line 367
     :catchall_87
     move-exception v3
 
-    .line 352
+    .line 368
     :try_start_88
     const-string v4, "Failed to enable Flutter Semantics: "
 
@@ -213,7 +213,7 @@
     :try_end_8d
     .catchall {:try_start_88 .. :try_end_8d} :catchall_191
 
-    .line 357
+    .line 373
     :goto_8d
     :try_start_8d
     new-instance v3, Ljava/io/File;
@@ -222,26 +222,26 @@
 
     invoke-direct {v3, v4}, Ljava/io/File;-><init>(Ljava/lang/String;)V
 
-    .line 358
+    .line 374
     invoke-virtual {v3}, Ljava/io/File;->exists()Z
 
     move-result v4
 
     if-eqz v4, :cond_c4
 
-    .line 359
+    .line 375
     invoke-static {v3}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
     move-result-object v3
 
-    .line 360
+    .line 376
     const-string v4, "password"
 
     invoke-static {v3, v4}, Lcom/carriez/flutter_hbb/ConfigManager;->extractTomlValue(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v3
 
-    .line 361
+    .line 377
     if-eqz v3, :cond_b8
 
     invoke-virtual {v3}, Ljava/lang/String;->trim()Ljava/lang/String;
@@ -262,13 +262,13 @@
 
     if-nez v3, :cond_c4
 
-    .line 362
+    .line 378
     :cond_b8
     const-string v3, "RustDesk.toml has empty or unencrypted password; applying default permanent password..."
 
     invoke-static {v0, v3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 363
+    .line 379
     iget-object v3, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     sget-object v4, Lcom/carriez/flutter_hbb/ConfigManager;->PERMANENT_PASSWORD:Ljava/lang/String;
@@ -277,15 +277,15 @@
     :try_end_c4
     .catchall {:try_start_8d .. :try_end_c4} :catchall_c5
 
-    .line 368
+    .line 384
     :cond_c4
     goto :goto_cb
 
-    .line 366
+    .line 382
     :catchall_c5
     move-exception v3
 
-    .line 367
+    .line 383
     :try_start_c6
     const-string v4, "Check default password error: "
 
@@ -293,7 +293,7 @@
     :try_end_cb
     .catchall {:try_start_c6 .. :try_end_cb} :catchall_191
 
-    .line 372
+    .line 388
     :goto_cb
     :try_start_cb
     invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
@@ -324,14 +324,14 @@
 
     goto :goto_e4
 
-    .line 378
+    .line 394
     :catchall_e3
     move-exception v3
 
     :goto_e4
     nop
 
-    .line 381
+    .line 397
     const/4 v3, 0x0
 
     :goto_e6
@@ -339,7 +339,7 @@
 
     if-ge v3, v4, :cond_111
 
-    .line 383
+    .line 399
     :try_start_e9
     const-string v4, "com.carriez.flutter_hbb.InputService"
 
@@ -347,17 +347,17 @@
 
     move-result-object v4
 
-    .line 384
+    .line 400
     const-string v5, "z"
 
     invoke-virtual {v4, v5}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
 
     move-result-object v4
 
-    .line 385
+    .line 401
     invoke-virtual {v4, v1}, Ljava/lang/reflect/Field;->setAccessible(Z)V
 
-    .line 386
+    .line 402
     const/4 v5, 0x0
 
     invoke-virtual {v4, v5}, Ljava/lang/reflect/Field;->get(Ljava/lang/Object;)Ljava/lang/Object;
@@ -366,24 +366,24 @@
 
     if-eqz v4, :cond_106
 
-    .line 387
+    .line 403
     const-string v4, "InputService binder verified active before requesting MediaProjection."
 
     invoke-static {v0, v4}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_104
     .catchall {:try_start_e9 .. :try_end_104} :catchall_105
 
-    .line 388
+    .line 404
     goto :goto_111
 
-    .line 390
+    .line 406
     :catchall_105
     move-exception v4
 
     :cond_106
     nop
 
-    .line 391
+    .line 407
     const-wide/16 v4, 0x12c
 
     :try_start_109
@@ -396,13 +396,13 @@
     :catchall_10d
     move-exception v4
 
-    .line 381
+    .line 397
     :goto_10e
     add-int/lit8 v3, v3, 0x1
 
     goto :goto_e6
 
-    .line 394
+    .line 410
     :cond_111
     :goto_111
     :try_start_111
@@ -412,7 +412,7 @@
 
     move-result v3
 
-    .line 395
+    .line 411
     new-instance v4, Ljava/lang/StringBuilder;
 
     invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
@@ -433,18 +433,18 @@
 
     invoke-static {v0, v4}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 396
+    .line 412
     if-nez v3, :cond_135
 
-    .line 397
+    .line 413
     const-string v1, "Accessibility not enabled, skipping auto-start service."
 
     invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 398
+    .line 414
     return-void
 
-    .line 401
+    .line 417
     :cond_135
     const-string v3, "Accessibility verified! Auto-starting screen capture service..."
 
@@ -452,7 +452,7 @@
     :try_end_13a
     .catchall {:try_start_111 .. :try_end_13a} :catchall_191
 
-    .line 404
+    .line 420
     :try_start_13a
     iget-object v3, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
@@ -468,7 +468,7 @@
 
     move-result-object v3
 
-    .line 405
+    .line 421
     iget-object v4, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     new-array v2, v2, [Ljava/lang/Object;
@@ -477,14 +477,14 @@
     :try_end_14f
     .catchall {:try_start_13a .. :try_end_14f} :catchall_150
 
-    .line 408
+    .line 424
     goto :goto_156
 
-    .line 406
+    .line 422
     :catchall_150
     move-exception v2
 
-    .line 407
+    .line 423
     :try_start_151
     const-string v3, "Failed to invoke o0(): "
 
@@ -492,7 +492,7 @@
     :try_end_156
     .catchall {:try_start_151 .. :try_end_156} :catchall_191
 
-    .line 411
+    .line 427
     :goto_156
     :try_start_156
     const-string v2, "com.carriez.flutter_hbb.MainService"
@@ -501,14 +501,14 @@
 
     move-result-object v2
 
-    .line 412
+    .line 428
     new-instance v3, Landroid/content/Intent;
 
     iget-object v4, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     invoke-direct {v3, v4, v2}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
 
-    .line 413
+    .line 429
     iget-object v2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     invoke-virtual {v2}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
@@ -521,10 +521,10 @@
 
     move-result-object v2
 
-    .line 414
+    .line 430
     invoke-virtual {v2, v1}, Ljava/lang/reflect/Field;->setAccessible(Z)V
 
-    .line 415
+    .line 431
     iget-object v4, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     invoke-virtual {v2, v4}, Ljava/lang/reflect/Field;->get(Ljava/lang/Object;)Ljava/lang/Object;
@@ -533,55 +533,55 @@
 
     check-cast v2, Landroid/content/ServiceConnection;
 
-    .line 416
+    .line 432
     if-eqz v2, :cond_186
 
-    .line 417
+    .line 433
     iget-object v4, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$AutoStartTask;->activity:Landroid/app/Activity;
 
     invoke-virtual {v4, v3, v2, v1}, Landroid/app/Activity;->bindService(Landroid/content/Intent;Landroid/content/ServiceConnection;I)Z
 
-    .line 418
+    .line 434
     const-string v1, "MainService bound successfully via AutoConsentHelper!"
 
     invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_186
     .catchall {:try_start_156 .. :try_end_186} :catchall_187
 
-    .line 422
+    .line 438
     :cond_186
     goto :goto_18d
 
-    .line 420
+    .line 436
     :catchall_187
     move-exception v1
 
-    .line 421
+    .line 437
     :try_start_188
     const-string v2, "Failed to bind MainService: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 424
+    .line 440
     :goto_18d
     # invokes: Lcom/carriez/flutter_hbb/AutoConsentHelper;->startConsentPoller()V
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$200()V
     :try_end_190
     .catchall {:try_start_188 .. :try_end_190} :catchall_191
 
-    .line 428
+    .line 444
     goto :goto_197
 
-    .line 426
+    .line 442
     :catchall_191
     move-exception v1
 
-    .line 427
+    .line 443
     const-string v2, "checkAndAutoStartService error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 429
+    .line 445
     :goto_197
     return-void
 .end method

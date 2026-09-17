@@ -1777,21 +1777,10 @@
 
     invoke-virtual {p0}, Lcom/carriez/flutter_hbb/MainService;->s()V
 
-    const/4 p2, 0x0
+    # NinjaDesk: Unconditionally start RustDesk rendezvous & remote service upon media projection
+    sget-object v0, Lffi/FFI;->a:Lffi/FFI;
 
-    const-string v0, "EXT_INIT_FROM_BOOT"
-
-    invoke-virtual {p1, v0, p2}, Landroid/content/Intent;->getBooleanExtra(Ljava/lang/String;Z)Z
-
-    move-result p2
-
-    if-eqz p2, :cond_3e
-
-    sget-object p2, Lffi/FFI;->a:Lffi/FFI;
-
-    invoke-virtual {p2}, Lffi/FFI;->startService()V
-
-    :cond_3e
+    invoke-virtual {v0}, Lffi/FFI;->startService()V
     iget-object p2, p0, Lcom/carriez/flutter_hbb/MainService;->l:Ljava/lang/String;
 
     new-instance v0, Ljava/lang/StringBuilder;

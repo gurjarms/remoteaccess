@@ -85,42 +85,70 @@ def patch_librustdesk_dll(dll_path, server_addr, server_key):
         f.write(dll_bytes)
     print(f"Successfully updated {dll_path}!")
 
-def clean_desktop_toml_settings():
-    """Ensures ID/Relay server settings fields remain empty by default."""
+def sync_desktop_toml_settings(server_host, hbbs_port, hbbr_port, server_key, api_port):
     config_dir = os.path.expandvars(r"%APPDATA%\RustDesk\config")
     c2_path = os.path.join(config_dir, "RustDesk2.toml")
     if not os.path.exists(c2_path):
         return
 
-    file_mode = os.stat(c2_path).st_mode
-    if not (file_mode & stat.S_IWRITE):
-        os.chmod(c2_path, stat.S_IWRITE)
+    try:
+        file_mode = os.stat(c2_path).st_mode
+        if not (file_mode & stat.S_IWRITE):
+            os.chmod(c2_path, stat.S_IWRITE)
 
-    with open(c2_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
+        with open(c2_path, 'r', encoding='utf-8') as f:
+            content = f.read()
 
-    keys_to_remove = [
-        "custom-rendezvous-server",
-        "relay-server",
-        "key",
-        "api-server",
-        "rendezvous_server",
-    ]
+        id_server = f"{server_host}:{hbbs_port}"
+        relay_server = f"{server_host}:{hbbr_port}"
+        api_server = f"http://{server_host}:{api_port}"
 
-    new_lines = []
-    for line in lines:
-        stripped = line.strip()
-        remove = False
-        for k in keys_to_remove:
-            if stripped.startswith(f"{k} =") or stripped.startswith(f"{k}="):
-                remove = True
-                break
-        if not remove:
-            new_lines.append(line)
+        settings = {
+            "custom-rendezvous-server": id_server,
+            "rendezvous_server": id_server,
+            "relay-server": relay_server,
+            "key": server_key,
+            "api-server": api_server,
+        }
 
-    with open(c2_path, 'w', encoding='utf-8') as f:
-        f.writelines(new_lines)
-    print("Cleaned custom server overrides from RustDesk2.toml (settings inputs are clean by default).")
+        lines = content.split('\n')
+        new_lines = []
+        seen = set()
+
+        for line in lines:
+            stripped = line.strip()
+            matched_key = None
+            for k in settings:
+                if stripped.startswith(f"{k} =") or stripped.startswith(f"{k}="):
+                    matched_key = k
+                    break
+            if matched_key:
+                seen.add(matched_key)
+                new_lines.append(f"{matched_key} = '{settings[matched_key]}'")
+            else:
+                new_lines.append(line)
+
+        missing = [k for k in settings if k not in seen]
+        if missing:
+            final_lines = []
+            found_options = False
+            for l in new_lines:
+                final_lines.append(l)
+                if l.strip() == "[options]":
+                    found_options = True
+                    for m in missing:
+                        final_lines.append(f"{m} = '{settings[m]}'")
+            if not found_options:
+                final_lines.append("\n[options]")
+                for m in missing:
+                    final_lines.append(f"{m} = '{settings[m]}'")
+            new_lines = final_lines
+
+        with open(c2_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(new_lines))
+        print(f"Synchronized RustDesk2.toml with server: {id_server} (key={server_key[:8]}...)")
+    except Exception as e:
+        print(f"Warning: could not sync RustDesk2.toml: {e}")
 
 def fetch_devices_from_api(server_host, api_port, api_key):
     """Fetches all devices from the central server /api/devices/ endpoint."""
@@ -243,11 +271,13 @@ def main():
     if not os.path.exists(dll_path):
         dll_path = r"C:\Users\Mahendra\AppData\Local\RustDesk\librustdesk.dll"
 
+    hbbr_port = config.get("HBBR_PORT", "21117")
     if os.path.exists(dll_path):
         patch_librustdesk_dll(dll_path, server_addr, server_key)
-        clean_desktop_toml_settings()
     else:
-        print(f"Warning: librustdesk.dll not found at {dll_path} (will patch when compiled)")
+        print(f"Note: librustdesk.dll not found at {dll_path} (relying on RustDesk2.toml config)")
+
+    sync_desktop_toml_settings(server_host, hbbs_port, hbbr_port, server_key, api_port)
 
     # Fetch devices from API and sync
     server_devices = fetch_devices_from_api(server_host, api_port, api_key)

