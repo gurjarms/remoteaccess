@@ -275,11 +275,6 @@ def sysinfo(request):
         return JsonResponse(result)
     client_ip = get_client_ip(request)
     postdata = json.loads(request.body)
-<<<<<<< HEAD
-    device = RustDesDevice.objects.filter(Q(rid=postdata['id']) & Q(uuid=postdata['uuid'])).first()
-    dev_config_ver = int(postdata.get('config_version', 0)) if 'config_version' in postdata else 0
-=======
-
     device_os = str(postdata.get('os', '')).lower()
     is_android = 'android' in device_os
 
@@ -296,7 +291,6 @@ def sysinfo(request):
         return JsonResponse(result)
 
     device = RustDesDevice.objects.filter(Q(rid=postdata['id']) & Q(uuid=postdata['uuid'])).first()
->>>>>>> 84fd169ae8d8ca45aa25d4d7c1adb1c1fa3c9a95
     if not device:
         device = RustDesDevice(
             rid=postdata['id'],
@@ -320,10 +314,7 @@ def sysinfo(request):
         if 'config_version' in postdata:
             RustDesDevice.objects.filter(Q(rid=postdata['id']) & Q(uuid=postdata['uuid'])).update(config_version=dev_config_ver)
 
-<<<<<<< HEAD
-    cfg = get_or_create_server_config_state()
-=======
->>>>>>> 84fd169ae8d8ca45aa25d4d7c1adb1c1fa3c9a95
+
     result['data'] = 'ok'
     result['server_version'] = cfg.version
     result['device_version'] = dev_config_ver
@@ -535,11 +526,7 @@ def api_devices_list(request):
     Returns full device list with telemetry for the Ninja Remote desktop app.
     """
     now = datetime.datetime.now()
-<<<<<<< HEAD
-    devices = RustDesDevice.objects.all().order_by('-update_time')
-=======
     devices = RustDesDevice.objects.filter(os__icontains='android').order_by('-update_time')
->>>>>>> 84fd169ae8d8ca45aa25d4d7c1adb1c1fa3c9a95
     peers = {}
     for p in RustDeskPeer.objects.all():
         if p.rid not in peers or (p.alias and not peers[p.rid].alias):
@@ -651,12 +638,6 @@ def api_device_password(request):
             dev_update['pending'] = True
             dev_update['password'] = new_pass
             dev_update['password_updated_at'] = datetime.datetime.now().isoformat()
-<<<<<<< HEAD
-            updates[rid] = dev_update
-            save_device_config_updates(updates)
-
-=======
-
             cfg = get_or_create_server_config_state()
             if 'server_host' not in dev_update:
                 dev_update['server_host'] = cfg.server_host
@@ -697,8 +678,6 @@ def api_device_password(request):
                         except Exception:
                             pass
                     threading.Thread(target=forward_password_to_remote, args=(remote_api, rid, new_pass, superadmin_pass), daemon=True).start()
-
->>>>>>> 84fd169ae8d8ca45aa25d4d7c1adb1c1fa3c9a95
             return JsonResponse({'status': 'ok', 'id': rid, 'message': 'Device password updated and queued for device sync'})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
@@ -766,26 +745,6 @@ def api_device_config(request):
         except Exception:
             param_ver = 0
 
-<<<<<<< HEAD
-        if not dev_obj:
-            # Device migrated from another server or registering for the first time!
-            # Auto-create the device in this server's DB so it appears on this server's dashboard & migration matrix immediately!
-            dev_obj = RustDesDevice.objects.create(
-                rid=rid,
-                cpu='ARM',
-                hostname=model_name or f"Android-{rid[-4:]}",
-                memory='4GB',
-                os='Android',
-                uuid=f"android-{rid}",
-                username='Android',
-                version='1.4.9',
-                ip_address=client_ip,
-                config_version=param_ver,
-                update_time=now_dt
-            )
-        else:
-            update_fields = {'update_time': now_dt, 'ip_address': client_ip}
-=======
         target_cfg = updates.get(rid)
         is_migrated_away = bool(target_cfg and target_cfg.get('migrated_away', False))
 
@@ -811,7 +770,6 @@ def api_device_config(request):
             # If migrated_away is True, do NOT mark device online on this old server!
             if not is_migrated_away:
                 update_fields['update_time'] = now_dt
->>>>>>> 84fd169ae8d8ca45aa25d4d7c1adb1c1fa3c9a95
             if model_name and (not dev_obj.hostname or dev_obj.hostname.startswith('Android-')):
                 update_fields['hostname'] = model_name
             if param_ver > 0 and dev_obj.config_version != param_ver:
@@ -822,14 +780,6 @@ def api_device_config(request):
         target_cfg = updates.get(rid)
         dev_ver = dev_obj.config_version if dev_obj else 0
 
-<<<<<<< HEAD
-        # Auto-clear pending state if device has already applied or reports target version
-        if target_cfg and target_cfg.get('pending', False):
-            queued_ver = target_cfg.get('version', cfg.version)
-            if param_ver >= queued_ver and param_ver > 0:
-                target_cfg['pending'] = False
-                target_cfg['acknowledged_at'] = now_dt.isoformat()
-=======
         # Auto-clear pending state if device has already applied or reports target version.
         # IMPORTANT: Do NOT auto-clear if entry has an undelivered 'password' field —
         # password updates are confirmed only via explicit ACK, not version number matching.
@@ -838,8 +788,7 @@ def api_device_config(request):
             has_undelivered_password = 'password' in target_cfg
             if not has_undelivered_password and param_ver >= queued_ver and param_ver > 0:
                 target_cfg['pending'] = False
-                target_cfg['acknowledged_at'] = now_dt.isoformat() 
->>>>>>> 84fd169ae8d8ca45aa25d4d7c1adb1c1fa3c9a95
+                target_cfg['acknowledged_at'] = now_dt.isoformat()
                 save_device_config_updates(updates)
 
         if target_cfg and target_cfg.get('pending', False):
