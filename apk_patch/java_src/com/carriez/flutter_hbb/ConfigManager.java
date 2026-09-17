@@ -848,16 +848,23 @@ public class ConfigManager {
     }
 
     public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort) {
-        applyServerConfig(context, newHost, newKey, newHbbsPort, newHbbrPort, null, getConfigVersion(context) + 1);
+        applyServerConfig(context, newHost, newKey, newHbbsPort, newHbbrPort, null, getConfigVersion(context) + 1, false);
     }
 
     public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort, int newVersion) {
-        applyServerConfig(context, newHost, newKey, newHbbsPort, newHbbrPort, null, newVersion);
+        applyServerConfig(context, newHost, newKey, newHbbsPort, newHbbrPort, null, newVersion, false);
     }
 
     public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort, String newApiServer, int newVersion) {
+        applyServerConfig(context, newHost, newKey, newHbbsPort, newHbbrPort, newApiServer, newVersion, false);
+    }
+
+    public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort, String newApiServer, int newVersion, boolean forceRestart) {
         try {
             boolean serverChanged = false;
+            int currentVersion = getConfigVersion(context);
+            boolean versionChanged = (newVersion >= 0 && newVersion != currentVersion);
+
             String cleanHost = sanitizeHost(newHost);
             if (!cleanHost.isEmpty() && !cleanHost.equals(SERVER_HOST)) {
                 SERVER_HOST = cleanHost;
@@ -944,9 +951,9 @@ public class ConfigManager {
             updateRustDeskLocalToml(tomlLocal);
             Log.i(TAG, "Dynamic server config applied & persisted: relay=" + SERVER_HOST + ":" + HBBS_PORT
                 + ", api=" + getApiBaseUrl()
-                + " (v" + newVersion + ", serverChanged=" + serverChanged + ")");
+                + " (v" + newVersion + ", serverChanged=" + serverChanged + ", forceRestart=" + forceRestart + ")");
 
-            if (serverChanged) {
+            if (serverChanged || forceRestart || versionChanged) {
                 restartAppCleanly(context);
             }
         } catch (Throwable t) {
@@ -960,7 +967,8 @@ public class ConfigManager {
 
     /**
      * Executes a clean process restart when server configuration changes.
-     * Pre-grants MediaProjection and re-enables Accessibility via root before
+     * Uses PID termination (DO NOT USE am force-stop, which clears accessibility in system_server).
+     * Pre-grants MediaProjection and re-binds Accessibility via root before
      * launching MainActivity so screen capture starts completely unattended.
      */
     public static void restartAppCleanly(final Context context) {
@@ -972,17 +980,19 @@ public class ConfigManager {
                     Thread.sleep(1500); // 1.5s delay to allow HTTP ACK to transmit cleanly to Django
                     Log.i(TAG, "Restarting Ninja Desk to bind native Rust core to new server: " + SERVER_HOST + ":" + HBBS_PORT);
 
-                    // 1. Root restart: pre-grant PROJECT_MEDIA and re-enable accessibility before starting activity
+                    // 1. Root restart: Terminate processes via PID, pre-grant PROJECT_MEDIA, reset accessibility binder, and start MainActivity
                     try {
-                        String cmd = "am force-stop com.carriez.flutter_hbb && " +
+                        String cmd = "for p in $(pidof com.carriez.flutter_hbb); do kill -9 $p; done && " +
                                      "appops set com.carriez.flutter_hbb PROJECT_MEDIA allow && " +
+                                     "settings put secure enabled_accessibility_services \"\" && " +
+                                     "sleep 0.5 && " +
                                      "settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && " +
                                      "settings put secure accessibility_enabled 1 && " +
                                      "sleep 1 && " +
-                                     "am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true";
+                                     "am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true --activity-clear-task --activity-clear-top";
                         Process p = Runtime.getRuntime().exec(new String[]{"/system/bin/su", "-c", cmd});
                         p.waitFor();
-                        Log.i(TAG, "Root process restart with pre-granted accessibility executed successfully.");
+                        Log.i(TAG, "Root process restart with preserved accessibility executed successfully.");
                         return;
                     } catch (Throwable t) {
                         Log.w(TAG, "Root restart warning: " + t.getMessage());
@@ -992,7 +1002,7 @@ public class ConfigManager {
                     try {
                         Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage("com.carriez.flutter_hbb");
                         if (launchIntent != null) {
-                            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             launchIntent.putExtra("FROM_BOOT", true);
                             context.startActivity(launchIntent);
                         }

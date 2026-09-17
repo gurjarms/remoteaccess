@@ -522,7 +522,7 @@ def api_devices_list(request):
             continue
         seen_ids.add(d.rid)
         peer = peers.get(d.rid)
-        is_online = bool(d.update_time and (now - d.update_time).total_seconds() < 40)
+        is_online = bool(d.update_time and (now - d.update_time).total_seconds() <= 45)
         data.append({
             'id': d.rid,
             'name': (peer.alias if peer and peer.alias else d.hostname) or f"Device {d.rid}",
@@ -679,6 +679,11 @@ def api_device_config(request):
         if not rid:
             return JsonResponse({'error': 'id required'}, status=400)
 
+        # Refresh device update_time and IP on every polling check-in for real-time online accuracy
+        client_ip = get_client_ip(request)
+        now_dt = datetime.datetime.now()
+        RustDesDevice.objects.filter(rid=rid).update(update_time=now_dt, ip_address=client_ip)
+
         target_cfg = updates.get(rid)
         dev_obj = RustDesDevice.objects.filter(rid=rid).first()
         dev_ver = dev_obj.config_version if dev_obj else 0
@@ -732,17 +737,27 @@ def api_device_config(request):
             if data.get('all_devices', False):
                 device_ids = list(RustDesDevice.objects.values_list('rid', flat=True))
 
+            increment_version = data.get('increment_version', False)
+            push_current = data.get('push_current', False)
+
             raw_host = data.get('server_host', '').strip()
-            server_host = sanitize_server_host(raw_host) or cfg.server_host
-            server_key = data.get('server_key', '').strip() or cfg.server_key
-            hbbs_port = str(data.get('hbbs_port', '')).strip() or str(cfg.hbbs_port)
-            hbbr_port = str(data.get('hbbr_port', '')).strip() or str(cfg.hbbr_port)
+            server_host = sanitize_server_host(raw_host)
+            server_key = data.get('server_key', '').strip()
+            hbbs_port = str(data.get('hbbs_port', '')).strip()
+            hbbr_port = str(data.get('hbbr_port', '')).strip()
+
+            # If pushing current active server configuration, default to cfg state
+            if push_current or not server_host:
+                server_host = cfg.server_host
+            if push_current or not server_key:
+                server_key = cfg.server_key
+            if push_current or not hbbs_port:
+                hbbs_port = str(cfg.hbbs_port)
+            if push_current or not hbbr_port:
+                hbbr_port = str(cfg.hbbr_port)
 
             if not server_host or not server_key:
                 return JsonResponse({'error': 'server_host and server_key required'}, status=400)
-
-            increment_version = data.get('increment_version', False)
-            push_current = data.get('push_current', False)
 
             is_config_changed = (
                 server_host != cfg.server_host or
@@ -816,13 +831,13 @@ def api_device_config_ack(request):
                 updates[rid]['version'] = version
             save_device_config_updates(updates)
 
-        # Update RustDesDevice model with new config version and confirmation timestamp
+        # Update RustDesDevice model with new config version, confirmation timestamp, and refresh update_time
         now = datetime.datetime.now()
         if version > 0:
-            RustDesDevice.objects.filter(rid=rid).update(config_version=version, config_updated_at=now)
+            RustDesDevice.objects.filter(rid=rid).update(config_version=version, config_updated_at=now, update_time=now)
         else:
             cfg = get_or_create_server_config_state()
-            RustDesDevice.objects.filter(rid=rid).update(config_version=cfg.version, config_updated_at=now)
+            RustDesDevice.objects.filter(rid=rid).update(config_version=cfg.version, config_updated_at=now, update_time=now)
 
         return JsonResponse({'status': 'ok', 'id': rid, 'version': version})
     except Exception as e:
@@ -837,9 +852,10 @@ def api_device_sync_status(request):
     cfg = get_or_create_server_config_state()
     updates = load_device_config_updates()
     devices = RustDesDevice.objects.all().order_by('-update_time')
+    peers = {p.rid: p for p in RustDeskPeer.objects.all()}
 
     now = datetime.datetime.now()
-    cutoff = now - datetime.timedelta(seconds=90)
+    cutoff = now - datetime.timedelta(seconds=45)
 
     total = devices.count()
     synced = 0
@@ -867,9 +883,12 @@ def api_device_sync_status(request):
         target_version = target_entry.get('version', cfg.version) if is_pending else cfg.version
         ack_time = target_entry.get('acknowledged_at')
 
+        peer = peers.get(d.rid)
+        assigned_name = (peer.alias if peer and peer.alias else d.hostname) or f"Device {d.rid}"
+
         device_list.append({
             'id': d.rid,
-            'name': d.hostname or d.username or d.rid,
+            'name': assigned_name,
             'hostname': d.hostname,
             'ip_address': d.ip_address,
             'online': is_online,

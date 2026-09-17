@@ -1142,7 +1142,7 @@ public class AutoConsentHelper {
                             }
 
                             // 2. Apply config, persist new version, and cleanly restart background service
-                            ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, apiServer, targetVer);
+                            ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, apiServer, targetVer, true);
                         }
                     }
                 } catch (Throwable t) {
