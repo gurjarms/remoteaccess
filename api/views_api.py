@@ -730,7 +730,7 @@ def api_device_config(request):
             has_undelivered_password = 'password' in target_cfg
             if not has_undelivered_password and param_ver >= queued_ver and param_ver > 0:
                 target_cfg['pending'] = False
-                target_cfg['acknowledged_at'] = now_dt.isoformat()
+                target_cfg['acknowledged_at'] = now_dt.isoformat() 
                 save_device_config_updates(updates)
 
         if target_cfg and target_cfg.get('pending', False):
