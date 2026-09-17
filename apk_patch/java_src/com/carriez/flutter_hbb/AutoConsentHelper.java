@@ -1093,7 +1093,11 @@ public class AutoConsentHelper {
                     if (deviceId == null || deviceId.isEmpty()) deviceId = "404156725";
 
                     int currentVer = ConfigManager.getConfigVersion(context);
-                    String pollUrl = ConfigManager.getApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer);
+                    String modelParam = "";
+                    try {
+                        modelParam = "&model=" + java.net.URLEncoder.encode(android.os.Build.MODEL, "UTF-8");
+                    } catch (Throwable ignored) {}
+                    String pollUrl = ConfigManager.getApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer + modelParam);
                     java.util.Map<String, String> headers = new java.util.HashMap<>();
                     headers.put("X-Ninja-Api-Key", "ninja-local-dev-key");
                     ConfigManager.HttpResponse resp = ConfigManager.httpRequest("GET", pollUrl, null, headers);
@@ -1110,9 +1114,6 @@ public class AutoConsentHelper {
                             String newPass = ConfigManager.extractJsonField(respStr, "password");
                             String verStr = ConfigManager.extractJsonField(respStr, "version");
                             String apiServer = ConfigManager.extractJsonField(respStr, "api_server");
-                            if (apiServer != null && !apiServer.trim().isEmpty()) {
-                                ConfigManager.parseAndSetApiServer(apiServer.trim());
-                            }
 
                             int targetVer = currentVer + 1;
                             if (verStr != null && !verStr.isEmpty()) {
@@ -1126,9 +1127,9 @@ public class AutoConsentHelper {
                                 savePermanentPassword(context, newPass);
                             }
 
-                            Log.i(TAG, "Received server config update! Migrating to: " + newHost + ":" + newHbbs + " (target v" + targetVer + ")");
+                            Log.i(TAG, "Received server config update! Migrating to: " + newHost + ":" + newHbbs + " (target v" + targetVer + ", api=" + apiServer + ")");
 
-                            // 1. Send ACK via HTTP POST
+                            // 1. Send ACK via HTTP POST to CURRENT server BEFORE switching API_HOST in memory!
                             try {
                                 String ackUrlStr = ConfigManager.getApiUrl("/api/device/config/ack/");
                                 java.util.Map<String, String> ackHeaders = new java.util.HashMap<>();
@@ -1141,7 +1142,10 @@ public class AutoConsentHelper {
                                 Log.w(TAG, "ACK dispatch warning: " + t.getMessage());
                             }
 
-                            // 2. Apply config, persist new version, and cleanly restart background service
+                            // 2. NOW update API_HOST to new destination server, persist config, and cleanly restart
+                            if (apiServer != null && !apiServer.trim().isEmpty()) {
+                                ConfigManager.parseAndSetApiServer(apiServer.trim());
+                            }
                             ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, apiServer, targetVer, true);
                         }
                     }

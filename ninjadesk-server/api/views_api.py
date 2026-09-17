@@ -522,7 +522,7 @@ def api_devices_list(request):
             continue
         seen_ids.add(d.rid)
         peer = peers.get(d.rid)
-        is_online = bool(d.update_time and (now - d.update_time).total_seconds() <= 45)
+        is_online = bool(d.update_time and (now - d.update_time).total_seconds() <= 15)
         data.append({
             'id': d.rid,
             'name': (peer.alias if peer and peer.alias else d.hostname) or f"Device {d.rid}",
@@ -682,29 +682,72 @@ def api_device_config(request):
         # Refresh device update_time and IP on every polling check-in for real-time online accuracy
         client_ip = get_client_ip(request)
         now_dt = datetime.datetime.now()
-        RustDesDevice.objects.filter(rid=rid).update(update_time=now_dt, ip_address=client_ip)
+        dev_obj = RustDesDevice.objects.filter(rid=rid).first()
+
+        model_name = request.GET.get('model', '').strip() or request.GET.get('hostname', '').strip()
+        version_param = request.GET.get('version', '')
+        try:
+            param_ver = int(version_param)
+        except Exception:
+            param_ver = 0
+
+        if not dev_obj:
+            # Device migrated from another server or registering for the first time!
+            # Auto-create the device in this server's DB so it appears on this server's dashboard & migration matrix immediately!
+            dev_obj = RustDesDevice.objects.create(
+                rid=rid,
+                cpu='ARM',
+                hostname=model_name or f"Android-{rid[-4:]}",
+                memory='4GB',
+                os='Android',
+                uuid=f"android-{rid}",
+                username='Android',
+                version='1.4.9',
+                ip_address=client_ip,
+                config_version=param_ver,
+                update_time=now_dt
+            )
+        else:
+            update_fields = {'update_time': now_dt, 'ip_address': client_ip}
+            if model_name and (not dev_obj.hostname or dev_obj.hostname.startswith('Android-')):
+                update_fields['hostname'] = model_name
+            if param_ver > 0 and dev_obj.config_version != param_ver:
+                update_fields['config_version'] = param_ver
+            RustDesDevice.objects.filter(rid=rid).update(**update_fields)
+            dev_obj.refresh_from_db()
 
         target_cfg = updates.get(rid)
-        dev_obj = RustDesDevice.objects.filter(rid=rid).first()
         dev_ver = dev_obj.config_version if dev_obj else 0
 
         if target_cfg and target_cfg.get('pending', False):
+            target_host = sanitize_server_host(target_cfg.get('server_host')) or cfg.server_host
+            target_api = target_cfg.get('api_server')
+            if not target_api:
+                req_port = request.get_port()
+                port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
+                target_api = f"{request.scheme}://{target_host}{port_str}"
+
             resp = {
                 'id': rid,
                 'pending': True,
                 'version': target_cfg.get('version', cfg.version),
                 'server_version': cfg.version,
-                'server_host': sanitize_server_host(target_cfg.get('server_host')) or cfg.server_host,
+                'server_host': target_host,
                 'server_key': target_cfg.get('server_key') or cfg.server_key,
                 'hbbs_port': str(target_cfg.get('hbbs_port') or cfg.hbbs_port),
                 'hbbr_port': str(target_cfg.get('hbbr_port') or cfg.hbbr_port),
-                'api_server': api_server_url,
+                'api_server': target_api,
             }
             if 'password' in target_cfg:
                 resp['password'] = target_cfg['password']
             return JsonResponse(resp)
         elif dev_ver < cfg.version and cfg.version > 0:
             # Device reconnected and has outdated configuration version! Auto-push latest config
+            target_host = cfg.server_host
+            req_port = request.get_port()
+            port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
+            target_api = f"{request.scheme}://{target_host}{port_str}"
+
             resp = {
                 'id': rid,
                 'pending': True,
@@ -714,7 +757,7 @@ def api_device_config(request):
                 'server_key': cfg.server_key,
                 'hbbs_port': str(cfg.hbbs_port),
                 'hbbr_port': str(cfg.hbbr_port),
-                'api_server': api_server_url,
+                'api_server': target_api,
             }
             return JsonResponse(resp)
 
@@ -785,6 +828,13 @@ def api_device_config(request):
 
             target_version = cfg.version
 
+            # Dynamically compute target API server URL for this migration
+            target_api_server = data.get('api_server', '').strip()
+            if not target_api_server:
+                req_port = request.get_port()
+                port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
+                target_api_server = f"{request.scheme}://{server_host}{port_str}"
+
             for did in device_ids:
                 did_str = str(did).strip()
                 dev_entry = updates.get(did_str, {})
@@ -793,6 +843,7 @@ def api_device_config(request):
                 dev_entry['server_key'] = server_key
                 dev_entry['hbbs_port'] = hbbs_port
                 dev_entry['hbbr_port'] = hbbr_port
+                dev_entry['api_server'] = target_api_server
                 dev_entry['version'] = target_version
                 dev_entry['updated_at'] = datetime.datetime.now().isoformat()
                 updates[did_str] = dev_entry
@@ -855,7 +906,7 @@ def api_device_sync_status(request):
     peers = {p.rid: p for p in RustDeskPeer.objects.all()}
 
     now = datetime.datetime.now()
-    cutoff = now - datetime.timedelta(seconds=45)
+    cutoff = now - datetime.timedelta(seconds=15)
 
     total = devices.count()
     synced = 0
