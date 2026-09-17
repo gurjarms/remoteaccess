@@ -18,7 +18,7 @@
 .method constructor <init>()V
     .registers 1
 
-    .line 1065
+    .line 1045
     invoke-direct {p0}, Landroid/content/BroadcastReceiver;-><init>()V
 
     return-void
@@ -29,7 +29,7 @@
 .method public onReceive(Landroid/content/Context;Landroid/content/Intent;)V
     .registers 4
 
-    .line 1068
+    .line 1048
     if-eqz p2, :cond_3d
 
     invoke-virtual {p2}, Landroid/content/Intent;->getAction()Ljava/lang/String;
@@ -40,13 +40,13 @@
 
     goto :goto_3d
 
-    .line 1069
+    .line 1049
     :cond_9
     invoke-virtual {p2}, Landroid/content/Intent;->getAction()Ljava/lang/String;
 
     move-result-object p2
 
-    .line 1070
+    .line 1050
     const-string v0, "com.carriez.flutter_hbb.SHOW_PASSWORD_DIALOG"
 
     invoke-virtual {v0, p2}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
@@ -55,7 +55,7 @@
 
     if-eqz v0, :cond_1f
 
-    .line 1071
+    .line 1051
     sget-object p2, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
     if-eqz p2, :cond_1b
@@ -67,7 +67,7 @@
 
     goto :goto_3c
 
-    .line 1072
+    .line 1052
     :cond_1f
     const-string v0, "com.carriez.flutter_hbb.RENAME_DEVICE"
 
@@ -77,7 +77,7 @@
 
     if-eqz v0, :cond_31
 
-    .line 1073
+    .line 1053
     sget-object p2, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
     if-eqz p2, :cond_2d
@@ -89,7 +89,7 @@
 
     goto :goto_3c
 
-    .line 1074
+    .line 1054
     :cond_31
     const-string p1, "com.carriez.flutter_hbb.RETURN_HOME"
 
@@ -99,15 +99,15 @@
 
     if-eqz p1, :cond_3c
 
-    .line 1075
+    .line 1055
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->returnToHomeLauncher()V
 
-    .line 1077
+    .line 1057
     :cond_3c
     :goto_3c
     return-void
 
-    .line 1068
+    .line 1048
     :cond_3d
     :goto_3d
     return-void

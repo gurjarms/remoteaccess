@@ -15,6 +15,7 @@ relayserver/id_ed25519.pub
 ninjadesk-server/db/device_passwords.json
 ninjadesk-server/db/device_config_updates.json
 
+
 # Large External Repositories & Unnecessary Folders
 rustdesk/
 rustdesk-1.4.9-src/
@@ -68,3 +69,4 @@ apk_patch/*.bin
 apk_patch/*.o
 apk_patch/*.bak
 apk_patch/*.so.bak
+*.zip

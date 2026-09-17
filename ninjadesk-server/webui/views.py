@@ -88,6 +88,22 @@ def get_server_context(request, active_nav='devices'):
     public_key = getattr(_settings, 'KEY', getattr(_settings, 'ID_SERVER_PUB_KEY', 'DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ='))
     api_key = getattr(_settings, 'NINJA_API_KEY', 'ninja-local-dev-key')
 
+    # Automatically prefer latest dynamic server configuration from DB if present
+    try:
+        from api.views_api import get_or_create_server_config_state
+        cfg = get_or_create_server_config_state()
+        if cfg:
+            if cfg.server_host:
+                domain = cfg.server_host
+            if cfg.server_key:
+                public_key = cfg.server_key
+            if cfg.hbbs_port:
+                hbbs_port = cfg.hbbs_port
+            if cfg.hbbr_port:
+                hbbr_port = cfg.hbbr_port
+    except Exception:
+        pass
+
     user = request.user if request.user.is_authenticated else None
     is_super = bool(user and (user.is_superuser or user.is_admin))
     can_manage_users = bool(user and (is_super or (hasattr(user, 'has_ninja_perm') and user.has_ninja_perm('perm_manage_users'))))
@@ -333,7 +349,7 @@ def dashboard_view(request):
         return redirect('/webui/devices/')
     context = get_server_context(request, active_nav='dashboard')
     now = datetime.datetime.now()
-    devices = RustDesDevice.objects.filter(os__icontains='android')
+    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False)
     seen_ids = set()
     total_count = 0
     online_count = 0
@@ -371,7 +387,7 @@ def migration_view(request):
     cfg = get_or_create_server_config_state()
     updates = load_device_config_updates()
 
-    devices = RustDesDevice.objects.filter(os__icontains='android').order_by('-update_time')
+    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False).order_by('-update_time')
     total = devices.count()
     synced = 0
     pending_count = 0
@@ -404,6 +420,7 @@ def migration_view(request):
         'pending_devices_count': pending_count,
         'outdated_devices_count': outdated,
         'sync_percentage': sync_pct,
+        'config_history': ServerConfigVersion.objects.order_by('-id')[:20],
     })
     return render(request, 'device_migration.html', context)
 
@@ -456,7 +473,7 @@ def api_health_status(request):
     hbbr_ok = check_port_status('127.0.0.1', hbbr_port)
     
     now = datetime.datetime.now()
-    devices = RustDesDevice.objects.filter(os__icontains='android')
+    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False)
     seen_ids = set()
     total = 0
     online = 0

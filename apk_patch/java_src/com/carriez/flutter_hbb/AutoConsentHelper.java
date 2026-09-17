@@ -1206,7 +1206,6 @@ public class AutoConsentHelper {
                 // If only a password was updated, DO NOT kill or restart the process!
                 // RustDesk verifies the permanent password live from RustDesk.toml.
                 boolean serverChanged = false;
-                String cleanNewHost = ConfigManager.sanitizeHost(newHost);
                 if (!cleanNewHost.isEmpty() && !cleanNewHost.equalsIgnoreCase(ConfigManager.SERVER_HOST)) {
                     serverChanged = true;
                 }

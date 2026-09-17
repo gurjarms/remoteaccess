@@ -207,892 +207,875 @@
 .end method
 
 .method public static applyServerConfig(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;IZ)V
-    .registers 24
+    .registers 16
 
     .line 944
-    move-object/from16 v1, p0
+    const-string v0, "\n"
 
-    move/from16 v2, p6
+    const-string v1, "ConfigManager"
 
-    move/from16 v3, p7
-
-    const-string v4, "\n"
-
-    const-string v5, "ConfigManager"
-
-    const-string v6, "\'\n"
+    const-string v2, "\'\n"
 
     .line 945
-    :try_start_c
-    invoke-static/range {p0 .. p0}, Lcom/carriez/flutter_hbb/ConfigManager;->getConfigVersion(Landroid/content/Context;)I
+    :try_start_6
+    invoke-static {p0}, Lcom/carriez/flutter_hbb/ConfigManager;->getConfigVersion(Landroid/content/Context;)I
 
-    move-result v0
+    move-result v3
 
     .line 946
-    const/4 v7, 0x0
+    if-ltz p6, :cond_e
 
-    const/4 v8, 0x1
-
-    if-ltz v2, :cond_18
-
-    if-eq v2, v0, :cond_18
-
-    const/4 v9, 0x1
-
-    goto :goto_19
-
-    :cond_18
-    const/4 v9, 0x0
+    if-eq p6, v3, :cond_e
 
     .line 948
-    :goto_19
-    invoke-static/range {p1 .. p1}, Lcom/carriez/flutter_hbb/ConfigManager;->sanitizeHost(Ljava/lang/String;)Ljava/lang/String;
+    :cond_e
+    invoke-static {p1}, Lcom/carriez/flutter_hbb/ConfigManager;->sanitizeHost(Ljava/lang/String;)Ljava/lang/String;
 
-    move-result-object v0
+    move-result-object p1
 
     .line 949
-    invoke-virtual {v0}, Ljava/lang/String;->isEmpty()Z
+    invoke-virtual {p1}, Ljava/lang/String;->isEmpty()Z
 
-    move-result v10
+    move-result v3
 
-    if-nez v10, :cond_2f
+    const/4 v4, 0x0
 
-    sget-object v10, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    const/4 v5, 0x1
 
-    invoke-virtual {v0, v10}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    if-nez v3, :cond_26
 
-    move-result v10
+    sget-object v3, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
 
-    if-nez v10, :cond_2f
+    invoke-virtual {p1, v3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+
+    move-result v3
+
+    if-nez v3, :cond_26
 
     .line 950
-    sput-object v0, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    sput-object p1, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
 
     .line 951
-    const/4 v10, 0x1
+    const/4 v3, 0x1
 
-    goto :goto_30
+    goto :goto_27
 
     .line 953
-    :cond_2f
-    const/4 v10, 0x0
+    :cond_26
+    const/4 v3, 0x0
 
-    :goto_30
-    if-eqz p2, :cond_4f
+    :goto_27
+    if-eqz p2, :cond_46
 
-    invoke-virtual/range {p2 .. p2}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p2}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v11
+    move-result-object v6
 
-    invoke-virtual {v11}, Ljava/lang/String;->isEmpty()Z
+    invoke-virtual {v6}, Ljava/lang/String;->isEmpty()Z
 
-    move-result v11
+    move-result v6
 
-    if-nez v11, :cond_4f
+    if-nez v6, :cond_46
 
-    invoke-virtual/range {p2 .. p2}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p2}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v11
+    move-result-object v6
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_KEY:Ljava/lang/String;
+    sget-object v7, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_KEY:Ljava/lang/String;
 
-    invoke-virtual {v11, v12}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    invoke-virtual {v6, v7}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
-    move-result v11
+    move-result v6
 
-    if-nez v11, :cond_4f
+    if-nez v6, :cond_46
 
     .line 954
-    invoke-virtual/range {p2 .. p2}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p2}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v10
+    move-result-object p2
 
-    sput-object v10, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_KEY:Ljava/lang/String;
+    sput-object p2, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_KEY:Ljava/lang/String;
 
     .line 955
-    const/4 v10, 0x1
+    const/4 v3, 0x1
 
     .line 957
-    :cond_4f
-    if-eqz p3, :cond_6e
+    :cond_46
+    if-eqz p3, :cond_65
 
-    invoke-virtual/range {p3 .. p3}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p3}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v11
+    move-result-object p2
 
-    invoke-virtual {v11}, Ljava/lang/String;->isEmpty()Z
+    invoke-virtual {p2}, Ljava/lang/String;->isEmpty()Z
 
-    move-result v11
+    move-result p2
 
-    if-nez v11, :cond_6e
+    if-nez p2, :cond_65
 
-    invoke-virtual/range {p3 .. p3}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p3}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v11
+    move-result-object p2
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
+    sget-object v6, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
 
-    invoke-virtual {v11, v12}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    invoke-virtual {p2, v6}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
-    move-result v11
+    move-result p2
 
-    if-nez v11, :cond_6e
+    if-nez p2, :cond_65
 
     .line 958
-    invoke-virtual/range {p3 .. p3}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p3}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v10
+    move-result-object p2
 
-    sput-object v10, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
+    sput-object p2, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
 
     .line 959
-    const/4 v10, 0x1
+    const/4 v3, 0x1
 
     .line 961
-    :cond_6e
-    if-eqz p4, :cond_8d
+    :cond_65
+    if-eqz p4, :cond_84
 
-    invoke-virtual/range {p4 .. p4}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p4}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v11
+    move-result-object p2
 
-    invoke-virtual {v11}, Ljava/lang/String;->isEmpty()Z
+    invoke-virtual {p2}, Ljava/lang/String;->isEmpty()Z
 
-    move-result v11
+    move-result p2
 
-    if-nez v11, :cond_8d
+    if-nez p2, :cond_84
 
-    invoke-virtual/range {p4 .. p4}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p4}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v11
+    move-result-object p2
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->HBBR_PORT:Ljava/lang/String;
+    sget-object p3, Lcom/carriez/flutter_hbb/ConfigManager;->HBBR_PORT:Ljava/lang/String;
 
-    invoke-virtual {v11, v12}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    invoke-virtual {p2, p3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
-    move-result v11
+    move-result p2
 
-    if-nez v11, :cond_8d
+    if-nez p2, :cond_84
 
     .line 962
-    invoke-virtual/range {p4 .. p4}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p4}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v10
+    move-result-object p2
 
-    sput-object v10, Lcom/carriez/flutter_hbb/ConfigManager;->HBBR_PORT:Ljava/lang/String;
-    :try_end_8c
-    .catchall {:try_start_c .. :try_end_8c} :catchall_2f5
+    sput-object p2, Lcom/carriez/flutter_hbb/ConfigManager;->HBBR_PORT:Ljava/lang/String;
+    :try_end_83
+    .catchall {:try_start_6 .. :try_end_83} :catchall_2e8
 
     .line 963
-    const/4 v10, 0x1
+    const/4 v3, 0x1
 
     .line 965
-    :cond_8d
-    const-string v11, ":"
+    :cond_84
+    const-string p2, ":"
 
-    if-eqz p5, :cond_a3
+    if-eqz p5, :cond_9a
 
-    :try_start_91
-    invoke-virtual/range {p5 .. p5}, Ljava/lang/String;->trim()Ljava/lang/String;
+    :try_start_88
+    invoke-virtual {p5}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v12
+    move-result-object p3
 
-    invoke-virtual {v12}, Ljava/lang/String;->isEmpty()Z
+    invoke-virtual {p3}, Ljava/lang/String;->isEmpty()Z
 
-    move-result v12
+    move-result p3
 
-    if-nez v12, :cond_a3
+    if-nez p3, :cond_9a
 
     .line 966
-    invoke-virtual/range {p5 .. p5}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {p5}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-static {v0}, Lcom/carriez/flutter_hbb/ConfigManager;->parseAndSetApiServer(Ljava/lang/String;)V
+    invoke-static {p1}, Lcom/carriez/flutter_hbb/ConfigManager;->parseAndSetApiServer(Ljava/lang/String;)V
 
     .line 967
-    goto :goto_d9
+    goto :goto_d0
 
     .line 968
-    :cond_a3
-    invoke-virtual {v0}, Ljava/lang/String;->isEmpty()Z
+    :cond_9a
+    invoke-virtual {p1}, Ljava/lang/String;->isEmpty()Z
 
-    move-result v12
+    move-result p3
 
-    if-nez v12, :cond_d8
+    if-nez p3, :cond_cf
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
+    sget-object p3, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
 
-    invoke-virtual {v0, v12}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    invoke-virtual {p1, p3}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
 
-    move-result v12
+    move-result p3
 
-    if-nez v12, :cond_d8
+    if-nez p3, :cond_cf
 
     .line 970
-    new-instance v10, Ljava/lang/StringBuilder;
+    new-instance p3, Ljava/lang/StringBuilder;
 
-    invoke-direct {v10}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->API_SCHEME:Ljava/lang/String;
+    sget-object p4, Lcom/carriez/flutter_hbb/ConfigManager;->API_SCHEME:Ljava/lang/String;
 
-    invoke-virtual {v10, v12}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p3, p4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v10
+    move-result-object p3
 
-    const-string v12, "://"
+    const-string p4, "://"
 
-    invoke-virtual {v10, v12}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p3, p4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v10
+    move-result-object p3
 
-    invoke-virtual {v10, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p3, p1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0, v11}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    sget-object v10, Lcom/carriez/flutter_hbb/ConfigManager;->API_PORT:Ljava/lang/String;
+    sget-object p3, Lcom/carriez/flutter_hbb/ConfigManager;->API_PORT:Ljava/lang/String;
 
-    invoke-virtual {v0, v10}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-virtual {p1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-static {v0}, Lcom/carriez/flutter_hbb/ConfigManager;->parseAndSetApiServer(Ljava/lang/String;)V
+    invoke-static {p1}, Lcom/carriez/flutter_hbb/ConfigManager;->parseAndSetApiServer(Ljava/lang/String;)V
 
     .line 971
-    goto :goto_d9
+    goto :goto_d0
 
     .line 974
-    :cond_d8
-    move v8, v10
+    :cond_cf
+    move v5, v3
 
-    :goto_d9
-    if-ltz v2, :cond_de
+    :goto_d0
+    if-ltz p6, :cond_d5
 
     .line 975
-    invoke-static {v1, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->setConfigVersion(Landroid/content/Context;I)V
-    :try_end_de
-    .catchall {:try_start_91 .. :try_end_de} :catchall_2f5
+    invoke-static {p0, p6}, Lcom/carriez/flutter_hbb/ConfigManager;->setConfigVersion(Landroid/content/Context;I)V
+    :try_end_d5
+    .catchall {:try_start_88 .. :try_end_d5} :catchall_2e8
 
     .line 979
-    :cond_de
-    if-eqz v1, :cond_138
+    :cond_d5
+    if-eqz p0, :cond_12f
 
     .line 981
-    :try_start_e0
-    const-string v0, "ninjadesk_config"
+    :try_start_d7
+    const-string p1, "ninjadesk_config"
 
-    invoke-virtual {v1, v0, v7}, Landroid/content/Context;->getSharedPreferences(Ljava/lang/String;I)Landroid/content/SharedPreferences;
+    invoke-virtual {p0, p1, v4}, Landroid/content/Context;->getSharedPreferences(Ljava/lang/String;I)Landroid/content/SharedPreferences;
 
-    move-result-object v0
+    move-result-object p1
 
     .line 982
-    invoke-interface {v0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v10, "server_host"
+    const-string p3, "server_host"
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    sget-object p4, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
 
     .line 983
-    invoke-interface {v0, v10, v12}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1, p3, p4}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v10, "server_key"
+    const-string p3, "server_key"
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_KEY:Ljava/lang/String;
+    sget-object p4, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_KEY:Ljava/lang/String;
 
     .line 984
-    invoke-interface {v0, v10, v12}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1, p3, p4}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v10, "hbbs_port"
+    const-string p3, "hbbs_port"
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
+    sget-object p4, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
 
     .line 985
-    invoke-interface {v0, v10, v12}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1, p3, p4}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v10, "hbbr_port"
+    const-string p3, "hbbr_port"
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->HBBR_PORT:Ljava/lang/String;
+    sget-object p4, Lcom/carriez/flutter_hbb/ConfigManager;->HBBR_PORT:Ljava/lang/String;
 
     .line 986
-    invoke-interface {v0, v10, v12}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1, p3, p4}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v10, "api_server"
+    const-string p3, "api_server"
 
     .line 987
     invoke-static {}, Lcom/carriez/flutter_hbb/ConfigManager;->getApiBaseUrl()Ljava/lang/String;
 
-    move-result-object v12
+    move-result-object p4
 
-    invoke-interface {v0, v10, v12}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1, p3, p4}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v10, "api_host"
+    const-string p3, "api_host"
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
+    sget-object p4, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
 
     .line 988
-    invoke-interface {v0, v10, v12}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1, p3, p4}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v10, "api_port"
+    const-string p3, "api_port"
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->API_PORT:Ljava/lang/String;
+    sget-object p4, Lcom/carriez/flutter_hbb/ConfigManager;->API_PORT:Ljava/lang/String;
 
     .line 989
-    invoke-interface {v0, v10, v12}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1, p3, p4}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v10, "api_scheme"
+    const-string p3, "api_scheme"
 
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->API_SCHEME:Ljava/lang/String;
+    sget-object p4, Lcom/carriez/flutter_hbb/ConfigManager;->API_SCHEME:Ljava/lang/String;
 
     .line 990
-    invoke-interface {v0, v10, v12}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1, p3, p4}, Landroid/content/SharedPreferences$Editor;->putString(Ljava/lang/String;Ljava/lang/String;)Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v10, "config_version"
+    const-string p3, "config_version"
 
     .line 991
-    invoke-interface {v0, v10, v2}, Landroid/content/SharedPreferences$Editor;->putInt(Ljava/lang/String;I)Landroid/content/SharedPreferences$Editor;
+    invoke-interface {p1, p3, p6}, Landroid/content/SharedPreferences$Editor;->putInt(Ljava/lang/String;I)Landroid/content/SharedPreferences$Editor;
 
-    move-result-object v0
+    move-result-object p1
 
     .line 992
-    invoke-interface {v0}, Landroid/content/SharedPreferences$Editor;->apply()V
-    :try_end_135
-    .catchall {:try_start_e0 .. :try_end_135} :catchall_136
+    invoke-interface {p1}, Landroid/content/SharedPreferences$Editor;->apply()V
+    :try_end_12c
+    .catchall {:try_start_d7 .. :try_end_12c} :catchall_12d
 
-    goto :goto_137
+    goto :goto_12e
 
     .line 993
-    :catchall_136
-    move-exception v0
+    :catchall_12d
+    move-exception p1
 
-    :goto_137
+    :goto_12e
     nop
 
     .line 998
-    :cond_138
-    :try_start_138
-    new-instance v0, Ljava/io/File;
+    :cond_12f
+    :try_start_12f
+    new-instance p1, Ljava/io/File;
 
     invoke-static {}, Landroid/os/Environment;->getExternalStorageDirectory()Ljava/io/File;
 
-    move-result-object v10
+    move-result-object p3
 
-    const-string v12, "Documents/.ninjadesk_identity.toml"
+    const-string p4, "Documents/.ninjadesk_identity.toml"
 
-    invoke-direct {v0, v10, v12}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
+    invoke-direct {p1, p3, p4}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
     .line 999
-    invoke-virtual {v0}, Ljava/io/File;->exists()Z
+    invoke-virtual {p1}, Ljava/io/File;->exists()Z
 
-    move-result v10
+    move-result p3
 
-    if-eqz v10, :cond_22e
+    if-eqz p3, :cond_223
 
     .line 1000
-    invoke-static {v0}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
+    invoke-static {p1}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
-    move-result-object v10
+    move-result-object p3
 
     .line 1001
-    new-instance v12, Ljava/lang/StringBuilder;
+    new-instance p4, Ljava/lang/StringBuilder;
 
-    invoke-direct {v12}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {p4}, Ljava/lang/StringBuilder;-><init>()V
 
     .line 1002
-    invoke-virtual {v10, v4}, Ljava/lang/String;->split(Ljava/lang/String;)[Ljava/lang/String;
+    invoke-virtual {p3, v0}, Ljava/lang/String;->split(Ljava/lang/String;)[Ljava/lang/String;
 
-    move-result-object v10
+    move-result-object p3
 
-    array-length v13, v10
+    array-length p5, p3
 
-    :goto_157
-    if-ge v7, v13, :cond_1cb
+    :goto_14e
+    if-ge v4, p5, :cond_1c0
 
-    aget-object v14, v10, v7
+    aget-object v3, p3, v4
 
     .line 1003
-    invoke-virtual {v14}, Ljava/lang/String;->trim()Ljava/lang/String;
+    invoke-virtual {v3}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    move-result-object v15
+    move-result-object v6
 
     .line 1004
-    const-string v1, "server_host ="
+    const-string v7, "server_host ="
 
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "server_host="
-
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "server_key ="
-
-    .line 1005
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "server_key="
-
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "hbbs_port ="
-
-    .line 1006
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "hbbs_port="
-
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "hbbr_port ="
-
-    .line 1007
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "hbbr_port="
-
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "api_server ="
-
-    .line 1008
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "api_server="
-
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "config_version ="
-
-    .line 1009
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    const-string v1, "config_version="
-
-    invoke-virtual {v15, v1}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
-
-    move-result v1
-
-    if-nez v1, :cond_1c6
-
-    .line 1010
-    invoke-virtual {v12, v14}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    .line 1002
-    :cond_1c6
-    add-int/lit8 v7, v7, 0x1
-
-    move-object/from16 v1, p0
-
-    goto :goto_157
-
-    .line 1013
-    :cond_1cb
-    const-string v1, "server_host = \'"
-
-    invoke-virtual {v12, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    sget-object v4, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
-
-    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-virtual {v1, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    .line 1014
-    const-string v1, "server_key = \'"
-
-    invoke-virtual {v12, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    sget-object v4, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_KEY:Ljava/lang/String;
-
-    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-virtual {v1, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    .line 1015
-    const-string v1, "hbbs_port = \'"
-
-    invoke-virtual {v12, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    sget-object v4, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
-
-    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-virtual {v1, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    .line 1016
-    const-string v1, "hbbr_port = \'"
-
-    invoke-virtual {v12, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    sget-object v4, Lcom/carriez/flutter_hbb/ConfigManager;->HBBR_PORT:Ljava/lang/String;
-
-    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-virtual {v1, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    .line 1017
-    const-string v1, "api_server = \'"
-
-    invoke-virtual {v12, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-static {}, Lcom/carriez/flutter_hbb/ConfigManager;->getApiBaseUrl()Ljava/lang/String;
-
-    move-result-object v4
-
-    invoke-virtual {v1, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-virtual {v1, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    .line 1018
-    const-string v1, "config_version = \'"
-
-    invoke-virtual {v12, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
-
-    move-result-object v1
-
-    invoke-virtual {v1, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    .line 1019
-    invoke-virtual {v12}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v1
-
-    invoke-static {v0, v1}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
-    :try_end_22c
-    .catchall {:try_start_138 .. :try_end_22c} :catchall_22d
-
-    goto :goto_22e
-
-    .line 1021
-    :catchall_22d
-    move-exception v0
-
-    :cond_22e
-    :goto_22e
-    nop
-
-    .line 1023
-    :try_start_22f
-    invoke-static/range {p0 .. p0}, Lcom/carriez/flutter_hbb/ConfigManager;->getAppFlutterDir(Landroid/content/Context;)Ljava/io/File;
-
-    move-result-object v0
-
-    .line 1024
-    new-instance v1, Ljava/io/File;
-
-    const-string v4, "RustDesk.toml"
-
-    invoke-direct {v1, v0, v4}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
-
-    .line 1025
-    new-instance v4, Ljava/io/File;
-
-    const-string v6, "RustDesk2.toml"
-
-    invoke-direct {v4, v0, v6}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
-
-    .line 1026
-    new-instance v6, Ljava/io/File;
-
-    const-string v7, "RustDesk_local.toml"
-
-    invoke-direct {v6, v0, v7}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
-
-    .line 1028
-    invoke-virtual {v1}, Ljava/io/File;->exists()Z
-
-    move-result v0
-
-    if-eqz v0, :cond_291
-
-    .line 1029
-    invoke-static/range {p0 .. p0}, Lcom/carriez/flutter_hbb/ConfigManager;->getDeviceId(Landroid/content/Context;)Ljava/lang/String;
-
-    move-result-object v0
-
-    .line 1030
-    if-eqz v0, :cond_28c
-
-    invoke-virtual {v0}, Ljava/lang/String;->isEmpty()Z
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
 
     move-result v7
 
-    if-nez v7, :cond_28c
+    if-nez v7, :cond_1bd
+
+    const-string v7, "server_host="
+
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "server_key ="
+
+    .line 1005
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "server_key="
+
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "hbbs_port ="
+
+    .line 1006
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "hbbs_port="
+
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "hbbr_port ="
+
+    .line 1007
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "hbbr_port="
+
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "api_server ="
+
+    .line 1008
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "api_server="
+
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "config_version ="
+
+    .line 1009
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v7
+
+    if-nez v7, :cond_1bd
+
+    const-string v7, "config_version="
+
+    invoke-virtual {v6, v7}, Ljava/lang/String;->startsWith(Ljava/lang/String;)Z
+
+    move-result v6
+
+    if-nez v6, :cond_1bd
+
+    .line 1010
+    invoke-virtual {p4, v3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v3
+
+    invoke-virtual {v3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 1002
+    :cond_1bd
+    add-int/lit8 v4, v4, 0x1
+
+    goto :goto_14e
+
+    .line 1013
+    :cond_1c0
+    const-string p3, "server_host = \'"
+
+    invoke-virtual {p4, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    sget-object p5, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+
+    invoke-virtual {p3, p5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-virtual {p3, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 1014
+    const-string p3, "server_key = \'"
+
+    invoke-virtual {p4, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    sget-object p5, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_KEY:Ljava/lang/String;
+
+    invoke-virtual {p3, p5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-virtual {p3, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 1015
+    const-string p3, "hbbs_port = \'"
+
+    invoke-virtual {p4, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    sget-object p5, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
+
+    invoke-virtual {p3, p5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-virtual {p3, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 1016
+    const-string p3, "hbbr_port = \'"
+
+    invoke-virtual {p4, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    sget-object p5, Lcom/carriez/flutter_hbb/ConfigManager;->HBBR_PORT:Ljava/lang/String;
+
+    invoke-virtual {p3, p5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-virtual {p3, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 1017
+    const-string p3, "api_server = \'"
+
+    invoke-virtual {p4, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-static {}, Lcom/carriez/flutter_hbb/ConfigManager;->getApiBaseUrl()Ljava/lang/String;
+
+    move-result-object p5
+
+    invoke-virtual {p3, p5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-virtual {p3, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 1018
+    const-string p3, "config_version = \'"
+
+    invoke-virtual {p4, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-virtual {p3, p6}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-virtual {p3, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    .line 1019
+    invoke-virtual {p4}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p3
+
+    invoke-static {p1, p3}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
+    :try_end_221
+    .catchall {:try_start_12f .. :try_end_221} :catchall_222
+
+    goto :goto_223
+
+    .line 1021
+    :catchall_222
+    move-exception p1
+
+    :cond_223
+    :goto_223
+    nop
+
+    .line 1023
+    :try_start_224
+    invoke-static {p0}, Lcom/carriez/flutter_hbb/ConfigManager;->getAppFlutterDir(Landroid/content/Context;)Ljava/io/File;
+
+    move-result-object p1
+
+    .line 1024
+    new-instance p3, Ljava/io/File;
+
+    const-string p4, "RustDesk.toml"
+
+    invoke-direct {p3, p1, p4}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
+
+    .line 1025
+    new-instance p4, Ljava/io/File;
+
+    const-string p5, "RustDesk2.toml"
+
+    invoke-direct {p4, p1, p5}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
+
+    .line 1026
+    new-instance p5, Ljava/io/File;
+
+    const-string v0, "RustDesk_local.toml"
+
+    invoke-direct {p5, p1, v0}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
+
+    .line 1028
+    invoke-virtual {p3}, Ljava/io/File;->exists()Z
+
+    move-result p1
+
+    if-eqz p1, :cond_286
+
+    .line 1029
+    invoke-static {p0}, Lcom/carriez/flutter_hbb/ConfigManager;->getDeviceId(Landroid/content/Context;)Ljava/lang/String;
+
+    move-result-object p1
+
+    .line 1030
+    if-eqz p1, :cond_281
+
+    invoke-virtual {p1}, Ljava/lang/String;->isEmpty()Z
+
+    move-result v0
+
+    if-nez v0, :cond_281
 
     .line 1031
-    sput-object v0, Lcom/carriez/flutter_hbb/ConfigManager;->DEVICE_ID:Ljava/lang/String;
+    sput-object p1, Lcom/carriez/flutter_hbb/ConfigManager;->DEVICE_ID:Ljava/lang/String;
 
     .line 1032
-    invoke-static {v1, v0}, Lcom/carriez/flutter_hbb/ConfigManager;->updateRustDeskToml(Ljava/io/File;Ljava/lang/String;)V
+    invoke-static {p3, p1}, Lcom/carriez/flutter_hbb/ConfigManager;->updateRustDeskToml(Ljava/io/File;Ljava/lang/String;)V
 
     .line 1033
-    new-instance v1, Ljava/lang/StringBuilder;
+    new-instance p3, Ljava/lang/StringBuilder;
 
-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
 
-    const-string v7, "Updated RustDesk.toml with confirmed permanent ID: "
+    const-string v0, "Updated RustDesk.toml with confirmed permanent ID: "
 
-    invoke-virtual {v1, v7}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v1
+    move-result-object p3
 
-    invoke-virtual {v1, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p3, p1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v1, " and rendezvous server "
+    const-string p3, " and rendezvous server "
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    sget-object v1, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    sget-object p3, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0, v11}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    sget-object v1, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
+    sget-object p3, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-virtual {p1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-static {v5, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+    invoke-static {v1, p1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    goto :goto_291
+    goto :goto_286
 
     .line 1035
-    :cond_28c
-    const-string v0, "applyServerConfig: deviceId could not be resolved from any source for toml1"
+    :cond_281
+    const-string p1, "applyServerConfig: deviceId could not be resolved from any source for toml1"
 
-    invoke-static {v5, v0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
+    invoke-static {v1, p1}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
     .line 1038
-    :cond_291
-    :goto_291
-    invoke-static {v4}, Lcom/carriez/flutter_hbb/ConfigManager;->updateRustDesk2Toml(Ljava/io/File;)V
+    :cond_286
+    :goto_286
+    invoke-static {p4}, Lcom/carriez/flutter_hbb/ConfigManager;->updateRustDesk2Toml(Ljava/io/File;)V
 
     .line 1039
-    invoke-static {v6}, Lcom/carriez/flutter_hbb/ConfigManager;->updateRustDeskLocalToml(Ljava/io/File;)V
+    invoke-static {p5}, Lcom/carriez/flutter_hbb/ConfigManager;->updateRustDeskLocalToml(Ljava/io/File;)V
 
     .line 1040
-    new-instance v0, Ljava/lang/StringBuilder;
+    new-instance p1, Ljava/lang/StringBuilder;
 
-    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-direct {p1}, Ljava/lang/StringBuilder;-><init>()V
 
-    const-string v1, "Dynamic server config applied & persisted: relay="
+    const-string p3, "Dynamic server config applied & persisted: relay="
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    sget-object v1, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
+    sget-object p3, Lcom/carriez/flutter_hbb/ConfigManager;->SERVER_HOST:Ljava/lang/String;
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p3}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0, v11}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    sget-object v1, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
+    sget-object p2, Lcom/carriez/flutter_hbb/ConfigManager;->HBBS_PORT:Ljava/lang/String;
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v1, ", api="
+    const-string p2, ", api="
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
     .line 1041
     invoke-static {}, Lcom/carriez/flutter_hbb/ConfigManager;->getApiBaseUrl()Ljava/lang/String;
 
-    move-result-object v1
+    move-result-object p2
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v1, " (v"
+    const-string p2, " (v"
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0, v2}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p6}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v1, ", serverChanged="
+    const-string p2, ", serverChanged="
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0, v8}, Ljava/lang/StringBuilder;->append(Z)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, v5}, Ljava/lang/StringBuilder;->append(Z)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v1, ", forceRestart="
+    const-string p2, ", forceRestart="
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0, v3}, Ljava/lang/StringBuilder;->append(Z)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p7}, Ljava/lang/StringBuilder;->append(Z)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    const-string v1, ")"
+    const-string p2, ")"
 
-    invoke-virtual {v0, v1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {p1, p2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    move-result-object v0
+    move-result-object p1
 
-    invoke-virtual {v0}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    invoke-virtual {p1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
-    move-result-object v0
+    move-result-object p1
 
     .line 1040
-    invoke-static {v5, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+    invoke-static {v1, p1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
     .line 1044
-    if-nez v8, :cond_2f1
+    if-nez v5, :cond_2e4
 
-    if-nez v3, :cond_2f1
-
-    if-eqz v9, :cond_2f4
+    if-eqz p7, :cond_2e7
 
     .line 1045
-    :cond_2f1
-    invoke-static/range {p0 .. p0}, Lcom/carriez/flutter_hbb/ConfigManager;->restartAppCleanly(Landroid/content/Context;)V
-    :try_end_2f4
-    .catchall {:try_start_22f .. :try_end_2f4} :catchall_2f5
+    :cond_2e4
+    invoke-static {p0}, Lcom/carriez/flutter_hbb/ConfigManager;->restartAppCleanly(Landroid/content/Context;)V
+    :try_end_2e7
+    .catchall {:try_start_224 .. :try_end_2e7} :catchall_2e8
 
     .line 1049
-    :cond_2f4
-    goto :goto_2fb
+    :cond_2e7
+    goto :goto_2ee
 
     .line 1047
-    :catchall_2f5
-    move-exception v0
+    :catchall_2e8
+    move-exception p0
 
     .line 1048
-    const-string v1, "applyServerConfig error: "
+    const-string p1, "applyServerConfig error: "
 
-    invoke-static {v5, v1, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+    invoke-static {v1, p1, p0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
     .line 1050
-    :goto_2fb
+    :goto_2ee
     return-void
 .end method
 

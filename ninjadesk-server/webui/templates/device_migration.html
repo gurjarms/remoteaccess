@@ -397,27 +397,32 @@
 
   <div class="editor-grid">
     <div class="form-group">
-      <label class="form-label">Relay & ID Server Host / IP</label>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <label class="form-label" style="margin-bottom: 0;">Relay & ID Server Host / IP</label>
+        <span class="badge-tag badge-superadmin" style="font-size: 10px; padding: 2px 7px;">
+          LATEST ACTIVE: <span id="label-active-host" style="font-family:'JetBrains Mono',monospace;">{{ domain }}</span>
+        </span>
+      </div>
       <input type="text" id="target-host" class="form-input {% if not is_superadmin %}input-locked{% endif %}" 
-             value="{{ domain }}" placeholder="e.g. 192.168.1.43 or remote.domain.com" {% if not is_superadmin %}readonly{% endif %}>
+             value="{{ domain }}" placeholder="e.g. 192.168.1.43 or remote.domain.com" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
 
     <div class="form-group">
       <label class="form-label">Server Public Key</label>
       <input type="text" id="target-key" class="form-input {% if not is_superadmin %}input-locked{% endif %}" 
-             value="{{ public_key }}" placeholder="e.g. DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=" {% if not is_superadmin %}readonly{% endif %}>
+             value="{{ public_key }}" placeholder="e.g. DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
 
     <div class="form-group">
       <label class="form-label">HBBS Port (Signaling & ID)</label>
       <input type="text" id="target-hbbs-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}" 
-             value="{{ hbbs_port }}" {% if not is_superadmin %}readonly{% endif %}>
+             value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
 
     <div class="form-group">
       <label class="form-label">HBBR Port (Data Relay)</label>
       <input type="text" id="target-hbbr-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}" 
-             value="{{ hbbr_port }}" {% if not is_superadmin %}readonly{% endif %}>
+             value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
   </div>
 
@@ -443,6 +448,88 @@
       🔒 Server migration broadcasts restricted to Superadmin accounts.
     </div>
     {% endif %}
+  </div>
+</div>
+
+<!-- ============================================================================== -->
+<!-- 2.5 SERVER CONFIGURATION HISTORY TABLE                                        -->
+<!-- ============================================================================== -->
+<div class="fleet-rack" style="margin-bottom: 24px;">
+  <div class="rack-header">
+    <div>
+      <div class="rack-title">
+        <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        <span>Server Configuration Versions & History</span>
+      </div>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+        Recorded history of all applied server configurations. The latest configuration is automatically set in the input fields above.
+      </div>
+    </div>
+    <div style="font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted);">
+      <span id="config-history-badge">{{ config_history|length }}</span> Configuration(s) Stored
+    </div>
+  </div>
+
+  <div class="fleet-table-container">
+    <table class="fleet-table" id="config-history-table">
+      <thead>
+        <tr>
+          <th style="width: 80px; text-align: center;">Version</th>
+          <th>Relay & ID Server Host / IP</th>
+          <th>Server Public Key</th>
+          <th style="text-align: center;">HBBS</th>
+          <th style="text-align: center;">HBBR</th>
+          <th>Updated By</th>
+          <th>Recorded At</th>
+          <th style="text-align: center; width: 140px;">Action</th>
+        </tr>
+      </thead>
+      <tbody id="config-history-body">
+        {% for c in config_history %}
+        <tr>
+          <td style="text-align: center;">
+            <span class="version-chip">v{{ c.version }}</span>
+          </td>
+          <td>
+            <div style="font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">
+              {{ c.server_host }}
+            </div>
+            {% if forloop.first %}
+            <span class="sync-badge synced" style="font-size: 10px; padding: 1px 6px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+              <span class="led-diode online" style="width: 5px; height: 5px;"></span> CURRENT LATEST
+            </span>
+            {% endif %}
+          </td>
+          <td>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);" title="{{ c.server_key }}">
+              {{ c.server_key|truncatechars:28 }}
+            </span>
+          </td>
+          <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">{{ c.hbbs_port }}</td>
+          <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">{{ c.hbbr_port }}</td>
+          <td style="font-size: 12px; color: var(--text-muted);">{{ c.updated_by|default:"System" }}</td>
+          <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">{{ c.updated_at|date:"Y-m-d H:i:s" }}</td>
+          <td style="text-align: center;">
+            {% if is_superadmin %}
+            <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;" 
+                    onclick="loadConfigIntoEditor('{{ c.server_host }}', '{{ c.server_key }}', '{{ c.hbbs_port }}', '{{ c.hbbr_port }}')">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>Load to Form</span>
+            </button>
+            {% else %}
+            <span style="font-size: 11px; color: var(--text-muted);">Locked</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 25px;">
+            No server configuration history recorded yet.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -529,6 +616,17 @@
   let activeHbbr = "{{ hbbr_port }}";
 
   let fleetDevices = [];
+  let formDirty = false;
+  let initialFormPopulated = false;
+
+  function setupFormDirtyTracking() {
+    ['target-host', 'target-key', 'target-hbbs-port', 'target-hbbr-port'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', () => { formDirty = true; });
+      }
+    });
+  }
 
   // 1. CLIPBOARD COPY
   async function copyClientString() {
@@ -547,11 +645,29 @@
 
   // 2. RESET FORM TO CURRENT ACTIVE VALUES
   function resetFormToActive() {
+    formDirty = false;
     document.getElementById('target-host').value = activeServerHost;
     document.getElementById('target-key').value = activeServerKey;
     document.getElementById('target-hbbs-port').value = activeHbbs;
     document.getElementById('target-hbbr-port').value = activeHbbr;
-    showToast('Form reset to active server values');
+    const labelHost = document.getElementById('label-active-host');
+    if (labelHost) labelHost.textContent = activeServerHost;
+    showToast('Form reset to latest active server configuration: ' + activeServerHost);
+  }
+
+  function loadConfigIntoEditor(host, key, hbbs, hbbr) {
+    formDirty = true;
+    const hostInput = document.getElementById('target-host');
+    const keyInput = document.getElementById('target-key');
+    const hbbsInput = document.getElementById('target-hbbs-port');
+    const hbbrInput = document.getElementById('target-hbbr-port');
+    if (hostInput) hostInput.value = host;
+    if (keyInput) keyInput.value = key;
+    if (hbbsInput) hbbsInput.value = hbbs;
+    if (hbbrInput) hbbrInput.value = hbbr;
+    showToast('Loaded configuration for ' + host + ' into form.');
+    hostInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    hostInput.focus();
   }
 
   // 3. LOAD SYNCHRONIZATION STATUS & RENDER TABLE
@@ -567,6 +683,26 @@
       activeHbbs = data.hbbs_port || activeHbbs;
       activeHbbr = data.hbbr_port || activeHbbr;
       fleetDevices = data.devices || [];
+
+      // Always populate the input fields with the latest active server configuration
+      // when user is not actively typing a new custom migration target
+      if (!formDirty || !initialFormPopulated) {
+        const hostInput = document.getElementById('target-host');
+        const keyInput = document.getElementById('target-key');
+        const hbbsInput = document.getElementById('target-hbbs-port');
+        const hbbrInput = document.getElementById('target-hbbr-port');
+        if (hostInput && data.server_host) hostInput.value = data.server_host;
+        if (keyInput && data.server_key) keyInput.value = data.server_key;
+        if (hbbsInput && data.hbbs_port) hbbsInput.value = data.hbbs_port;
+        if (hbbrInput && data.hbbr_port) hbbrInput.value = data.hbbr_port;
+        initialFormPopulated = true;
+      }
+      const labelHost = document.getElementById('label-active-host');
+      if (labelHost && data.server_host) labelHost.textContent = data.server_host;
+
+      if (data.config_history && data.config_history.length > 0) {
+        renderConfigHistoryTable(data.config_history);
+      }
 
       // Update Header Metrics
       const verEl = document.getElementById('stat-server-version');
@@ -601,6 +737,44 @@
     } catch (e) {
       console.error('loadSyncStatus error:', e);
     }
+  }
+
+  function renderConfigHistoryTable(history) {
+    const tbody = document.getElementById('config-history-body');
+    if (!tbody || !history) return;
+    const countEl = document.getElementById('config-history-badge');
+    if (countEl) countEl.textContent = history.length;
+
+    tbody.innerHTML = history.map((c, idx) => {
+      const isLatest = (idx === 0);
+      const badge = isLatest 
+        ? `<span class="sync-badge synced" style="font-size: 10px; padding: 1px 6px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;"><span class="led-diode online" style="width: 5px; height: 5px;"></span> CURRENT LATEST</span>`
+        : '';
+      const keyShort = (c.server_key && c.server_key.length > 28) ? c.server_key.substring(0, 28) + '...' : (c.server_key || '-');
+      const safeKey = (c.server_key || '').replace(/'/g, "\\'");
+      const safeHost = (c.server_host || '').replace(/'/g, "\\'");
+
+      return `<tr>
+        <td style="text-align: center;"><span class="version-chip">v${c.version}</span></td>
+        <td>
+          <div style="font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">${c.server_host || '-'}</div>
+          ${badge}
+        </td>
+        <td><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);" title="${c.server_key || ''}">${keyShort}</span></td>
+        <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">${c.hbbs_port || '21116'}</td>
+        <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">${c.hbbr_port || '21117'}</td>
+        <td style="font-size: 12px; color: var(--text-muted);">${c.updated_by || 'System'}</td>
+        <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">${c.updated_at || '-'}</td>
+        <td style="text-align: center;">
+          ${IS_SUPERADMIN ? `
+          <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;" 
+                  onclick="loadConfigIntoEditor('${safeHost}', '${safeKey}', '${c.hbbs_port}', '${c.hbbr_port}')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>Load to Form</span>
+          </button>` : `<span style="font-size: 11px; color: var(--text-muted);">Locked</span>`}
+        </td>
+      </tr>`;
+    }).join('');
   }
 
   // 4. RENDER FLEET TABLE (PRESERVING CHECKBOX SELECTIONS)
@@ -653,10 +827,17 @@
 
       let actionHtml = '';
       if (IS_SUPERADMIN) {
-        actionHtml = `<button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px; white-space: nowrap;" onclick="pushConfigToSingleDevice('${d.id}')">
-          <svg class="icon icon-sm" viewBox="0 0 24 24" style="width:12px;height:12px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          <span>Push Config</span>
-        </button>`;
+        const safeName = (d.name || d.hostname || d.id).replace(/'/g, "\\'");
+        actionHtml = `
+        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+          <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px; white-space: nowrap;" onclick="pushConfigToSingleDevice('${d.id}')">
+            <svg class="icon icon-sm" viewBox="0 0 24 24" style="width:12px;height:12px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <span>Push Config</span>
+          </button>
+          <button class="btn-delete-quick" onclick="triggerDeleteDevice('${d.id}', '${safeName}')" title="Delete Device">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>`;
       } else {
         actionHtml = `<span style="color:var(--text-muted);font-size:11px;">Restricted</span>`;
       }
@@ -792,8 +973,11 @@
       const data = await res.json();
       if (data.status === 'ok') {
         showToast(`Server config upgraded to v${data.version}! Queued for ${data.targeted_devices} device(s).`);
+        formDirty = false;
         selectDevicesByType('none');
-        loadSyncStatus();
+        await loadSyncStatus();
+        const hostInput = document.getElementById('target-host');
+        if (hostInput && data.server_host) hostInput.value = data.server_host;
       } else {
         showToast(data.error || 'Broadcast failed', true);
       }
@@ -910,6 +1094,7 @@
 
   // INITIALIZE & START REAL-TIME 3s HEARTBEAT
   document.addEventListener('DOMContentLoaded', () => {
+    setupFormDirtyTracking();
     loadSyncStatus();
     setInterval(loadSyncStatus, 3000);
   });
