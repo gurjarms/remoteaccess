@@ -722,10 +722,13 @@ def api_device_config(request):
         target_cfg = updates.get(rid)
         dev_ver = dev_obj.config_version if dev_obj else 0
 
-        # Auto-clear pending state if device has already applied or reports target version
+        # Auto-clear pending state if device has already applied or reports target version.
+        # IMPORTANT: Do NOT auto-clear if entry has an undelivered 'password' field —
+        # password updates are confirmed only via explicit ACK, not version number matching.
         if target_cfg and target_cfg.get('pending', False):
             queued_ver = target_cfg.get('version', cfg.version)
-            if param_ver >= queued_ver and param_ver > 0:
+            has_undelivered_password = 'password' in target_cfg
+            if not has_undelivered_password and param_ver >= queued_ver and param_ver > 0:
                 target_cfg['pending'] = False
                 target_cfg['acknowledged_at'] = now_dt.isoformat()
                 save_device_config_updates(updates)
