@@ -38,7 +38,7 @@
 .method private static applyPendingConfig(Landroid/content/Context;Ljava/lang/String;ILjava/lang/String;Z)V
     .registers 16
 
-    .line 1168
+    .line 1178
     const-string v0, ")"
 
     const-string v1, "AutoConsentHelper"
@@ -78,59 +78,59 @@
 
     invoke-static {v1, v2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1169
+    .line 1179
     const-string v2, "server_host"
 
     invoke-static {p3, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v4
 
-    .line 1170
+    .line 1180
     const-string v2, "server_key"
 
     invoke-static {p3, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v5
 
-    .line 1171
+    .line 1181
     const-string v2, "hbbs_port"
 
     invoke-static {p3, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v6
 
-    .line 1172
+    .line 1182
     const-string v2, "hbbr_port"
 
     invoke-static {p3, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v7
 
-    .line 1173
+    .line 1183
     const-string v2, "password"
 
     invoke-static {p3, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v2
 
-    .line 1174
+    .line 1184
     const-string v3, "version"
 
     invoke-static {p3, v3}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v3
 
-    .line 1175
+    .line 1185
     const-string v8, "api_server"
 
     invoke-static {p3, v8}, Lcom/carriez/flutter_hbb/ConfigManager;->extractJsonField(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object p3
 
-    .line 1177
+    .line 1187
     add-int/lit8 p2, p2, 0x1
 
-    .line 1178
+    .line 1188
     if-eqz v3, :cond_67
 
     invoke-virtual {v3}, Ljava/lang/String;->isEmpty()Z
@@ -141,7 +141,7 @@
 
     if-nez v8, :cond_67
 
-    .line 1180
+    .line 1190
     :try_start_5c
     invoke-virtual {v3}, Ljava/lang/String;->trim()Ljava/lang/String;
 
@@ -153,7 +153,7 @@
     :try_end_64
     .catchall {:try_start_5c .. :try_end_64} :catchall_66
 
-    .line 1181
+    .line 1191
     move v9, p2
 
     goto :goto_68
@@ -161,7 +161,7 @@
     :catchall_66
     move-exception v3
 
-    .line 1184
+    .line 1194
     :cond_67
     move v9, p2
 
@@ -175,7 +175,7 @@
 
     if-nez p2, :cond_89
 
-    .line 1185
+    .line 1195
     new-instance p2, Ljava/lang/StringBuilder;
 
     invoke-direct {p2}, Ljava/lang/StringBuilder;-><init>()V
@@ -196,16 +196,16 @@
 
     invoke-static {v1, p2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1186
+    .line 1196
     invoke-static {p0, v2}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->savePermanentPassword(Landroid/content/Context;Ljava/lang/String;)V
 
-    .line 1192
+    .line 1202
     :cond_89
     invoke-static {v4}, Lcom/carriez/flutter_hbb/ConfigManager;->sanitizeHost(Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object p2
 
-    .line 1193
+    .line 1203
     invoke-virtual {p2}, Ljava/lang/String;->isEmpty()Z
 
     move-result v2
@@ -216,7 +216,7 @@
 
     if-nez v2, :cond_ec
 
-    .line 1194
+    .line 1204
     if-eqz p3, :cond_b1
 
     :try_start_97
@@ -246,7 +246,7 @@
 
     if-nez v2, :cond_ec
 
-    .line 1195
+    .line 1205
     :cond_b1
     new-instance p3, Ljava/lang/StringBuilder;
 
@@ -282,7 +282,7 @@
 
     move-result-object p2
 
-    .line 1196
+    .line 1206
     new-instance p3, Ljava/lang/StringBuilder;
 
     invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
@@ -307,7 +307,7 @@
 
     goto :goto_ed
 
-    .line 1200
+    .line 1210
     :cond_ec
     move-object v8, p3
 
@@ -376,12 +376,12 @@
     :try_end_12d
     .catchall {:try_start_97 .. :try_end_12d} :catchall_1db
 
-    .line 1204
+    .line 1214
     const-string p2, "/api/device/config/ack/"
 
     if-eqz p4, :cond_136
 
-    .line 1205
+    .line 1215
     :try_start_131
     invoke-static {p2}, Lcom/carriez/flutter_hbb/ConfigManager;->getOriginApiUrl(Ljava/lang/String;)Ljava/lang/String;
 
@@ -389,33 +389,33 @@
 
     goto :goto_13a
 
-    .line 1206
+    .line 1216
     :cond_136
     invoke-static {p2}, Lcom/carriez/flutter_hbb/ConfigManager;->getApiUrl(Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object p2
 
-    .line 1207
+    .line 1217
     :goto_13a
     new-instance p3, Ljava/util/HashMap;
 
     invoke-direct {p3}, Ljava/util/HashMap;-><init>()V
 
-    .line 1208
+    .line 1218
     const-string p4, "Content-Type"
 
     const-string v2, "application/json"
 
     invoke-interface {p3, p4, v2}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 1209
+    .line 1219
     const-string p4, "X-Ninja-Api-Key"
 
     const-string v2, "ninja-local-dev-key"
 
     invoke-interface {p3, p4, v2}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 1210
+    .line 1220
     new-instance p4, Ljava/lang/StringBuilder;
 
     invoke-direct {p4}, Ljava/lang/StringBuilder;-><init>()V
@@ -450,14 +450,14 @@
 
     move-result-object p1
 
-    .line 1211
+    .line 1221
     const-string p4, "POST"
 
     invoke-static {p4, p2, p1, p3}, Lcom/carriez/flutter_hbb/ConfigManager;->httpRequest(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;
 
     move-result-object p1
 
-    .line 1212
+    .line 1222
     new-instance p3, Ljava/lang/StringBuilder;
 
     invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
@@ -506,14 +506,14 @@
     :try_end_1a6
     .catchall {:try_start_131 .. :try_end_1a6} :catchall_1a7
 
-    .line 1215
+    .line 1225
     goto :goto_1c2
 
-    .line 1213
+    .line 1223
     :catchall_1a7
     move-exception p1
 
-    .line 1214
+    .line 1224
     :try_start_1a8
     new-instance p2, Ljava/lang/StringBuilder;
 
@@ -539,7 +539,7 @@
 
     invoke-static {v1, p1}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1218
+    .line 1228
     :goto_1c2
     if-eqz v8, :cond_1d5
 
@@ -553,14 +553,14 @@
 
     if-nez p1, :cond_1d5
 
-    .line 1219
+    .line 1229
     invoke-virtual {v8}, Ljava/lang/String;->trim()Ljava/lang/String;
 
     move-result-object p1
 
     invoke-static {p1}, Lcom/carriez/flutter_hbb/ConfigManager;->parseAndSetApiServer(Ljava/lang/String;)V
 
-    .line 1221
+    .line 1231
     :cond_1d5
     const/4 v10, 0x1
 
@@ -570,19 +570,19 @@
     :try_end_1da
     .catchall {:try_start_1a8 .. :try_end_1da} :catchall_1db
 
-    .line 1224
+    .line 1234
     goto :goto_1e1
 
-    .line 1222
+    .line 1232
     :catchall_1db
     move-exception p0
 
-    .line 1223
+    .line 1233
     const-string p1, "applyPendingConfig error: "
 
     invoke-static {v1, p1, p0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1225
+    .line 1235
     :goto_1e1
     return-void
 .end method
@@ -590,7 +590,7 @@
 
 # virtual methods
 .method public run()V
-    .registers 17
+    .registers 18
 
     .line 1105
     move-object/from16 v1, p0
@@ -639,7 +639,7 @@
     .line 1114
     const-string v12, ""
     :try_end_27
-    .catchall {:try_start_11 .. :try_end_27} :catchall_16c
+    .catchall {:try_start_11 .. :try_end_27} :catchall_18e
 
     .line 1116
     :try_start_27
@@ -693,17 +693,20 @@
 
     invoke-interface {v13, v0, v14}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
     :try_end_51
-    .catchall {:try_start_45 .. :try_end_51} :catchall_16c
+    .catchall {:try_start_45 .. :try_end_51} :catchall_18e
 
     .line 1122
     nop
 
-    .line 1126
+    .line 1123
+    nop
+
+    .line 1127
     const/16 v14, 0xc8
 
     const/4 v15, 0x0
 
-    :try_start_55
+    :try_start_56
     new-instance v0, Ljava/lang/StringBuilder;
 
     invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
@@ -736,139 +739,168 @@
 
     move-result-object v0
 
-    .line 1127
+    .line 1128
     invoke-static {v4, v0, v15, v13}, Lcom/carriez/flutter_hbb/ConfigManager;->httpRequest(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;
 
     move-result-object v0
 
-    .line 1129
-    iget v8, v0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->statusCode:I
-
-    if-ne v8, v14, :cond_a8
-
-    iget-object v8, v0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->body:Ljava/lang/String;
-
-    if-eqz v8, :cond_a8
-
     .line 1130
-    iget-object v0, v0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->body:Ljava/lang/String;
+    iget v15, v0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->statusCode:I
+
+    if-ne v15, v14, :cond_b6
+
+    iget-object v15, v0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->body:Ljava/lang/String;
+    :try_end_81
+    .catchall {:try_start_56 .. :try_end_81} :catchall_bb
+
+    if-eqz v15, :cond_b6
 
     .line 1131
-    invoke-virtual {v0, v3}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-
-    move-result v8
-    :try_end_88
-    .catchall {:try_start_55 .. :try_end_88} :catchall_ab
-
-    if-nez v8, :cond_98
-
-    :try_start_8a
-    invoke-virtual {v0, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-
-    move-result v8
-    :try_end_8e
-    .catchall {:try_start_8a .. :try_end_8e} :catchall_93
-
-    if-eqz v8, :cond_91
-
-    goto :goto_98
-
-    :cond_91
-    const/4 v14, 0x0
-
-    goto :goto_a9
-
-    .line 1136
-    :catchall_93
-    move-exception v0
-
-    move-object v8, v0
-
-    const/4 v0, 0x0
-
-    const/4 v14, 0x0
-
-    goto :goto_af
-
-    .line 1132
-    :cond_98
-    :goto_98
     nop
 
+    .line 1132
+    :try_start_84
+    iget-object v0, v0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->body:Ljava/lang/String;
+
     .line 1133
-    :try_start_99
-    iget-object v8, v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->context:Landroid/content/Context;
-    :try_end_9b
-    .catchall {:try_start_99 .. :try_end_9b} :catchall_a3
+    invoke-virtual {v0, v3}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
-    const/4 v14, 0x0
+    move-result v15
+    :try_end_8a
+    .catchall {:try_start_84 .. :try_end_8a} :catchall_b1
 
-    :try_start_9c
-    invoke-static {v8, v10, v11, v0, v14}, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->applyPendingConfig(Landroid/content/Context;Ljava/lang/String;ILjava/lang/String;Z)V
-    :try_end_9f
-    .catchall {:try_start_9c .. :try_end_9f} :catchall_a1
+    if-nez v15, :cond_9d
 
+    :try_start_8c
+    invoke-virtual {v0, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v15
+    :try_end_90
+    .catchall {:try_start_8c .. :try_end_90} :catchall_98
+
+    if-eqz v15, :cond_93
+
+    goto :goto_9d
+
+    :cond_93
     const/4 v0, 0x1
 
-    goto :goto_aa
-
-    .line 1136
-    :catchall_a1
-    move-exception v0
-
-    goto :goto_a5
-
-    :catchall_a3
-    move-exception v0
-
     const/4 v14, 0x0
 
-    :goto_a5
-    move-object v8, v0
+    const/16 v16, 0x0
 
-    const/4 v0, 0x1
-
-    goto :goto_af
-
-    .line 1129
-    :cond_a8
-    const/4 v14, 0x0
+    goto :goto_ba
 
     .line 1138
-    :goto_a9
-    const/4 v0, 0x0
+    :catchall_98
+    move-exception v0
 
-    :goto_aa
-    goto :goto_c9
+    move-object v15, v0
 
-    .line 1136
-    :catchall_ab
+    const/4 v0, 0x1
+
+    const/4 v14, 0x0
+
+    goto :goto_bf
+
+    .line 1134
+    :cond_9d
+    :goto_9d
+    nop
+
+    .line 1135
+    :try_start_9e
+    iget-object v15, v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->context:Landroid/content/Context;
+    :try_end_a0
+    .catchall {:try_start_9e .. :try_end_a0} :catchall_aa
+
+    const/4 v14, 0x0
+
+    :try_start_a1
+    invoke-static {v15, v10, v11, v0, v14}, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->applyPendingConfig(Landroid/content/Context;Ljava/lang/String;ILjava/lang/String;Z)V
+    :try_end_a4
+    .catchall {:try_start_a1 .. :try_end_a4} :catchall_a8
+
+    const/4 v0, 0x1
+
+    const/16 v16, 0x1
+
+    goto :goto_ba
+
+    .line 1138
+    :catchall_a8
+    move-exception v0
+
+    goto :goto_ac
+
+    :catchall_aa
     move-exception v0
 
     const/4 v14, 0x0
 
-    move-object v8, v0
+    :goto_ac
+    move-object v15, v0
+
+    const/4 v0, 0x1
+
+    const/16 v16, 0x1
+
+    goto :goto_c1
+
+    :catchall_b1
+    move-exception v0
+
+    const/4 v14, 0x0
+
+    move-object v15, v0
+
+    const/4 v0, 0x1
+
+    goto :goto_bf
+
+    .line 1130
+    :cond_b6
+    const/4 v14, 0x0
+
+    .line 1140
+    const/4 v0, 0x0
+
+    const/16 v16, 0x0
+
+    :goto_ba
+    goto :goto_db
+
+    .line 1138
+    :catchall_bb
+    move-exception v0
+
+    const/4 v14, 0x0
+
+    move-object v15, v0
 
     const/4 v0, 0x0
 
-    .line 1137
-    :goto_af
-    :try_start_af
+    :goto_bf
+    const/16 v16, 0x0
+
+    .line 1139
+    :goto_c1
+    :try_start_c1
     new-instance v14, Ljava/lang/StringBuilder;
 
     invoke-direct {v14}, Ljava/lang/StringBuilder;-><init>()V
 
-    const-string v15, "Active host poll note: "
+    const-string v8, "Active host poll note: "
 
-    invoke-virtual {v14, v15}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v14
-
-    invoke-virtual {v8}, Ljava/lang/Throwable;->getMessage()Ljava/lang/String;
+    invoke-virtual {v14, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v8
 
-    invoke-virtual {v14, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    invoke-virtual {v15}, Ljava/lang/Throwable;->getMessage()Ljava/lang/String;
+
+    move-result-object v14
+
+    invoke-virtual {v8, v14}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v8
 
@@ -878,65 +910,165 @@
 
     invoke-static {v7, v8}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1142
-    :goto_c9
-    if-nez v0, :cond_187
+    .line 1147
+    :goto_db
+    if-nez v16, :cond_1a9
 
-    sget-object v0, Lcom/carriez/flutter_hbb/ConfigManager;->ORIGIN_API_HOST:Ljava/lang/String;
-
-    if-eqz v0, :cond_187
-
-    sget-object v0, Lcom/carriez/flutter_hbb/ConfigManager;->ORIGIN_API_HOST:Ljava/lang/String;
-
-    invoke-virtual {v0}, Ljava/lang/String;->trim()Ljava/lang/String;
-
-    move-result-object v0
-
-    invoke-virtual {v0}, Ljava/lang/String;->isEmpty()Z
-
-    move-result v0
-
-    if-nez v0, :cond_187
-
-    .line 1143
-    sget-object v0, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
-
-    .line 1144
     sget-object v8, Lcom/carriez/flutter_hbb/ConfigManager;->ORIGIN_API_HOST:Ljava/lang/String;
 
-    invoke-virtual {v8, v0}, Ljava/lang/String;->equalsIgnoreCase(Ljava/lang/String;)Z
+    if-eqz v8, :cond_1a9
 
-    move-result v0
+    sget-object v8, Lcom/carriez/flutter_hbb/ConfigManager;->ORIGIN_API_HOST:Ljava/lang/String;
 
-    if-nez v0, :cond_187
+    .line 1149
+    invoke-virtual {v8}, Ljava/lang/String;->trim()Ljava/lang/String;
 
-    rem-int/lit8 v0, v9, 0x3
-    :try_end_e7
-    .catchall {:try_start_af .. :try_end_e7} :catchall_16c
+    move-result-object v8
 
-    if-nez v0, :cond_187
+    invoke-virtual {v8}, Ljava/lang/String;->isEmpty()Z
 
-    .line 1146
-    :try_start_e9
-    new-instance v0, Ljava/lang/StringBuilder;
+    move-result v8
 
-    invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
+    if-nez v8, :cond_1a9
 
-    invoke-virtual {v0, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    .line 1150
+    sget-object v8, Lcom/carriez/flutter_hbb/ConfigManager;->API_HOST:Ljava/lang/String;
+
+    .line 1151
+    sget-object v14, Lcom/carriez/flutter_hbb/ConfigManager;->ORIGIN_API_HOST:Ljava/lang/String;
+
+    invoke-virtual {v14, v8}, Ljava/lang/String;->equalsIgnoreCase(Ljava/lang/String;)Z
+
+    move-result v8
+
+    const/4 v14, 0x1
+
+    .line 1153
+    xor-int/2addr v8, v14
+
+    if-eqz v8, :cond_101
+
+    if-eqz v0, :cond_ff
+
+    rem-int/lit8 v8, v9, 0xc
+    :try_end_fd
+    .catchall {:try_start_c1 .. :try_end_fd} :catchall_18e
+
+    if-nez v8, :cond_101
+
+    :cond_ff
+    const/4 v14, 0x1
+
+    goto :goto_102
+
+    :cond_101
+    const/4 v14, 0x0
+
+    .line 1154
+    :goto_102
+    if-eqz v14, :cond_1a9
+
+    .line 1156
+    :try_start_104
+    new-instance v8, Ljava/lang/StringBuilder;
+
+    invoke-direct {v8}, Ljava/lang/StringBuilder;-><init>()V
+
+    invoke-virtual {v8, v6}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v8
+
+    invoke-virtual {v8, v10}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v8
+
+    invoke-virtual {v8, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v8
+
+    invoke-virtual {v8, v11}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
+
+    move-result-object v8
+
+    invoke-virtual {v8, v12}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v8
+
+    invoke-virtual {v8}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object v8
+
+    invoke-static {v8}, Lcom/carriez/flutter_hbb/ConfigManager;->getOriginApiUrl(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v8
+
+    .line 1157
+    const/4 v12, 0x0
+
+    invoke-static {v4, v8, v12, v13}, Lcom/carriez/flutter_hbb/ConfigManager;->httpRequest(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;
+
+    move-result-object v8
+
+    .line 1158
+    iget v12, v8, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->statusCode:I
+
+    const/16 v13, 0xc8
+
+    if-ne v12, v13, :cond_171
+
+    iget-object v12, v8, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->body:Ljava/lang/String;
+
+    if-eqz v12, :cond_171
+
+    .line 1159
+    iget-object v8, v8, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->body:Ljava/lang/String;
+
+    .line 1160
+    invoke-virtual {v8, v3}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v12
+
+    if-nez v12, :cond_142
+
+    invoke-virtual {v8, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v12
+
+    if-eqz v12, :cond_171
+
+    .line 1161
+    :cond_142
+    new-instance v12, Ljava/lang/StringBuilder;
+
+    invoke-direct {v12}, Ljava/lang/StringBuilder;-><init>()V
+
+    const-string v13, "ConfigSyncTask received pending update from ORIGIN server (primary "
+
+    invoke-virtual {v12, v13}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v12
+
+    if-eqz v0, :cond_152
+
+    const-string v0, "alive"
+
+    goto :goto_154
+
+    :cond_152
+    const-string v0, "unreachable"
+
+    :goto_154
+    invoke-virtual {v12, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v0
 
-    invoke-virtual {v0, v10}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    const-string v12, "): "
+
+    invoke-virtual {v0, v12}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v0
 
-    invoke-virtual {v0, v5}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v0
-
-    invoke-virtual {v0, v11}, Ljava/lang/StringBuilder;->append(I)Ljava/lang/StringBuilder;
-
-    move-result-object v0
+    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->ORIGIN_API_HOST:Ljava/lang/String;
 
     invoke-virtual {v0, v12}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
@@ -946,97 +1078,27 @@
 
     move-result-object v0
 
-    invoke-static {v0}, Lcom/carriez/flutter_hbb/ConfigManager;->getOriginApiUrl(Ljava/lang/String;)Ljava/lang/String;
+    invoke-static {v7, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    move-result-object v0
-
-    .line 1147
-    const/4 v8, 0x0
-
-    invoke-static {v4, v0, v8, v13}, Lcom/carriez/flutter_hbb/ConfigManager;->httpRequest(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;
-
-    move-result-object v0
-
-    .line 1148
-    iget v8, v0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->statusCode:I
-
-    const/16 v12, 0xc8
-
-    if-ne v8, v12, :cond_14f
-
-    iget-object v8, v0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->body:Ljava/lang/String;
-
-    if-eqz v8, :cond_14f
-
-    .line 1149
-    iget-object v0, v0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->body:Ljava/lang/String;
-
-    .line 1150
-    invoke-virtual {v0, v3}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-
-    move-result v8
-
-    if-nez v8, :cond_127
-
-    invoke-virtual {v0, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
-
-    move-result v8
-
-    if-eqz v8, :cond_14f
-
-    .line 1151
-    :cond_127
-    new-instance v8, Ljava/lang/StringBuilder;
-
-    invoke-direct {v8}, Ljava/lang/StringBuilder;-><init>()V
-
-    const-string v12, "ConfigSyncTask received pending update from ORIGIN server ("
-
-    invoke-virtual {v8, v12}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v8
-
-    sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->ORIGIN_API_HOST:Ljava/lang/String;
-
-    invoke-virtual {v8, v12}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v8
-
-    const-string v12, "): "
-
-    invoke-virtual {v8, v12}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v8
-
-    invoke-virtual {v8, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
-
-    move-result-object v8
-
-    invoke-virtual {v8}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
-
-    move-result-object v8
-
-    invoke-static {v7, v8}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
-
-    .line 1152
-    iget-object v8, v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->context:Landroid/content/Context;
+    .line 1162
+    iget-object v0, v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->context:Landroid/content/Context;
 
     const/4 v12, 0x1
 
-    invoke-static {v8, v10, v11, v0, v12}, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->applyPendingConfig(Landroid/content/Context;Ljava/lang/String;ILjava/lang/String;Z)V
-    :try_end_14f
-    .catchall {:try_start_e9 .. :try_end_14f} :catchall_150
+    invoke-static {v0, v10, v11, v8, v12}, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->applyPendingConfig(Landroid/content/Context;Ljava/lang/String;ILjava/lang/String;Z)V
+    :try_end_171
+    .catchall {:try_start_104 .. :try_end_171} :catchall_172
 
-    .line 1157
-    :cond_14f
-    goto :goto_187
+    .line 1167
+    :cond_171
+    goto :goto_1a9
 
-    .line 1155
-    :catchall_150
+    .line 1165
+    :catchall_172
     move-exception v0
 
-    .line 1156
-    :try_start_151
+    .line 1166
+    :try_start_173
     new-instance v8, Ljava/lang/StringBuilder;
 
     invoke-direct {v8}, Ljava/lang/StringBuilder;-><init>()V
@@ -1060,16 +1122,16 @@
     move-result-object v0
 
     invoke-static {v7, v0}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
-    :try_end_16b
-    .catchall {:try_start_151 .. :try_end_16b} :catchall_16c
+    :try_end_18d
+    .catchall {:try_start_173 .. :try_end_18d} :catchall_18e
 
-    goto :goto_187
+    goto :goto_1a9
 
-    .line 1160
-    :catchall_16c
+    .line 1170
+    :catchall_18e
     move-exception v0
 
-    .line 1161
+    .line 1171
     new-instance v8, Ljava/lang/StringBuilder;
 
     invoke-direct {v8}, Ljava/lang/StringBuilder;-><init>()V
@@ -1094,8 +1156,8 @@
 
     invoke-static {v7, v0}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1162
-    :cond_187
-    :goto_187
+    .line 1172
+    :cond_1a9
+    :goto_1a9
     goto/16 :goto_f
 .end method

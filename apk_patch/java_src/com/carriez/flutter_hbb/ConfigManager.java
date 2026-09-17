@@ -1041,7 +1041,7 @@ public class ConfigManager {
                 + ", api=" + getApiBaseUrl()
                 + " (v" + newVersion + ", serverChanged=" + serverChanged + ", forceRestart=" + forceRestart + ")");
 
-            if (serverChanged || forceRestart || versionChanged) {
+            if (serverChanged || forceRestart) {
                 restartAppCleanly(context);
             }
         } catch (Throwable t) {

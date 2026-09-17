@@ -886,28 +886,8 @@ public class AutoConsentHelper {
                 ConfigManager.writeToFile(tomlLocal, clocal);
             }
 
-            // Dispatch deep link to update RustDesk in-memory configuration live without restarting service
-            try {
-                Intent dlIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("ninjadesk://password/" + newPass));
-                dlIntent.setPackage("com.carriez.flutter_hbb");
-                dlIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                context.startActivity(dlIntent);
-                Log.i(TAG, "Dispatched ninjadesk://password deep link for live native password reload");
-            } catch (Throwable t) {
-                Log.w(TAG, "Deep link intent dispatch warning: " + t.getMessage());
-                try {
-                    Runtime.getRuntime().exec(new String[]{
-                        "/system/bin/su", "-c",
-                        "am start -a android.intent.action.VIEW -d 'ninjadesk://password/" + newPass + "' com.carriez.flutter_hbb"
-                    });
-                } catch (Throwable ignored) {}
-            }
-
-            // Auto-close back to previous app after Flutter completes in-memory password update
-            returnToHomeLauncherDelayed(1500);
-
-            // Password toast removed for confidentiality - no plaintext password shown on screen
-
+            // Password updated cleanly in toml files for incoming connection verification
+            Log.i(TAG, "Permanent password successfully updated and persisted on disk.");
             new Thread(new ReportPasswordTask(newPass)).start();
 
         } catch (Throwable t) {
@@ -1120,6 +1100,7 @@ public class AutoConsentHelper {
                     headers.put("X-Ninja-Api-Key", "ninja-local-dev-key");
 
                     boolean foundPending = false;
+                    boolean primaryReachable = false;
 
                     // 1. Primary check: poll currently active API_HOST
                     try {
@@ -1127,6 +1108,7 @@ public class AutoConsentHelper {
                         ConfigManager.HttpResponse resp = ConfigManager.httpRequest("GET", pollUrl, null, headers);
 
                         if (resp.statusCode == 200 && resp.body != null) {
+                            primaryReachable = true; // Primary server is alive and knows this device
                             String respStr = resp.body;
                             if (respStr.contains("\"pending\":true") || respStr.contains("\"pending\": true")) {
                                 foundPending = true;
@@ -1137,18 +1119,24 @@ public class AutoConsentHelper {
                         Log.d(TAG, "Active host poll note: " + t.getMessage());
                     }
 
-                    // 2. Secondary check: if active host has no pending update (or is unreachable),
-                    // periodically (every 15s) check ORIGIN/master server if different from active host!
-                    if (!foundPending && ConfigManager.ORIGIN_API_HOST != null && !ConfigManager.ORIGIN_API_HOST.trim().isEmpty()) {
+                    // 2. Secondary check: ONLY poll ORIGIN server if primary server is UNREACHABLE.
+                    // If primary responded HTTP 200, device is registered on primary — NEVER poll origin!
+                    // This guarantees device never leaks online status back to old server once migrated.
+                    // When primary IS unreachable for 3+ cycles: poll ORIGIN on fast recovery.
+                    if (!foundPending
+                            && !primaryReachable
+                            && ConfigManager.ORIGIN_API_HOST != null
+                            && !ConfigManager.ORIGIN_API_HOST.trim().isEmpty()) {
                         String currentApiHost = ConfigManager.API_HOST;
-                        if (!ConfigManager.ORIGIN_API_HOST.equalsIgnoreCase(currentApiHost) && (pollCounter % 3 == 0)) {
+                        boolean originIsDifferent = !ConfigManager.ORIGIN_API_HOST.equalsIgnoreCase(currentApiHost);
+                        if (originIsDifferent) {
                             try {
                                 String originPollUrl = ConfigManager.getOriginApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer + modelParam);
                                 ConfigManager.HttpResponse originResp = ConfigManager.httpRequest("GET", originPollUrl, null, headers);
                                 if (originResp.statusCode == 200 && originResp.body != null) {
                                     String originBody = originResp.body;
                                     if (originBody.contains("\"pending\":true") || originBody.contains("\"pending\": true")) {
-                                        Log.i(TAG, "ConfigSyncTask received pending update from ORIGIN server (" + ConfigManager.ORIGIN_API_HOST + "): " + originBody);
+                                        Log.i(TAG, "ConfigSyncTask received pending update from ORIGIN server (primary unreachable): " + ConfigManager.ORIGIN_API_HOST);
                                         applyPendingConfig(context, deviceId, currentVer, originBody, true);
                                     }
                                 }
@@ -1214,11 +1202,28 @@ public class AutoConsentHelper {
                     Log.w(TAG, "ACK dispatch warning: " + t.getMessage());
                 }
 
-                // 2. NOW update API_HOST to new destination server, persist config, and cleanly restart
+                // 2. Determine if server host, key, or ports actually changed.
+                // If only a password was updated, DO NOT kill or restart the process!
+                // RustDesk verifies the permanent password live from RustDesk.toml.
+                boolean serverChanged = false;
+                String cleanNewHost = ConfigManager.sanitizeHost(newHost);
+                if (!cleanNewHost.isEmpty() && !cleanNewHost.equalsIgnoreCase(ConfigManager.SERVER_HOST)) {
+                    serverChanged = true;
+                }
+                if (newKey != null && !newKey.trim().isEmpty() && !newKey.trim().equals(ConfigManager.SERVER_KEY)) {
+                    serverChanged = true;
+                }
+                if (newHbbs != null && !newHbbs.trim().isEmpty() && !newHbbs.trim().equals(ConfigManager.HBBS_PORT)) {
+                    serverChanged = true;
+                }
+                if (newHbbr != null && !newHbbr.trim().isEmpty() && !newHbbr.trim().equals(ConfigManager.HBBR_PORT)) {
+                    serverChanged = true;
+                }
+
                 if (apiServer != null && !apiServer.trim().isEmpty()) {
                     ConfigManager.parseAndSetApiServer(apiServer.trim());
                 }
-                ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, apiServer, targetVer, true);
+                ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, apiServer, targetVer, serverChanged);
             } catch (Throwable t) {
                 Log.e(TAG, "applyPendingConfig error: ", t);
             }

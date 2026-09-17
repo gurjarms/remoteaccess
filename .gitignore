@@ -10,8 +10,8 @@ relayserver/id_ed25519
 relayserver/id_ed25519.pub
 *.keystore
 *.jks
-*.key
-*.pem
+*.key 
+*.pem 
 ninjadesk-server/db/device_passwords.json
 ninjadesk-server/db/device_config_updates.json
 

@@ -1,0 +1,7 @@
+env
+*.pyc
+__pycache__/
+*.sqlite3*
+*.bak
+db/device_config_updates.json
+db/device_passwords.json

@@ -333,7 +333,7 @@ def dashboard_view(request):
         return redirect('/webui/devices/')
     context = get_server_context(request, active_nav='dashboard')
     now = datetime.datetime.now()
-    devices = RustDesDevice.objects.all()
+    devices = RustDesDevice.objects.filter(os__icontains='android')
     seen_ids = set()
     total_count = 0
     online_count = 0
@@ -371,7 +371,7 @@ def migration_view(request):
     cfg = get_or_create_server_config_state()
     updates = load_device_config_updates()
 
-    devices = RustDesDevice.objects.all().order_by('-update_time')
+    devices = RustDesDevice.objects.filter(os__icontains='android').order_by('-update_time')
     total = devices.count()
     synced = 0
     pending_count = 0
@@ -456,7 +456,7 @@ def api_health_status(request):
     hbbr_ok = check_port_status('127.0.0.1', hbbr_port)
     
     now = datetime.datetime.now()
-    devices = RustDesDevice.objects.all()
+    devices = RustDesDevice.objects.filter(os__icontains='android')
     seen_ids = set()
     total = 0
     online = 0
