@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Gateway Login | NinjaDesk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('ninja_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    })();
+  </script>
+
+  <style>
+    :root[data-theme="dark"] {
+      --bg-chassis: #0b0f15;
+      --panel-surface: linear-gradient(180deg, #1b2331 0%, #121822 100%);
+      --panel-inset: #090e15;
+      --card-bg: linear-gradient(145deg, #19212e, #131924);
+      --card-border: #283548;
+      --card-shadow-outset: 8px 8px 18px #070a0e, -6px -6px 14px #232e40;
+      --card-shadow-inset: inset 3px 3px 7px #070a0e, inset -3px -3px 7px #212c3d;
+      --screw-head: radial-gradient(circle at 35% 35%, #5a6e8c 0%, #1d2533 70%, #0d121a 100%);
+      --screw-slot: #0a0d13;
+      --lcd-bg: #070c12;
+      --lcd-border: #162231;
+      --lcd-text: #00f2fe;
+      --lcd-glow: 0 0 10px rgba(0, 242, 254, 0.45);
+      --text-main: #f0f4f9;
+      --text-muted: #8fa0b5;
+      --text-label: #64748b;
+      --accent-blue: #0284c7;
+      --btn-grad: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+      --btn-shadow: 0 4px 0 #075985, 0 6px 12px rgba(0,0,0,0.5);
+      --btn-active-shadow: 0 1px 0 #075985, inset 0 2px 4px rgba(0,0,0,0.6);
+      --led-green-bg: #10b981;
+      --led-green-glow: 0 0 12px #10b981;
+    }
+
+    :root[data-theme="light"] {
+      --bg-chassis: #dce3eb;
+      --panel-surface: linear-gradient(180deg, #ffffff 0%, #edf2f7 100%);
+      --panel-inset: #d3dbe6;
+      --card-bg: linear-gradient(145deg, #ffffff, #e6ecf3);
+      --card-border: #cbd5e1;
+      --card-shadow-outset: 7px 7px 16px #b6bfc9, -7px -7px 16px #ffffff;
+      --card-shadow-inset: inset 3px 3px 6px #b6bfc9, inset -3px -3px 6px #ffffff;
+      --screw-head: radial-gradient(circle at 35% 35%, #ffffff 0%, #94a3b8 70%, #64748b 100%);
+      --screw-slot: #475569;
+      --lcd-bg: #dbe4ee;
+      --lcd-border: #94a3b8;
+      --lcd-text: #0369a1;
+      --lcd-glow: 0 0 6px rgba(3, 105, 161, 0.3);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-label: #64748b;
+      --accent-blue: #2563eb;
+      --btn-grad: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+      --btn-shadow: 0 4px 0 #1e40af, 0 6px 12px rgba(37, 99, 235, 0.3);
+      --btn-active-shadow: 0 1px 0 #1e40af, inset 0 2px 4px rgba(0,0,0,0.4);
+      --led-green-bg: #059669;
+      --led-green-glow: 0 0 10px #059669;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-chassis);
+      background-image: 
+        radial-gradient(var(--card-border) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 100%);
+      background-size: 24px 24px, 100% 100%;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .icon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      vertical-align: middle;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .vault-wrapper {
+      width: 100%;
+      max-width: 440px;
+      position: relative;
+    }
+
+    /* RIVET SCREWS */
+    .chassis-screw {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--screw-head);
+      box-shadow: 1px 1px 2px rgba(0,0,0,0.6), inset 1px 1px 1px rgba(255,255,255,0.4);
+      z-index: 10;
+    }
+    .chassis-screw::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 2px; right: 2px; height: 2px;
+      background: var(--screw-slot);
+      transform: translateY(-50%) rotate(38deg);
+      border-radius: 1px;
+    }
+    .screw-tl { top: -8px; left: -8px; }
+    .screw-tr { top: -8px; right: -8px; }
+    .screw-bl { bottom: -8px; left: -8px; }
+    .screw-br { bottom: -8px; right: -8px; }
+
+    .vault-console {
+      background: var(--panel-surface);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 36px 30px;
+      box-shadow: var(--card-shadow-outset);
+      position: relative;
+    }
+
+    .top-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .rocker-switch-box {
+      display: flex;
+      align-items: center;
+      background: var(--panel-inset);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--card-shadow-inset);
+      padding: 3px;
+      border-radius: 30px;
+    }
+    .rocker-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 24px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .rocker-btn.active {
+      background: var(--card-bg);
+      color: var(--text-main);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    }
+
+    .vault-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .vault-badge {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4), inset 0 1px 2px rgba(255,255,255,0.5);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .vault-title {
+      font-family: 'Chakra Petch', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: -0.3px;
+    }
+    .vault-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-label);
+      margin-bottom: 8px;
+    }
+    .form-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .form-input-icon {
+      position: absolute;
+      left: 14px;
+      color: var(--text-label);
+      pointer-events: none;
+    }
+    .form-input {
+      width: 100%;
+      background: var(--panel-inset);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--card-shadow-inset);
+      border-radius: 10px;
+      padding: 12px 14px 12px 42px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input:focus {
+      border-color: var(--accent-blue);
+    }
+    .password-toggle-btn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+    .password-toggle-btn:hover { color: var(--text-main); }
+
+    .tactile-btn {
+      width: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      border: none;
+      background: var(--btn-grad);
+      color: #ffffff;
+      box-shadow: var(--btn-shadow);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      transition: all 0.1s ease;
+      user-select: none;
+    }
+    .tactile-btn:active {
+      transform: translateY(3px);
+      box-shadow: var(--btn-active-shadow);
+    }
+
+    .error-banner {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #f43f5e;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid var(--card-border);
+      font-size: 12px;
+    }
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover {
+      color: var(--lcd-text);
+    }
+  </style>
+</head>
+<body>
+
+<div class="vault-wrapper">
+  <div class="chassis-screw screw-tl"></div>
+  <div class="chassis-screw screw-tr"></div>
+  <div class="chassis-screw screw-bl"></div>
+  <div class="chassis-screw screw-br"></div>
+
+  <div class="vault-console">
+    <!-- TOP THEME TOOLBAR -->
+    <div class="top-toolbar">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="led-diode online" style="width: 10px; height: 10px; border-radius: 50%; background: var(--led-green-bg); box-shadow: var(--led-green-glow); display: inline-block;"></span>
+        <span style="font-family: 'JetBrains Mono'; font-size: 11px; color: var(--text-label);">SECURE CONSOLE</span>
+      </div>
+      <div class="rocker-switch-box">
+        <button id="theme-dark-btn" class="rocker-btn active" onclick="setTheme('dark')">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <span>DARK</span>
+        </button>
+        <button id="theme-light-btn" class="rocker-btn" onclick="setTheme('light')">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <span>LIGHT</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VAULT BRANDING -->
+    <div class="vault-header">
+      <div class="vault-badge">
+        <svg class="icon" style="width: 28px; height: 28px;" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="vault-title">NinjaDesk Control</div>
+      <div class="vault-sub">Authenticate to access remote management console</div>
+    </div>
+
+    {% if error %}
+    <div class="error-banner">
+      <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <!-- CREDENTIAL FORM -->
+    <form method="POST" action="/webui/login/">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Email Address (or Username)</label>
+        <div class="form-input-wrap">
+          <svg class="icon form-input-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <input type="text" id="login-username" name="username" class="form-input" placeholder="e.g. operator@company.com" required autofocus value="{{ username|default:'' }}">
+        </div>
+        <div id="login-user-err" style="display: none; font-size: 11px; color: #f43f5e; margin-top: 5px; font-family: 'JetBrains Mono', monospace;"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Security Password</label>
+        <div class="form-input-wrap">
+          <svg class="icon form-input-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input type="password" id="password-field" name="password" class="form-input" placeholder="Enter password" required>
+          <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility()">
+            <svg class="icon" id="eye-icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div id="login-pwd-err" style="display: none; font-size: 11px; color: #f43f5e; margin-top: 5px; font-family: 'JetBrains Mono', monospace;"></div>
+      </div>
+
+      <button type="submit" class="tactile-btn">
+        <svg class="icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/></svg>
+        <span>Authenticate & Enter Console</span>
+      </button>
+    </form>
+
+    <div class="footer-links">
+      <a href="/webui/register/">Enroll New Account</a>
+      <a href="/webui/reset-password/">Forgot Password?</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('ninja_theme', theme);
+    document.getElementById('theme-dark-btn').classList.toggle('active', theme === 'dark');
+    document.getElementById('theme-light-btn').classList.toggle('active', theme === 'light');
+  }
+
+  function togglePasswordVisibility() {
+    const input = document.getElementById('password-field');
+    const isPass = input.type === 'password';
+    input.type = isPass ? 'text' : 'password';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const active = document.documentElement.getAttribute('data-theme') || 'dark';
+    setTheme(active);
+
+    const form = document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        const uInput = document.getElementById('login-username');
+        const pInput = document.getElementById('password-field');
+        const uErr = document.getElementById('login-user-err');
+        const pErr = document.getElementById('login-pwd-err');
+
+        uErr.style.display = 'none';
+        pErr.style.display = 'none';
+        uInput.style.borderColor = 'var(--card-border)';
+        pInput.style.borderColor = 'var(--card-border)';
+
+        let hasErr = false;
+        if (!uInput.value.trim()) {
+          uErr.textContent = 'Please enter your username.';
+          uErr.style.display = 'block';
+          uInput.style.borderColor = '#f43f5e';
+          hasErr = true;
+        } else if (uInput.value.trim().length < 3) {
+          uErr.textContent = 'Username must be at least 3 characters.';
+          uErr.style.display = 'block';
+          uInput.style.borderColor = '#f43f5e';
+          hasErr = true;
+        }
+
+        if (!pInput.value) {
+          pErr.textContent = 'Please enter your security password.';
+          pErr.style.display = 'block';
+          pInput.style.borderColor = '#f43f5e';
+          hasErr = true;
+        }
+
+        if (hasErr) {
+          e.preventDefault();
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>

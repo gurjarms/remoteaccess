@@ -1,0 +1,869 @@
+{% extends "base_skeuo.html" %}
+
+{% block title %}Session & Audit Logs | NinjaDesk{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* TELEMETRY GAUGES RACK */
+  .telemetry-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .telemetry-card {
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow-inset);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .telemetry-card .card-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-label);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .telemetry-card .card-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--lcd-text);
+    text-shadow: var(--lcd-glow);
+  }
+
+  /* SWITCHBOARD HARDWARE CONSOLE */
+  .switchboard-rack {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow-outset);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+  }
+  .switchboard-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .switchboard-row + .switchboard-row {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--card-border);
+  }
+
+  .search-slot {
+    flex: 1;
+    min-width: 280px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .search-slot .search-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--text-label);
+    pointer-events: none;
+    width: 16px;
+    height: 16px;
+  }
+  .search-slot input {
+    padding-left: 38px;
+    padding-right: 36px;
+    height: 38px;
+  }
+  .clear-search-btn {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px;
+    display: none;
+  }
+  .clear-search-btn:hover {
+    color: #f43f5e;
+  }
+
+  .filter-cluster {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--card-border);
+    background: var(--panel-inset);
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .filter-pill:hover {
+    color: var(--text-main);
+    border-color: var(--accent-blue);
+  }
+  .filter-pill.active {
+    background: var(--btn-grad);
+    color: #ffffff;
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .control-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-label);
+    white-space: nowrap;
+  }
+  .control-select, .control-date {
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow-inset);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.2s;
+    height: 36px;
+  }
+  .control-select:focus, .control-date:focus {
+    border-color: var(--accent-blue);
+  }
+
+  /* CRT MONOSPACE TERMINAL */
+  .crt-terminal {
+    background: var(--terminal-bg);
+    border: 1px solid var(--terminal-border);
+    box-shadow: var(--card-shadow-inset), 0 0 20px rgba(0,0,0,0.4);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .terminal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--terminal-border);
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--terminal-text);
+  }
+
+  .logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    position: relative;
+  }
+  .logs-table th {
+    text-align: left;
+    padding: 10px 12px;
+    color: var(--text-label);
+    font-size: 11px;
+    border-bottom: 1px solid var(--terminal-border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    user-select: none;
+  }
+  .logs-table th.sortable {
+    cursor: pointer;
+  }
+  .logs-table th.sortable:hover {
+    color: var(--lcd-text);
+  }
+  .logs-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--card-border);
+    color: var(--text-main);
+    vertical-align: middle;
+  }
+  .logs-table tbody tr {
+    transition: background-color 0.15s ease;
+  }
+  .logs-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  /* TACTILE HARDWARE PAGINATION RACK */
+  .pagination-rack {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--terminal-border);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .page-counter-text {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .pagination-btns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .page-num-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow-inset);
+    color: var(--text-main);
+    transition: all 0.15s ease;
+  }
+  .page-num-btn:hover:not(:disabled) {
+    border-color: var(--accent-blue);
+    color: var(--lcd-text);
+  }
+  .page-num-btn.active {
+    background: var(--btn-grad);
+    color: #ffffff;
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+  }
+  .page-num-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  /* COPY BADGE HELPER */
+  .copy-chip {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+    transition: all 0.15s;
+  }
+  .copy-chip:hover {
+    border-color: var(--accent-blue);
+    color: var(--lcd-text);
+  }
+
+  .status-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .status-tag.active-session {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+  }
+  .status-tag.closed-session {
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--text-muted);
+    border: 1px solid var(--card-border);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- TELEMETRY GAUGES STRIP -->
+<div class="telemetry-strip">
+  <div class="telemetry-card">
+    <div class="card-label">
+      <span>Matching Sessions</span>
+      <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div class="card-val" id="stat-matching-count">0</div>
+  </div>
+
+  <div class="telemetry-card">
+    <div class="card-label">
+      <span>Active Sessions Now</span>
+      <span class="led-diode online" id="stat-active-led"></span>
+    </div>
+    <div class="card-val" id="stat-active-count">0 ACTIVE</div>
+  </div>
+
+  <div class="telemetry-card">
+    <div class="card-label">
+      <span>Total Archive Size</span>
+      <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+    </div>
+    <div class="card-val" id="stat-total-archive">0</div>
+  </div>
+
+  <div class="telemetry-card">
+    <div class="card-label">
+      <span>Active Date Scope</span>
+      <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+    <div class="card-val" style="font-size: 14px; font-weight: 700;" id="stat-date-scope">ALL TIME</div>
+  </div>
+</div>
+
+<!-- HARDWARE SWITCHBOARD CONSOLE -->
+<div class="switchboard-rack">
+  <!-- ROW 1: SEARCH & QUICK DATE PRESETS -->
+  <div class="switchboard-row">
+    <div class="search-slot">
+      <svg class="icon search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="log-search-input" class="form-input" placeholder="Search by Device ID, Name, Client IP, Peer ID, Session ID..." oninput="handleSearchInput(event)">
+      <button id="clear-search-btn" class="clear-search-btn" onclick="clearSearch()" title="Clear search">&times;</button>
+    </div>
+
+    <div class="filter-cluster">
+      <span class="control-label" style="margin-right: 4px;">Date Presets:</span>
+      <span class="filter-pill active" data-preset="all" onclick="setDatePreset('all', this)">All Time</span>
+      <span class="filter-pill" data-preset="today" onclick="setDatePreset('today', this)">Today</span>
+      <span class="filter-pill" data-preset="yesterday" onclick="setDatePreset('yesterday', this)">Yesterday</span>
+      <span class="filter-pill" data-preset="7d" onclick="setDatePreset('7d', this)">Last 7 Days</span>
+      <span class="filter-pill" data-preset="30d" onclick="setDatePreset('30d', this)">Last 30 Days</span>
+    </div>
+  </div>
+
+  <!-- ROW 2: DETAILED DATE PICKERS, SELECTORS & ACTION BUTTONS -->
+  <div class="switchboard-row">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px;">
+      <!-- DATE RANGE PICKERS -->
+      <div class="control-group">
+        <span class="control-label">From:</span>
+        <input type="date" id="date-from-input" class="control-date" onchange="handleDateChange()">
+      </div>
+      <div class="control-group">
+        <span class="control-label">To:</span>
+        <input type="date" id="date-to-input" class="control-date" onchange="handleDateChange()">
+      </div>
+
+      <!-- ACTION TYPE SELECTOR -->
+      <div class="control-group">
+        <span class="control-label">Action:</span>
+        <select id="action-select" class="control-select" onchange="handleFilterChange()">
+          <option value="all">All Actions</option>
+          <option value="new">NEW / Connect</option>
+          <option value="close">CLOSE / Disconnect</option>
+        </select>
+      </div>
+
+      <!-- STATUS SELECTOR -->
+      <div class="control-group">
+        <span class="control-label">Status:</span>
+        <select id="status-select" class="control-select" onchange="handleFilterChange()">
+          <option value="all">All Sessions</option>
+          <option value="active">Active (Ongoing)</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+
+      <!-- SORT ORDER SELECTOR -->
+      <div class="control-group">
+        <span class="control-label">Sort:</span>
+        <select id="sort-select" class="control-select" onchange="handleFilterChange()">
+          <option value="date_desc">Newest First</option>
+          <option value="date_asc">Oldest First</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- TACTILE ACTION BUTTONS -->
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button class="tactile-btn tactile-btn-secondary" style="padding: 7px 12px; font-size: 12px;" onclick="resetFilters()" title="Reset all filters">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+        <span>Reset</span>
+      </button>
+
+      <button class="tactile-btn tactile-btn-secondary" style="padding: 7px 12px; font-size: 12px;" onclick="loadLogs()" title="Refresh records">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>Refresh</span>
+      </button>
+
+      <button class="tactile-btn tactile-btn-primary" style="padding: 7px 14px; font-size: 12px;" onclick="exportCsv()" title="Export filtered audit logs to CSV file">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Export CSV</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CRT MONOSPACE TERMINAL TABLE -->
+<div class="crt-terminal">
+  <div class="terminal-header">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="led-diode online"></span>
+      <span style="letter-spacing: 0.5px;">NINJADESK AUDIT CONSOLE // LIVE TELEMETRY LOG</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--text-muted);">
+      <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+        <input type="checkbox" id="auto-refresh-check" checked onchange="toggleAutoRefresh(this.checked)">
+        <span>Auto-refresh (15s)</span>
+      </label>
+    </div>
+  </div>
+
+  <div style="overflow-x: auto;">
+    <table class="logs-table">
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Target Device</th>
+          <th>Source Client / Peer</th>
+          <th>Client IP</th>
+          <th class="sortable" onclick="toggleSort('date')">
+            <span>Started</span>
+            <span id="sort-arrow-date">▼</span>
+          </th>
+          <th>Duration</th>
+          <th>Status</th>
+          <th>Session ID</th>
+        </tr>
+      </thead>
+      <tbody id="logs-table-body">
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">
+            <div style="margin-bottom: 8px;">Fetching connection session telemetry...</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TACTILE HARDWARE PAGINATION RACK -->
+  <div class="pagination-rack">
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <div class="page-counter-text" id="pagination-summary">
+        Showing 0 to 0 of 0 sessions
+      </div>
+      <div class="control-group">
+        <span class="control-label" style="font-size: 10px;">Per Page:</span>
+        <select id="page-size-select" class="control-select" style="height: 28px; padding: 2px 8px; font-size: 11px;" onchange="handlePageSizeChange(this.value)">
+          <option value="10">10</option>
+          <option value="25" selected>25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="pagination-btns" id="pagination-controls">
+      <button class="page-num-btn" id="btn-first-page" onclick="goToPage(1)" title="First Page">&laquo;</button>
+      <button class="page-num-btn" id="btn-prev-page" onclick="goToPage(currentPage - 1)" title="Previous Page">&lsaquo;</button>
+      <div id="page-numbers-cluster" style="display: flex; gap: 4px;"></div>
+      <button class="page-num-btn" id="btn-next-page" onclick="goToPage(currentPage + 1)" title="Next Page">&rsaquo;</button>
+      <button class="page-num-btn" id="btn-last-page" onclick="goToPage(totalPages)" title="Last Page">&raquo;</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // STATE MANAGEMENT
+  let currentPage = 1;
+  let pageSize = 25;
+  let totalPages = 1;
+  let totalRecords = 0;
+  let activePreset = 'all';
+  let searchDebounceTimer = null;
+  let autoRefreshInterval = null;
+
+  // FORMAT DATE HELPER (YYYY-MM-DD)
+  function formatDateInput(d) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // PRESET DATE HANDLER
+  function setDatePreset(preset, el) {
+    activePreset = preset;
+    document.querySelectorAll('.filter-pill[data-preset]').forEach(p => p.classList.remove('active'));
+    if (el) el.classList.add('active');
+
+    const fromInput = document.getElementById('date-from-input');
+    const toInput = document.getElementById('date-to-input');
+    const now = new Date();
+
+    if (preset === 'all') {
+      fromInput.value = '';
+      toInput.value = '';
+    } else if (preset === 'today') {
+      const todayStr = formatDateInput(now);
+      fromInput.value = todayStr;
+      toInput.value = todayStr;
+    } else if (preset === 'yesterday') {
+      const yest = new Date(now);
+      yest.setDate(yest.getDate() - 1);
+      const yestStr = formatDateInput(yest);
+      fromInput.value = yestStr;
+      toInput.value = yestStr;
+    } else if (preset === '7d') {
+      const past7 = new Date(now);
+      past7.setDate(past7.getDate() - 6);
+      fromInput.value = formatDateInput(past7);
+      toInput.value = formatDateInput(now);
+    } else if (preset === '30d') {
+      const past30 = new Date(now);
+      past30.setDate(past30.getDate() - 29);
+      fromInput.value = formatDateInput(past30);
+      toInput.value = formatDateInput(now);
+    }
+
+    currentPage = 1;
+    loadLogs();
+  }
+
+  // SEARCH INPUT DEBOUNCE
+  function handleSearchInput(e) {
+    const val = e.target.value;
+    const clearBtn = document.getElementById('clear-search-btn');
+    clearBtn.style.display = val.length > 0 ? 'block' : 'none';
+
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      currentPage = 1;
+      loadLogs();
+    }, 350);
+  }
+
+  function clearSearch() {
+    const input = document.getElementById('log-search-input');
+    input.value = '';
+    document.getElementById('clear-search-btn').style.display = 'none';
+    currentPage = 1;
+    loadLogs();
+  }
+
+  // DATE & FILTER CHANGE HANDLERS
+  function handleDateChange() {
+    activePreset = 'custom';
+    document.querySelectorAll('.filter-pill[data-preset]').forEach(p => p.classList.remove('active'));
+    currentPage = 1;
+    loadLogs();
+  }
+
+  function handleFilterChange() {
+    currentPage = 1;
+    loadLogs();
+  }
+
+  function handlePageSizeChange(val) {
+    pageSize = parseInt(val, 10) || 25;
+    currentPage = 1;
+    loadLogs();
+  }
+
+  function toggleSort(field) {
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect.value === 'date_desc') {
+      sortSelect.value = 'date_asc';
+      document.getElementById('sort-arrow-date').textContent = '▲';
+    } else {
+      sortSelect.value = 'date_desc';
+      document.getElementById('sort-arrow-date').textContent = '▼';
+    }
+    currentPage = 1;
+    loadLogs();
+  }
+
+  function resetFilters() {
+    document.getElementById('log-search-input').value = '';
+    document.getElementById('clear-search-btn').style.display = 'none';
+    document.getElementById('date-from-input').value = '';
+    document.getElementById('date-to-input').value = '';
+    document.getElementById('action-select').value = 'all';
+    document.getElementById('status-select').value = 'all';
+    document.getElementById('sort-select').value = 'date_desc';
+    document.getElementById('sort-arrow-date').textContent = '▼';
+    
+    setDatePreset('all', document.querySelector('.filter-pill[data-preset="all"]'));
+  }
+
+  function goToPage(p) {
+    if (p < 1 || p > totalPages || p === currentPage) return;
+    currentPage = p;
+    loadLogs();
+  }
+
+  // COPY TEXT HELPER
+  function copyText(val, label) {
+    if (!val || val === '—') return;
+    navigator.clipboard.writeText(val).then(() => {
+      showToast(`${label} copied to clipboard: ${val}`);
+    }).catch(() => {});
+  }
+
+  function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0284c7;color:#fff;padding:10px 18px;border-radius:10px;font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.5);z-index:99999;animation:fadeIn 0.2s;';
+    toast.innerText = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s';
+      setTimeout(() => toast.remove(), 300);
+    }, 2200);
+  }
+
+  // EXPORT CSV HANDLER
+  function exportCsv() {
+    const q = document.getElementById('log-search-input').value.trim();
+    const dateFrom = document.getElementById('date-from-input').value.trim();
+    const dateTo = document.getElementById('date-to-input').value.trim();
+    const action = document.getElementById('action-select').value;
+    const status = document.getElementById('status-select').value;
+    const sort = document.getElementById('sort-select').value;
+
+    const params = new URLSearchParams({
+      q: q,
+      date_from: dateFrom,
+      date_to: dateTo,
+      action: action,
+      status: status,
+      sort: sort
+    });
+
+    window.location.href = `/webui/api/logs/export/?${params.toString()}`;
+  }
+
+  // FETCH & RENDER LOGS
+  async function loadLogs() {
+    const tbody = document.getElementById('logs-table-body');
+    const q = document.getElementById('log-search-input').value.trim();
+    const dateFrom = document.getElementById('date-from-input').value.trim();
+    const dateTo = document.getElementById('date-to-input').value.trim();
+    const action = document.getElementById('action-select').value;
+    const status = document.getElementById('status-select').value;
+    const sort = document.getElementById('sort-select').value;
+
+    const params = new URLSearchParams({
+      page: currentPage,
+      page_size: pageSize,
+      q: q,
+      date_from: dateFrom,
+      date_to: dateTo,
+      action: action,
+      status: status,
+      sort: sort
+    });
+
+    try {
+      const res = await fetch(`/webui/api/logs/?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status}`);
+      }
+      const data = await res.json();
+      
+      const logs = data.logs || [];
+      totalRecords = data.total || 0;
+      totalPages = data.total_pages || 1;
+      currentPage = data.page || 1;
+
+      // Update gauges
+      document.getElementById('stat-matching-count').textContent = `${totalRecords} SESSIONS`;
+      document.getElementById('stat-active-count').textContent = `${data.active_count || 0} ACTIVE`;
+      
+      // Update archive size
+      if (!q && !dateFrom && !dateTo && action === 'all' && status === 'all') {
+        document.getElementById('stat-total-archive').textContent = `${totalRecords} LOGGED`;
+      }
+
+      // Update date scope readout
+      const dateScopeEl = document.getElementById('stat-date-scope');
+      if (dateFrom && dateTo) {
+        dateScopeEl.textContent = `${dateFrom} -> ${dateTo}`;
+      } else if (dateFrom) {
+        dateScopeEl.textContent = `FROM ${dateFrom}`;
+      } else if (dateTo) {
+        dateScopeEl.textContent = `UNTIL ${dateTo}`;
+      } else {
+        dateScopeEl.textContent = 'ALL TIME';
+      }
+
+      // Render logs table
+      if (logs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 50px 20px;">
+              <div style="font-size: 14px; font-weight: 700; color: var(--text-main); margin-bottom: 6px;">No connection sessions matched the current filter.</div>
+              <div style="font-size: 12px; margin-bottom: 16px;">Try adjusting your search keywords, clearing date constraints, or switching action filters.</div>
+              <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 14px; font-size: 12px;" onclick="resetFilters()">
+                Reset All Filters
+              </button>
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = logs.map(l => {
+          const actionColor = l.action === 'NEW' ? '#10b981' : (l.action === 'CLOSE' ? '#f43f5e' : '#0284c7');
+          const isOngoing = l.is_active;
+
+          return `
+            <tr>
+              <td>
+                <span style="color: ${actionColor}; font-weight: 800; font-size: 11px;">
+                  [ ${l.action} ]
+                </span>
+              </td>
+              <td>
+                <div style="font-weight: 700; color: var(--text-main);">${l.target_name}</div>
+                <div style="margin-top: 2px;">
+                  <span class="copy-chip" onclick="copyText('${l.target_id}', 'Target Device ID')" title="Click to copy ID">
+                    <span>${l.target_id}</span>
+                    <svg class="icon" style="width:11px;height:11px;opacity:0.6;" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </span>
+                </div>
+              </td>
+              <td>
+                <div style="color: var(--text-main); font-weight: 600;">${l.from_name}</div>
+                ${l.from_id && l.from_id !== '—' && l.from_id !== l.from_name ? `
+                  <div style="margin-top: 2px;">
+                    <span class="copy-chip" onclick="copyText('${l.from_id}', 'Source ID')" title="Click to copy ID">
+                      <span>${l.from_id}</span>
+                    </span>
+                  </div>
+                ` : ''}
+              </td>
+              <td>
+                ${l.from_ip && l.from_ip !== '—' ? `
+                  <span class="copy-chip" onclick="copyText('${l.from_ip}', 'Client IP')" title="Click to copy IP">
+                    <span>${l.from_ip}</span>
+                  </span>
+                ` : '<span style="color: var(--text-muted);">—</span>'}
+              </td>
+              <td style="color: var(--text-main); white-space: nowrap;">
+                ${l.conn_start ? new Date(l.conn_start).toLocaleString() : '—'}
+              </td>
+              <td style="font-weight: 800; color: ${isOngoing ? '#10b981' : 'var(--lcd-text)'}; white-space: nowrap;">
+                ${l.duration}
+              </td>
+              <td>
+                ${isOngoing ? `
+                  <span class="status-tag active-session">
+                    <span class="led-diode online" style="width: 7px; height: 7px;"></span>
+                    <span>ONLINE</span>
+                  </span>
+                ` : `
+                  <span class="status-tag closed-session">
+                    <span>CLOSED</span>
+                  </span>
+                `}
+              </td>
+              <td>
+                ${l.session_id && l.session_id !== '—' ? `
+                  <span class="copy-chip" style="font-size: 10px;" onclick="copyText('${l.session_id}', 'Session ID')" title="Click to copy Session ID">
+                    <span>${l.session_id.substring(0, 14)}...</span>
+                    <svg class="icon" style="width:10px;height:10px;opacity:0.6;" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </span>
+                ` : '<span style="color: var(--text-muted);">—</span>'}
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Render pagination summary and controls
+      renderPagination(data);
+
+    } catch (e) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center; color: #f43f5e; padding: 30px;">
+            Telemetry acquisition failed: ${e.message}
+          </td>
+        </tr>
+      `;
+    }
+  }
+
+  // RENDER PAGINATION CONTROLS
+  function renderPagination(data) {
+    const summaryEl = document.getElementById('pagination-summary');
+    const startIdx = data.start_index || 0;
+    const endIdx = data.end_index || 0;
+    summaryEl.textContent = `Showing ${startIdx} to ${endIdx} of ${totalRecords} sessions (Page ${currentPage} of ${totalPages})`;
+
+    // Prev / Next button states
+    document.getElementById('btn-first-page').disabled = currentPage <= 1;
+    document.getElementById('btn-prev-page').disabled = currentPage <= 1;
+    document.getElementById('btn-next-page').disabled = currentPage >= totalPages;
+    document.getElementById('btn-last-page').disabled = currentPage >= totalPages;
+
+    // Numbered buttons
+    const cluster = document.getElementById('page-numbers-cluster');
+    cluster.innerHTML = '';
+
+    const maxButtons = 5;
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+    if (endPage - startPage < maxButtons - 1) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    for (let p = startPage; p <= endPage; p++) {
+      const btn = document.createElement('button');
+      btn.className = `page-num-btn ${p === currentPage ? 'active' : ''}`;
+      btn.textContent = p;
+      btn.onclick = () => goToPage(p);
+      cluster.appendChild(btn);
+    }
+  }
+
+  // AUTO-REFRESH TOGGLE
+  function toggleAutoRefresh(enable) {
+    clearInterval(autoRefreshInterval);
+    if (enable) {
+      autoRefreshInterval = setInterval(() => {
+        loadLogs();
+      }, 15000);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadLogs();
+    toggleAutoRefresh(true);
+  });
+</script>
+{% endblock %}
