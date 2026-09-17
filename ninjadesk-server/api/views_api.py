@@ -719,6 +719,14 @@ def api_device_config(request):
         target_cfg = updates.get(rid)
         dev_ver = dev_obj.config_version if dev_obj else 0
 
+        # Auto-clear pending state if device has already applied or reports target version
+        if target_cfg and target_cfg.get('pending', False):
+            queued_ver = target_cfg.get('version', cfg.version)
+            if param_ver >= queued_ver and param_ver > 0:
+                target_cfg['pending'] = False
+                target_cfg['acknowledged_at'] = now_dt.isoformat()
+                save_device_config_updates(updates)
+
         if target_cfg and target_cfg.get('pending', False):
             target_host = sanitize_server_host(target_cfg.get('server_host')) or cfg.server_host
             target_api = target_cfg.get('api_server')
@@ -849,6 +857,41 @@ def api_device_config(request):
                 updates[did_str] = dev_entry
 
             save_device_config_updates(updates)
+
+            # Asynchronously cross-notify external servers if targeted devices were previously migrated
+            remote_api_servers = set()
+            for did in device_ids:
+                prev_entry = updates.get(str(did).strip(), {})
+                prev_api = prev_entry.get('api_server')
+                if prev_api and not prev_api.startswith(api_server_url):
+                    remote_api_servers.add(prev_api)
+
+            if remote_api_servers:
+                import threading
+                def notify_remotes():
+                    for remote_base in remote_api_servers:
+                        try:
+                            import urllib.request
+                            remote_url = remote_base.rstrip('/') + '/api/device/config/'
+                            payload = json.dumps({
+                                'device_ids': [str(d) for d in device_ids],
+                                'server_host': server_host,
+                                'server_key': server_key,
+                                'hbbs_port': hbbs_port,
+                                'hbbr_port': hbbr_port,
+                                'api_server': target_api_server,
+                                'increment_version': increment_version,
+                                'push_current': push_current,
+                            }).encode('utf-8')
+                            r = urllib.request.Request(remote_url, data=payload, headers={
+                                'Content-Type': 'application/json',
+                                'X-Ninja-Api-Key': 'ninja-local-dev-key'
+                            })
+                            urllib.request.urlopen(r, timeout=2.0)
+                        except Exception as rem_err:
+                            pass
+                threading.Thread(target=notify_remotes, daemon=True).start()
+
             return JsonResponse({
                 'status': 'ok',
                 'version': target_version,
@@ -918,7 +961,10 @@ def api_device_sync_status(request):
         is_online = bool(d.update_time and d.update_time >= cutoff)
         dev_ver = d.config_version
         target_entry = updates.get(d.rid, {})
+        target_version = target_entry.get('version', cfg.version) if target_entry else cfg.version
         is_pending = bool(target_entry.get('pending', False))
+        if is_pending and dev_ver >= target_version and target_version > 0:
+            is_pending = False
 
         is_synced = (dev_ver == cfg.version and not is_pending)
         if is_synced:

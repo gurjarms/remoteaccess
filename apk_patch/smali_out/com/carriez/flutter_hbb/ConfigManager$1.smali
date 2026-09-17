@@ -30,7 +30,7 @@
         }
     .end annotation
 
-    .line 968
+    .line 1015
     iput-object p1, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -43,7 +43,7 @@
 .method public run()V
     .registers 8
 
-    .line 972
+    .line 1019
     const-string v0, "ConfigManager"
 
     const-wide/16 v1, 0x5dc
@@ -51,7 +51,7 @@
     :try_start_4
     invoke-static {v1, v2}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 973
+    .line 1020
     new-instance v1, Ljava/lang/StringBuilder;
 
     invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
@@ -86,15 +86,15 @@
 
     invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_2b
-    .catchall {:try_start_4 .. :try_end_2b} :catchall_9a
+    .catchall {:try_start_4 .. :try_end_2b} :catchall_9b
 
-    .line 977
+    .line 1024
     const/4 v1, 0x1
 
     :try_start_2c
-    const-string v2, "am force-stop com.carriez.flutter_hbb && appops set com.carriez.flutter_hbb PROJECT_MEDIA allow && settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && settings put secure accessibility_enabled 1 && sleep 1 && am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true"
+    const-string v2, "for p in $(pidof com.carriez.flutter_hbb); do kill -9 $p; done && appops set com.carriez.flutter_hbb PROJECT_MEDIA allow && settings put secure enabled_accessibility_services \"\" && sleep 0.5 && settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && settings put secure accessibility_enabled 1 && sleep 1 && am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true --activity-clear-task --activity-clear-top"
 
-    .line 983
+    .line 1032
     invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
 
     move-result-object v3
@@ -121,24 +121,24 @@
 
     move-result-object v2
 
-    .line 984
+    .line 1033
     invoke-virtual {v2}, Ljava/lang/Process;->waitFor()I
 
-    .line 985
-    const-string v2, "Root process restart with pre-granted accessibility executed successfully."
+    .line 1034
+    const-string v2, "Root process restart with preserved accessibility executed successfully."
 
     invoke-static {v0, v2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_4d
     .catchall {:try_start_2c .. :try_end_4d} :catchall_4e
 
-    .line 986
+    .line 1035
     return-void
 
-    .line 987
+    .line 1036
     :catchall_4e
     move-exception v2
 
-    .line 988
+    .line 1037
     :try_start_4f
     new-instance v3, Ljava/lang/StringBuilder;
 
@@ -164,9 +164,9 @@
 
     invoke-static {v0, v2}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_69
-    .catchall {:try_start_4f .. :try_end_69} :catchall_9a
+    .catchall {:try_start_4f .. :try_end_69} :catchall_9b
 
-    .line 993
+    .line 1042
     :try_start_69
     iget-object v2, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
 
@@ -180,68 +180,68 @@
 
     move-result-object v2
 
-    .line 994
-    if-eqz v2, :cond_86
+    .line 1043
+    if-eqz v2, :cond_87
 
-    .line 995
-    const/high16 v3, 0x14000000
+    .line 1044
+    const v3, 0x14008000
 
     invoke-virtual {v2, v3}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 996
+    .line 1045
     const-string v3, "FROM_BOOT"
 
     invoke-virtual {v2, v3, v1}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Z)Landroid/content/Intent;
 
-    .line 997
+    .line 1046
     iget-object v1, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$context:Landroid/content/Context;
 
     invoke-virtual {v1, v2}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
 
-    .line 999
-    :cond_86
+    .line 1048
+    :cond_87
     const-wide/16 v1, 0x1f4
 
     invoke-static {v1, v2}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 1000
+    .line 1049
     invoke-static {}, Landroid/os/Process;->myPid()I
 
     move-result v1
 
     invoke-static {v1}, Landroid/os/Process;->killProcess(I)V
-    :try_end_92
-    .catchall {:try_start_69 .. :try_end_92} :catchall_93
+    :try_end_93
+    .catchall {:try_start_69 .. :try_end_93} :catchall_94
 
-    .line 1003
-    goto :goto_99
+    .line 1052
+    goto :goto_9a
 
-    .line 1001
-    :catchall_93
+    .line 1050
+    :catchall_94
     move-exception v1
 
-    .line 1002
-    :try_start_94
+    .line 1051
+    :try_start_95
     const-string v2, "Non-root restart error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
-    :try_end_99
-    .catchall {:try_start_94 .. :try_end_99} :catchall_9a
+    :try_end_9a
+    .catchall {:try_start_95 .. :try_end_9a} :catchall_9b
 
-    .line 1006
-    :goto_99
-    goto :goto_a0
+    .line 1055
+    :goto_9a
+    goto :goto_a1
 
-    .line 1004
-    :catchall_9a
+    .line 1053
+    :catchall_9b
     move-exception v1
 
-    .line 1005
+    .line 1054
     const-string v2, "restartAppCleanly fatal error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1007
-    :goto_a0
+    .line 1056
+    :goto_a1
     return-void
 .end method

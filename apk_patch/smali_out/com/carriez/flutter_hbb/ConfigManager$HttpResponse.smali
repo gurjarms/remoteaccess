@@ -24,13 +24,13 @@
 .method public constructor <init>(ILjava/lang/String;)V
     .registers 3
 
-    .line 108
+    .line 123
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 109
+    .line 124
     iput p1, p0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->statusCode:I
 
-    .line 110
+    .line 125
     if-eqz p2, :cond_8
 
     goto :goto_a
@@ -41,7 +41,7 @@
     :goto_a
     iput-object p2, p0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->body:Ljava/lang/String;
 
-    .line 111
+    .line 126
     return-void
 .end method
 
@@ -50,7 +50,7 @@
 .method public isSuccess()Z
     .registers 3
 
-    .line 114
+    .line 129
     iget v0, p0, Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;->statusCode:I
 
     const/16 v1, 0xc8

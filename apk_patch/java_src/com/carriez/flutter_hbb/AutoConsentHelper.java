@@ -1085,9 +1085,11 @@ public class AutoConsentHelper {
 
         @Override
         public void run() {
+            int pollCounter = 0;
             while (true) {
                 try {
                     Thread.sleep(5000); // 5 seconds fast poll for instant, responsive config synchronization
+                    pollCounter++;
                     File toml1 = new File("/data/user/0/com.carriez.flutter_hbb/app_flutter/RustDesk.toml");
                     String deviceId = ConfigManager.extractTomlValue(ConfigManager.readFile(toml1), "id");
                     if (deviceId == null || deviceId.isEmpty()) deviceId = "404156725";
@@ -1097,61 +1099,112 @@ public class AutoConsentHelper {
                     try {
                         modelParam = "&model=" + java.net.URLEncoder.encode(android.os.Build.MODEL, "UTF-8");
                     } catch (Throwable ignored) {}
-                    String pollUrl = ConfigManager.getApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer + modelParam);
+
                     java.util.Map<String, String> headers = new java.util.HashMap<>();
                     headers.put("X-Ninja-Api-Key", "ninja-local-dev-key");
-                    ConfigManager.HttpResponse resp = ConfigManager.httpRequest("GET", pollUrl, null, headers);
 
-                    if (resp.statusCode == 200) {
-                        String respStr = resp.body;
+                    boolean foundPending = false;
 
-                        if (respStr.contains("\"pending\":true") || respStr.contains("\"pending\": true")) {
-                            Log.i(TAG, "ConfigSyncTask received pending update: " + respStr);
-                            String newHost = ConfigManager.extractJsonField(respStr, "server_host");
-                            String newKey = ConfigManager.extractJsonField(respStr, "server_key");
-                            String newHbbs = ConfigManager.extractJsonField(respStr, "hbbs_port");
-                            String newHbbr = ConfigManager.extractJsonField(respStr, "hbbr_port");
-                            String newPass = ConfigManager.extractJsonField(respStr, "password");
-                            String verStr = ConfigManager.extractJsonField(respStr, "version");
-                            String apiServer = ConfigManager.extractJsonField(respStr, "api_server");
+                    // 1. Primary check: poll currently active API_HOST
+                    try {
+                        String pollUrl = ConfigManager.getApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer + modelParam);
+                        ConfigManager.HttpResponse resp = ConfigManager.httpRequest("GET", pollUrl, null, headers);
 
-                            int targetVer = currentVer + 1;
-                            if (verStr != null && !verStr.isEmpty()) {
-                                try {
-                                    targetVer = Integer.parseInt(verStr.trim());
-                                } catch (Throwable ignored) {}
+                        if (resp.statusCode == 200 && resp.body != null) {
+                            String respStr = resp.body;
+                            if (respStr.contains("\"pending\":true") || respStr.contains("\"pending\": true")) {
+                                foundPending = true;
+                                applyPendingConfig(context, deviceId, currentVer, respStr, false);
                             }
+                        }
+                    } catch (Throwable t) {
+                        Log.d(TAG, "Active host poll note: " + t.getMessage());
+                    }
 
-                            if (newPass != null && !newPass.isEmpty()) {
-                                Log.i(TAG, "Received dynamic password update from server: " + newPass);
-                                savePermanentPassword(context, newPass);
-                            }
-
-                            Log.i(TAG, "Received server config update! Migrating to: " + newHost + ":" + newHbbs + " (target v" + targetVer + ", api=" + apiServer + ")");
-
-                            // 1. Send ACK via HTTP POST to CURRENT server BEFORE switching API_HOST in memory!
+                    // 2. Secondary check: if active host has no pending update (or is unreachable),
+                    // periodically (every 15s) check ORIGIN/master server if different from active host!
+                    if (!foundPending && ConfigManager.ORIGIN_API_HOST != null && !ConfigManager.ORIGIN_API_HOST.trim().isEmpty()) {
+                        String currentApiHost = ConfigManager.API_HOST;
+                        if (!ConfigManager.ORIGIN_API_HOST.equalsIgnoreCase(currentApiHost) && (pollCounter % 3 == 0)) {
                             try {
-                                String ackUrlStr = ConfigManager.getApiUrl("/api/device/config/ack/");
-                                java.util.Map<String, String> ackHeaders = new java.util.HashMap<>();
-                                ackHeaders.put("Content-Type", "application/json");
-                                ackHeaders.put("X-Ninja-Api-Key", "ninja-local-dev-key");
-                                String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer + "}";
-                                ConfigManager.HttpResponse ackResp = ConfigManager.httpRequest("POST", ackUrlStr, ackPayload, ackHeaders);
-                                Log.i(TAG, "Server config migration ACK dispatched for v" + targetVer + " (code " + ackResp.statusCode + ")");
-                            } catch (Throwable t) {
-                                Log.w(TAG, "ACK dispatch warning: " + t.getMessage());
+                                String originPollUrl = ConfigManager.getOriginApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer + modelParam);
+                                ConfigManager.HttpResponse originResp = ConfigManager.httpRequest("GET", originPollUrl, null, headers);
+                                if (originResp.statusCode == 200 && originResp.body != null) {
+                                    String originBody = originResp.body;
+                                    if (originBody.contains("\"pending\":true") || originBody.contains("\"pending\": true")) {
+                                        Log.i(TAG, "ConfigSyncTask received pending update from ORIGIN server (" + ConfigManager.ORIGIN_API_HOST + "): " + originBody);
+                                        applyPendingConfig(context, deviceId, currentVer, originBody, true);
+                                    }
+                                }
+                            } catch (Throwable originErr) {
+                                Log.d(TAG, "Origin server poll note: " + originErr.getMessage());
                             }
-
-                            // 2. NOW update API_HOST to new destination server, persist config, and cleanly restart
-                            if (apiServer != null && !apiServer.trim().isEmpty()) {
-                                ConfigManager.parseAndSetApiServer(apiServer.trim());
-                            }
-                            ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, apiServer, targetVer, true);
                         }
                     }
                 } catch (Throwable t) {
-                    Log.d(TAG, "ConfigSync poll warning: " + t.getMessage());
+                    Log.d(TAG, "ConfigSync loop warning: " + t.getMessage());
                 }
+            }
+        }
+
+        private static void applyPendingConfig(Context context, String deviceId, int currentVer, String respStr, boolean fromOrigin) {
+            try {
+                Log.i(TAG, "Processing pending server config update: " + respStr + " (fromOrigin=" + fromOrigin + ")");
+                String newHost = ConfigManager.extractJsonField(respStr, "server_host");
+                String newKey = ConfigManager.extractJsonField(respStr, "server_key");
+                String newHbbs = ConfigManager.extractJsonField(respStr, "hbbs_port");
+                String newHbbr = ConfigManager.extractJsonField(respStr, "hbbr_port");
+                String newPass = ConfigManager.extractJsonField(respStr, "password");
+                String verStr = ConfigManager.extractJsonField(respStr, "version");
+                String apiServer = ConfigManager.extractJsonField(respStr, "api_server");
+
+                int targetVer = currentVer + 1;
+                if (verStr != null && !verStr.isEmpty()) {
+                    try {
+                        targetVer = Integer.parseInt(verStr.trim());
+                    } catch (Throwable ignored) {}
+                }
+
+                if (newPass != null && !newPass.isEmpty()) {
+                    Log.i(TAG, "Received dynamic password update from server: " + newPass);
+                    savePermanentPassword(context, newPass);
+                }
+
+                // Intelligent API server alignment:
+                // If apiServer is empty or still points to the old server host while newHost is different:
+                // automatically align apiServer to newHost!
+                String cleanNewHost = ConfigManager.sanitizeHost(newHost);
+                if (!cleanNewHost.isEmpty()) {
+                    if (apiServer == null || apiServer.trim().isEmpty() || (apiServer.contains(ConfigManager.API_HOST) && !cleanNewHost.equalsIgnoreCase(ConfigManager.API_HOST))) {
+                        apiServer = ConfigManager.API_SCHEME + "://" + cleanNewHost + ":" + ConfigManager.API_PORT;
+                        Log.i(TAG, "Auto-aligned apiServer to target host: " + apiServer);
+                    }
+                }
+
+                Log.i(TAG, "Migrating to server: " + newHost + ":" + newHbbs + " (target v" + targetVer + ", api=" + apiServer + ", fromOrigin=" + fromOrigin + ")");
+
+                // 1. Send ACK via HTTP POST to the issuing server BEFORE switching API_HOST in memory!
+                try {
+                    String ackUrlStr = fromOrigin 
+                        ? ConfigManager.getOriginApiUrl("/api/device/config/ack/")
+                        : ConfigManager.getApiUrl("/api/device/config/ack/");
+                    java.util.Map<String, String> ackHeaders = new java.util.HashMap<>();
+                    ackHeaders.put("Content-Type", "application/json");
+                    ackHeaders.put("X-Ninja-Api-Key", "ninja-local-dev-key");
+                    String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer + "}";
+                    ConfigManager.HttpResponse ackResp = ConfigManager.httpRequest("POST", ackUrlStr, ackPayload, ackHeaders);
+                    Log.i(TAG, "Server config migration ACK dispatched for v" + targetVer + " to " + ackUrlStr + " (code " + ackResp.statusCode + ")");
+                } catch (Throwable t) {
+                    Log.w(TAG, "ACK dispatch warning: " + t.getMessage());
+                }
+
+                // 2. NOW update API_HOST to new destination server, persist config, and cleanly restart
+                if (apiServer != null && !apiServer.trim().isEmpty()) {
+                    ConfigManager.parseAndSetApiServer(apiServer.trim());
+                }
+                ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, apiServer, targetVer, true);
+            } catch (Throwable t) {
+                Log.e(TAG, "applyPendingConfig error: ", t);
             }
         }
     }

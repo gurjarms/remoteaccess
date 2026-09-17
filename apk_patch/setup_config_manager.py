@@ -100,6 +100,9 @@ jcontent = re.sub(r'public static String PERMANENT_PASSWORD = ".*?";', f'public 
 # This allows relay server and Django API to be on different hosts in production.
 api_host_value = config.get("API_HOST", "").strip() or config["SERVER_HOST"]
 jcontent = re.sub(r'public static String API_HOST = ".*?";', f'public static String API_HOST = "{api_host_value}";', jcontent)
+jcontent = re.sub(r'public static String ORIGIN_API_HOST = ".*?";', f'public static String ORIGIN_API_HOST = "{api_host_value}";', jcontent)
+jcontent = re.sub(r'public static String ORIGIN_API_PORT = ".*?";', f'public static String ORIGIN_API_PORT = "{config["API_PORT"]}";', jcontent)
+jcontent = re.sub(r'public static String ORIGIN_API_SCHEME = ".*?";', f'public static String ORIGIN_API_SCHEME = "{config["API_SCHEME"]}";', jcontent)
 
 with open(java_file_path, "w", encoding="utf-8") as f:
     f.write(jcontent)

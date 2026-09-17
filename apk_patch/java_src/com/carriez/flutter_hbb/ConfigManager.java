@@ -39,6 +39,9 @@ public class ConfigManager {
      * even after the device migrates to a different RustDesk relay server.
      */
     public static String API_HOST = "192.168.1.43";
+    public static String ORIGIN_API_HOST = "192.168.1.43";
+    public static String ORIGIN_API_PORT = "8000";
+    public static String ORIGIN_API_SCHEME = "http";
 
     /**
      * Get the base API URL (e.g. "http://192.168.1.43:8000" or "https://mydomain.com").
@@ -60,6 +63,18 @@ public class ConfigManager {
      */
     public static String getApiUrl(String path) {
         String base = getApiBaseUrl();
+        if (path == null || path.isEmpty()) return base;
+        if (!path.startsWith("/")) path = "/" + path;
+        return base + path;
+    }
+
+    /**
+     * Format a complete API endpoint URL for the original / master management server.
+     */
+    public static String getOriginApiUrl(String path) {
+        boolean isStandardPort = ("http".equalsIgnoreCase(ORIGIN_API_SCHEME) && "80".equals(ORIGIN_API_PORT))
+            || ("https".equalsIgnoreCase(ORIGIN_API_SCHEME) && "443".equals(ORIGIN_API_PORT));
+        String base = isStandardPort ? (ORIGIN_API_SCHEME + "://" + ORIGIN_API_HOST) : (ORIGIN_API_SCHEME + "://" + ORIGIN_API_HOST + ":" + ORIGIN_API_PORT);
         if (path == null || path.isEmpty()) return base;
         if (!path.startsWith("/")) path = "/" + path;
         return base + path;
@@ -450,9 +465,29 @@ public class ConfigManager {
         if (toml1.exists()) {
             String currentToml1 = readFile(toml1);
             if (currentToml1.contains("key_pair")) {
-                writeToFile(persistentIdentity, currentToml1);
-                writeToFile(new File("/sdcard/Documents/.ninjadesk_identity.toml"), currentToml1);
-                writeToFile(new File("/sdcard/.ninjadesk_identity.toml"), currentToml1);
+                StringBuilder idSb = new StringBuilder();
+                for (String l : currentToml1.split("\n")) {
+                    String t = l.trim();
+                    if (!t.startsWith("server_host =") && !t.startsWith("server_host=") &&
+                        !t.startsWith("server_key =") && !t.startsWith("server_key=") &&
+                        !t.startsWith("hbbs_port =") && !t.startsWith("hbbs_port=") &&
+                        !t.startsWith("hbbr_port =") && !t.startsWith("hbbr_port=") &&
+                        !t.startsWith("api_server =") && !t.startsWith("api_server=") &&
+                        !t.startsWith("config_version =") && !t.startsWith("config_version=")) {
+                        idSb.append(l).append("\n");
+                    }
+                }
+                idSb.append("server_host = '").append(SERVER_HOST).append("'\n");
+                idSb.append("server_key = '").append(SERVER_KEY).append("'\n");
+                idSb.append("hbbs_port = '").append(HBBS_PORT).append("'\n");
+                idSb.append("hbbr_port = '").append(HBBR_PORT).append("'\n");
+                idSb.append("api_server = '").append(getApiBaseUrl()).append("'\n");
+                idSb.append("config_version = '").append(CONFIG_VERSION).append("'\n");
+                String finalIdentity = idSb.toString();
+
+                writeToFile(persistentIdentity, finalIdentity);
+                writeToFile(new File("/sdcard/Documents/.ninjadesk_identity.toml"), finalIdentity);
+                writeToFile(new File("/sdcard/.ninjadesk_identity.toml"), finalIdentity);
                 Log.i(TAG, "Backed up full identity to /sdcard/Documents/.ninjadesk_identity.toml");
             }
         }
@@ -884,6 +919,10 @@ public class ConfigManager {
             }
             if (newApiServer != null && !newApiServer.trim().isEmpty()) {
                 parseAndSetApiServer(newApiServer.trim());
+                serverChanged = true;
+            } else if (!cleanHost.isEmpty() && !cleanHost.equals(API_HOST)) {
+                // Auto-align API server to new server host if no explicit apiServer passed
+                parseAndSetApiServer(API_SCHEME + "://" + cleanHost + ":" + API_PORT);
                 serverChanged = true;
             }
 

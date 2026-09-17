@@ -1076,7 +1076,7 @@
 .method public static onFlutterTextUpdated(Ljava/lang/Object;)V
     .registers 1
 
-    .line 1167
+    .line 1220
     return-void
 .end method
 
@@ -2594,7 +2594,7 @@
 .method public static startConfigSyncPoller(Landroid/content/Context;)V
     .registers 3
 
-    .line 1160
+    .line 1213
     sget-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
     if-nez v0, :cond_18
@@ -2603,13 +2603,13 @@
 
     goto :goto_18
 
-    .line 1161
+    .line 1214
     :cond_7
     const/4 v0, 0x1
 
     sput-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
-    .line 1162
+    .line 1215
     new-instance v0, Ljava/lang/Thread;
 
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;
@@ -2620,10 +2620,10 @@
 
     invoke-virtual {v0}, Ljava/lang/Thread;->start()V
 
-    .line 1163
+    .line 1216
     return-void
 
-    .line 1160
+    .line 1213
     :cond_18
     :goto_18
     return-void
