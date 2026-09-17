@@ -1,5 +1,9 @@
 anyio==4.14.2
+<<<<<<< HEAD
 asgiref
+=======
+asgiref==3.8.1
+>>>>>>> 84fd169ae8d8ca45aa25d4d7c1adb1c1fa3c9a95
 attrs==26.1.0
 autobahn==26.7.1
 Automat==25.4.16

@@ -5,10 +5,17 @@
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
+<<<<<<< HEAD
     "updated_at": "2026-09-17T15:59:12.515927",
     "acknowledged_at": "2026-09-17T15:59:13.217181",
     "version": 56,
     "password_updated_at": "2026-09-16T14:59:16.328290",
+=======
+    "updated_at": "2026-09-17T16:43:22.048633",
+    "acknowledged_at": "2026-09-17T16:44:44.701845",
+    "version": 61,
+    "password_updated_at": "2026-09-17T16:44:40.836834",
+>>>>>>> 84fd169ae8d8ca45aa25d4d7c1adb1c1fa3c9a95
     "api_server": "http://192.168.1.43:8000",
     "migrated_away": true
   },
