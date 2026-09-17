@@ -5,12 +5,12 @@
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "updated_at": "2026-09-17T16:06:29.8201955+05:30",
-    "acknowledged_at": "2026-09-17T16:06:30.942345",
-    "version": 57,
-    "password_updated_at": "2026-09-17T16:02:54.763297",
+    "updated_at": "2026-09-17T16:43:22.048633",
+    "acknowledged_at": "2026-09-17T16:44:44.701845",
+    "version": 61,
+    "password_updated_at": "2026-09-17T16:44:40.836834",
     "api_server": "http://192.168.1.43:8000",
-    "migrated_away": false
+    "migrated_away": true
   },
   "198166477": {
     "pending": true,
