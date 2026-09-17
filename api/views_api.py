@@ -15,12 +15,13 @@ from django.contrib.auth.hashers import check_password
 from api.models import RustDeskToken, UserProfile, RustDeskTag, RustDeskPeer, RustDesDevice, ConnLog, FileLog, ServerConfigVersion
 from django.db.models import Q
 import copy
+from django.views.decorators.csrf import csrf_exempt
 from .views_front import *
 from django.utils.translation import gettext as _
 
 
 def get_or_create_server_config_state():
-    cfg = ServerConfigVersion.objects.first()
+    cfg = ServerConfigVersion.objects.order_by('-id').first()
     if not cfg:
         default_host = getattr(settings, 'ID_SERVER', '') or getattr(settings, 'SERVER_HOST', '') or '127.0.0.1'
         default_key = getattr(settings, 'SERVER_KEY', getattr(settings, 'KEY', 'DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ='))
@@ -291,6 +292,13 @@ def sysinfo(request):
         return JsonResponse(result)
 
     device = RustDesDevice.objects.filter(Q(rid=postdata['id']) & Q(uuid=postdata['uuid'])).first()
+    if device and device.is_deleted:
+        # Device has been soft-deleted from dashboard by administrator
+        result['data'] = 'ok'
+        result['server_version'] = cfg.version
+        result['device_version'] = dev_config_ver
+        return JsonResponse(result)
+
     if not device:
         device = RustDesDevice(
             rid=postdata['id'],
@@ -526,7 +534,7 @@ def api_devices_list(request):
     Returns full device list with telemetry for the Ninja Remote desktop app.
     """
     now = datetime.datetime.now()
-    devices = RustDesDevice.objects.filter(os__icontains='android').order_by('-update_time')
+    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False).order_by('-update_time')
     peers = {}
     for p in RustDeskPeer.objects.all():
         if p.rid not in peers or (p.alias and not peers[p.rid].alias):
@@ -578,6 +586,35 @@ def api_device_rename(request):
             RustDeskPeer.objects.create(rid=rid, uid=1, alias=name, hostname=name)
 
         return JsonResponse({'status': 'ok', 'id': rid, 'name': name})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_ninja_api_key
+def api_device_delete(request):
+    """
+    Soft-delete a device node from the registry (sets is_deleted=True, deleted_at=now).
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        rid = str(data.get('id', '')).strip()
+        if not rid:
+            return JsonResponse({'error': 'Device id required'}, status=400)
+
+        now = datetime.datetime.now()
+        # Soft delete in RustDesDevice
+        updated_count = RustDesDevice.objects.filter(rid=rid).update(is_deleted=True, deleted_at=now)
+
+        # Clear pending config updates
+        updates = load_device_config_updates()
+        if rid in updates:
+            del updates[rid]
+            save_device_config_updates(updates)
+
+        return JsonResponse({'status': 'ok', 'id': rid, 'message': f'Device {rid} soft-deleted successfully.'})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -891,14 +928,16 @@ def api_device_config(request):
 
             # Only increment global version if explicitly requested or if saving a brand new server configuration
             if increment_version or (is_config_changed and not push_current):
-                cfg.version += 1
-                cfg.server_host = server_host
-                cfg.server_key = server_key
-                cfg.hbbs_port = hbbs_port
-                cfg.hbbr_port = hbbr_port
+                new_ver = (cfg.version + 1) if cfg else 1
                 username_str = user.username if (user and user.is_authenticated) else 'Superadmin'
-                cfg.updated_by = username_str
-                cfg.save()
+                cfg = ServerConfigVersion.objects.create(
+                    version=new_ver,
+                    server_host=server_host,
+                    server_key=server_key,
+                    hbbs_port=hbbs_port,
+                    hbbr_port=hbbr_port,
+                    updated_by=username_str
+                )
             else:
                 # Use current active server parameters without bumping version number
                 server_host = cfg.server_host
@@ -1029,7 +1068,7 @@ def api_device_sync_status(request):
     """
     cfg = get_or_create_server_config_state()
     updates = load_device_config_updates()
-    devices = RustDesDevice.objects.all().order_by('-update_time')
+    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False).order_by('-update_time')
     peers = {}
     for p in RustDeskPeer.objects.all():
         if p.rid not in peers or (p.alias and not peers[p.rid].alias):
@@ -1088,6 +1127,13 @@ def api_device_sync_status(request):
 
     sync_pct = round((synced / total * 100)) if total > 0 else 100
 
+    history_items = list(ServerConfigVersion.objects.order_by('-id')[:20].values(
+        'id', 'version', 'server_host', 'server_key', 'hbbs_port', 'hbbr_port', 'updated_at', 'updated_by'
+    ))
+    for h in history_items:
+        if h.get('updated_at'):
+            h['updated_at'] = h['updated_at'].strftime('%Y-%m-%d %H:%M:%S')
+
     return JsonResponse({
         'server_version': cfg.version,
         'times_changed': cfg.version,
@@ -1103,6 +1149,7 @@ def api_device_sync_status(request):
         'outdated_devices': outdated,
         'sync_percentage': sync_pct,
         'devices': device_list,
+        'config_history': history_items,
     })
 
 

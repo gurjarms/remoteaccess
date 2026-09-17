@@ -257,7 +257,10 @@
         return;
       }
 
-      tbody.innerHTML = devices.map(d => `
+      tbody.innerHTML = devices.map(d => {
+        const safeName = (d.name || d.hostname || `Device ${d.id}`).replace(/'/g, "\\'");
+        const safeHost = (d.hostname || d.id).replace(/'/g, "\\'");
+        return `
         <tr>
           <td>
             <span class="led-diode ${d.online ? 'online' : 'offline'}"></span>
@@ -267,13 +270,20 @@
           <td>${d.ip_address || '--'}</td>
           <td style="color: var(--text-muted);">${d.os_version || d.platform}</td>
           <td>
-            <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="triggerRemoteAccess('${d.id}', '${d.name}', '${d.hostname}')">
-              <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/></svg>
-              <span>Connect</span>
-            </button>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="triggerRemoteAccess('${d.id}', '${safeName}', '${safeHost}')">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/></svg>
+                <span>Connect</span>
+              </button>
+              <button class="tactile-btn tactile-btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="triggerDeleteDevice('${d.id}', '${safeName}')" title="Delete Device">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <span>Delete</span>
+              </button>
+            </div>
           </td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
     } catch (e) {
       console.error(e);
     }

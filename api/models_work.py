@@ -84,6 +84,8 @@ class RustDesDevice(models.Model):
     config_updated_at = models.DateTimeField(verbose_name=_('配置更新时间'), null=True, blank=True)
     create_time = models.DateTimeField(verbose_name=_('设备注册时间'), auto_now_add=True)
     update_time = models.DateTimeField(verbose_name=('设备更新时间'), auto_now=True, blank=True)
+    is_deleted = models.BooleanField(verbose_name=_('已软删除'), default=False)
+    deleted_at = models.DateTimeField(verbose_name=_('软删除时间'), null=True, blank=True)
 
     class Meta:
         ordering = ('-rid',)
@@ -101,6 +103,7 @@ class ServerConfigVersion(models.Model):
     updated_by = models.CharField(verbose_name=_('变更管理员'), max_length=150, blank=True, default='')
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = _("服务器配置版本")
         verbose_name_plural = _("服务器配置版本列表")
 
