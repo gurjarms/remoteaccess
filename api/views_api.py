@@ -579,7 +579,6 @@ def peers(request):
     return JsonResponse(result)
 
 
-@require_ninja_api_key
 def api_health(request):
     """
     Lets the Ninja Remote Electron app check real Django reachability instead
