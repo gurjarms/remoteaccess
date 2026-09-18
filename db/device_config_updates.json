@@ -9,5 +9,18 @@
     "version": 130,
     "updated_at": "2026-09-17T18:49:20.204059",
     "migrated_away": true
+  },
+  "489629155": {
+    "pending": false,
+    "password_updated_at": "2026-09-18T15:06:07.167560",
+    "server_host": "192.168.1.43",
+    "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
+    "hbbs_port": "21116",
+    "hbbr_port": "21117",
+    "version": 132,
+    "acknowledged_at": "2026-09-18T15:43:22.006497",
+    "api_server": "http://192.168.1.43:8000",
+    "updated_at": "2026-09-18T15:43:21.556011",
+    "migrated_away": true
   }
 }

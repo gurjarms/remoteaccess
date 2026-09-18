@@ -160,6 +160,48 @@
     overflow-x: auto;
   }
 
+  /* COLLAPSIBLE CONFIG HISTORY */
+  .collapsible-container {
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.25s ease;
+    max-height: 2500px;
+    opacity: 1;
+    overflow: hidden;
+  }
+
+  .collapsible-container.collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-width: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    pointer-events: none;
+  }
+
+  .history-toggle-pill {
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .history-toggle-pill:hover {
+    background: rgba(2, 132, 199, 0.15);
+    border-color: rgba(2, 132, 199, 0.4);
+    color: var(--lcd-text);
+  }
+
   .fleet-table {
     width: 100%;
     border-collapse: collapse;
@@ -363,11 +405,9 @@
         <span>Pending & Outdated</span>
       </div>
       <div style="display: flex; align-items: baseline; gap: 8px;">
-        <span class="metric-val" id="stat-pending-count" style="color: #f59e0b; font-size: 24px;">{{
-          pending_devices_count }}</span>
+        <span class="metric-val" id="stat-pending-count" style="color: #f59e0b; font-size: 24px;">{{ pending_devices_count }}</span>
         <span style="font-size: 12px; color: var(--text-muted);">pending •</span>
-        <span class="metric-val" id="stat-outdated-count" style="color: #ef4444; font-size: 24px;">{{
-          outdated_devices_count }}</span>
+        <span class="metric-val" id="stat-outdated-count" style="color: #ef4444; font-size: 24px;">{{ outdated_devices_count }}</span>
         <span style="font-size: 12px; color: var(--text-muted);">outdated</span>
       </div>
       <div class="metric-sub">
@@ -390,8 +430,7 @@
         {{ domain }}:{{ hbbs_port }}
       </div>
       <div class="metric-sub">
-        Updated: <span id="stat-updated-at" style="color: var(--text-main); font-weight: 600;">{{ config_updated_at
-          }}</span>
+        Updated: <span id="stat-updated-at" style="color: var(--text-main); font-weight: 600;">{{ config_updated_at }}</span>
       </div>
     </div>
   </div>
@@ -455,8 +494,7 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
         <label class="form-label" style="margin-bottom: 0;">Relay & ID Server Host / IP</label>
         <span class="badge-tag badge-superadmin" style="font-size: 10px; padding: 2px 7px;">
-          LATEST ACTIVE: <span id="label-active-host" style="font-family:'JetBrains Mono',monospace;">{{ domain
-            }}</span>
+          LATEST ACTIVE: <span id="label-active-host" style="font-family:'JetBrains Mono',monospace;">{{ domain }}</span>
         </span>
       </div>
       <input type="text" id="target-host" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
@@ -474,15 +512,13 @@
     <div class="form-group">
       <label class="form-label">HBBS Port (Signaling & ID)</label>
       <input type="text" id="target-hbbs-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
-        value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not
-        is_superadmin %}readonly{% endif %}>
+        value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
 
     <div class="form-group">
       <label class="form-label">HBBR Port (Data Relay)</label>
       <input type="text" id="target-hbbr-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
-        value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not
-        is_superadmin %}readonly{% endif %}>
+        value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
   </div>
 
@@ -493,8 +529,7 @@
         <line x1="12" y1="16" x2="12" y2="12" />
         <line x1="12" y1="8" x2="12.01" y2="8" />
       </svg>
-      <span>Broadcasting will increment the server version to <strong>v<span id="next-version-indicator">{{
-            server_version|add:1 }}</span></strong>.</span>
+      <span>Broadcasting will increment the server version to <strong>v<span id="next-version-indicator">{{ server_version|add:1 }}</span></strong>.</span>
     </div>
 
     {% if is_superadmin %}
@@ -527,7 +562,7 @@
 <!-- 2.5 SERVER CONFIGURATION HISTORY TABLE                                        -->
 <!-- ============================================================================== -->
 <div class="fleet-rack" style="margin-bottom: 24px;">
-  <div class="rack-header">
+  <div class="rack-header" style="cursor: pointer; user-select: none;" onclick="toggleConfigHistory()" title="Click to Expand or Collapse Server Configuration History">
     <div>
       <div class="rack-title">
         <svg class="icon icon-md" viewBox="0 0 24 24">
@@ -541,12 +576,20 @@
         input fields above.
       </div>
     </div>
-    <div style="font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted);">
-      <span id="config-history-badge">{{ config_history|length }}</span> Configuration(s) Stored
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted);">
+        <span id="config-history-badge">{{ config_history|length }}</span> Configuration(s) Stored
+      </div>
+      <button type="button" class="history-toggle-pill" id="btn-toggle-config-history" onclick="event.stopPropagation(); toggleConfigHistory();" title="Expand or Collapse Configuration History">
+        <span id="history-toggle-text">Expand</span>
+        <svg class="icon icon-sm" id="history-toggle-icon" style="transition: transform 0.25s ease; transform: rotate(0deg);" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
     </div>
   </div>
 
-  <div class="fleet-table-container">
+  <div class="fleet-table-container collapsible-container collapsed" id="config-history-container">
     <table class="fleet-table" id="config-history-table">
       <thead>
         <tr>
@@ -587,8 +630,7 @@
           <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">{{ c.hbbs_port }}</td>
           <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">{{ c.hbbr_port }}</td>
           <td style="font-size: 12px; color: var(--text-muted);">{{ c.updated_by|default:"System" }}</td>
-          <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">{{
-            c.updated_at|date:"Y-m-d H:i:s" }}</td>
+          <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">{{ c.updated_at|date:"Y-m-d H:i:s" }}</td>
           <td style="text-align: center;">
             {% if is_superadmin %}
             <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;"
@@ -706,6 +748,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script>
 const IS_SUPERADMIN = {% if is_superadmin %}true{% else %}false{% endif %};
 const API_KEY = '{{ api_key }}';
 let activeServerVersion = parseInt("{{ server_version|default:'0' }}", 10) || 0;
@@ -1218,11 +1261,45 @@ showToast(e.message, true);
 }
 }
 
+// EXPAND / COLLAPSE CONFIG HISTORY
+function toggleConfigHistory(forceState = null) {
+  const container = document.getElementById('config-history-container');
+  const icon = document.getElementById('history-toggle-icon');
+  const text = document.getElementById('history-toggle-text');
+  if (!container) return;
+
+  const isCollapsed = container.classList.contains('collapsed');
+  const willCollapse = (forceState !== null) ? forceState : !isCollapsed;
+
+  if (willCollapse) {
+    container.classList.add('collapsed');
+    if (icon) icon.style.transform = 'rotate(0deg)'; // points down: ready to expand
+    if (text) text.textContent = 'Expand';
+    localStorage.setItem('ninja_config_history_collapsed', 'true');
+  } else {
+    container.classList.remove('collapsed');
+    if (icon) icon.style.transform = 'rotate(180deg)'; // points up: ready to collapse
+    if (text) text.textContent = 'Collapse';
+    localStorage.setItem('ninja_config_history_collapsed', 'false');
+  }
+}
+
+function initConfigHistoryCollapseState() {
+  const saved = localStorage.getItem('ninja_config_history_collapsed');
+  // Default to collapsed unless user explicitly previously expanded it ('false')
+  if (saved === 'false') {
+    toggleConfigHistory(false);
+  } else {
+    toggleConfigHistory(true);
+  }
+}
+
 // INITIALIZE & START REAL-TIME 3s HEARTBEAT
 document.addEventListener('DOMContentLoaded', () => {
-setupFormDirtyTracking();
-loadSyncStatus();
-setInterval(loadSyncStatus, 3000);
+  setupFormDirtyTracking();
+  initConfigHistoryCollapseState();
+  loadSyncStatus();
+  setInterval(loadSyncStatus, 3000);
 });
 </script>
 {% endblock %}
