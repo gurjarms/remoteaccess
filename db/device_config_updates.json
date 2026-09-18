@@ -1,1 +1,13 @@
-{}
+{
+  "590412300": {
+    "pending": true,
+    "server_host": "192.168.1.43",
+    "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
+    "hbbs_port": "21116",
+    "hbbr_port": "21117",
+    "api_server": "http://192.168.1.43:8000",
+    "version": 130,
+    "updated_at": "2026-09-17T18:49:20.204059",
+    "migrated_away": true
+  }
+}

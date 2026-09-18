@@ -18,6 +18,7 @@ import copy
 from django.views.decorators.csrf import csrf_exempt
 from .views_front import *
 from django.utils.translation import gettext as _
+from django.utils import timezone
 
 
 def get_or_create_server_config_state():
@@ -292,12 +293,18 @@ def sysinfo(request):
         return JsonResponse(result)
 
     device = RustDesDevice.objects.filter(Q(rid=postdata['id']) & Q(uuid=postdata['uuid'])).first()
+    if not device:
+        device = RustDesDevice.objects.filter(rid=postdata['id']).first()
+        if device:
+            device.uuid = postdata['uuid']
+            device.save(update_fields=['uuid'])
+
     if device and device.is_deleted:
-        # Device has been soft-deleted from dashboard by administrator
-        result['data'] = 'ok'
-        result['server_version'] = cfg.version
-        result['device_version'] = dev_config_ver
-        return JsonResponse(result)
+        # Device was soft-deleted, but now it sent an active online signal!
+        # Automatically un-delete and restore to active fleet
+        device.is_deleted = False
+        device.deleted_at = None
+        device.save(update_fields=['is_deleted', 'deleted_at'])
 
     if not device:
         device = RustDesDevice(
@@ -316,12 +323,21 @@ def sysinfo(request):
     else:
         postdata2 = copy.copy(postdata)
         postdata2['rid'] = postdata2['id']
-        postdata2.pop('id')
+        postdata2.pop('id', None)
         postdata2.pop('config_version', None)
-        RustDesDevice.objects.filter(Q(rid=postdata['id']) & Q(uuid=postdata['uuid'])).update(**postdata2)
+        # Protect existing custom or hardware username if incoming is '-'
+        if postdata2.get('username') in ['-', '', None] and device.username and device.username != '-':
+            postdata2.pop('username', None)
+        # Never let sysinfo overwrite hardware_id, password_updated_at
+        for prot in ['hardware_id', 'password_updated_at', 'last_reboot_requested_at']:
+            postdata2.pop(prot, None)
+        postdata2['ip_address'] = client_ip
+        # Ensure device is marked active
+        postdata2['is_deleted'] = False
+        postdata2['deleted_at'] = None
+        RustDesDevice.objects.filter(rid=postdata['id']).update(**postdata2)
         if 'config_version' in postdata:
-            RustDesDevice.objects.filter(Q(rid=postdata['id']) & Q(uuid=postdata['uuid'])).update(config_version=dev_config_ver)
-
+            RustDesDevice.objects.filter(rid=postdata['id']).update(config_version=dev_config_ver)
 
     result['data'] = 'ok'
     result['server_version'] = cfg.version
@@ -333,9 +349,15 @@ def heartbeat(request):
     postdata = json.loads(request.body)
     rid = postdata.get('id')
     device = RustDesDevice.objects.filter(Q(rid=rid) & Q(uuid=postdata['uuid'])).first()
+    if not device:
+        device = RustDesDevice.objects.filter(rid=rid).first()
     if device:
         client_ip = get_client_ip(request)
         device.ip_address = client_ip
+        # Auto-reactivate if soft-deleted
+        if device.is_deleted:
+            device.is_deleted = False
+            device.deleted_at = None
         if 'config_version' in postdata:
             try:
                 device.config_version = int(postdata['config_version'])
@@ -369,9 +391,11 @@ def heartbeat(request):
 def resolve_id(request):
     """
     Allocates or resolves a permanent device ID.
-    The Android client sends its persistent hardware_id (ANDROID_ID) and hostname.
-    If the device was previously assigned an ID, return that exact ID.
-    Otherwise, assign a new unique 9-digit ID and register the device.
+    The Android client sends its persistent hardware_id (ANDROID_ID), preferred_id, uuid, and hostname.
+    - If hardware_id matches an existing device record, returns that exact ID.
+    - If preferred_id matches an existing device record, returns that exact ID and binds hardware_id.
+    - If client provides preferred_id from local storage and no prior record exists, registers preferred_id.
+    - Only if it's a completely new device without any prior ID, allocates a new unique 9-digit ID.
     """
     result = {}
     if request.method == 'GET':
@@ -383,35 +407,72 @@ def resolve_id(request):
         return JsonResponse({'error': f'invalid JSON: {str(e)}'}, status=400)
 
     hardware_id = postdata.get('hardware_id', '').strip()
+    preferred_id = postdata.get('preferred_id', '').strip()
     uuid = postdata.get('uuid', '').strip()
     hostname = postdata.get('hostname', '').strip() or 'Android Device'
 
-    if not hardware_id and not uuid:
-        return JsonResponse({'error': 'hardware_id or uuid required'}, status=400)
+    if not hardware_id and not uuid and not preferred_id:
+        return JsonResponse({'error': 'hardware_id, preferred_id, or uuid required'}, status=400)
 
-    # 1. Search for existing device by hardware_id or uuid
     device = None
+
+    # Priority 1: Search by dedicated hardware_id
     if hardware_id:
-        device = RustDesDevice.objects.filter(Q(username=hardware_id) | Q(uuid=hardware_id)).first()
+        device = RustDesDevice.objects.filter(hardware_id=hardware_id).first()
+        if not device:
+            # Fallback for devices created on older builds before dedicated hardware_id column
+            device = RustDesDevice.objects.filter(Q(username=hardware_id) | Q(uuid=hardware_id)).first()
+
+    # Priority 2: Search by preferred_id (client's locally persisted ID)
+    if not device and preferred_id:
+        device = RustDesDevice.objects.filter(rid=preferred_id).first()
+
+    # Priority 3: Search by uuid
     if not device and uuid:
         device = RustDesDevice.objects.filter(uuid=uuid).first()
 
     if device:
-        # Update hostname/uuid if needed
+        # Guarantee hardware_id is persisted on the record permanently
+        update_fields = []
+        if hardware_id and device.hardware_id != hardware_id:
+            device.hardware_id = hardware_id
+            update_fields.append('hardware_id')
         if hostname and not device.hostname:
             device.hostname = hostname
-            device.save(update_fields=['hostname'])
+            update_fields.append('hostname')
+        if update_fields:
+            device.save(update_fields=update_fields)
+
         result['id'] = device.rid
         result['status'] = 'ok'
         result['action'] = 'existing'
         return JsonResponse(result)
 
-    # 2. Allocate a brand new unique 9-digit device ID
+    # Priority 4: Client already has a preferred ID from persistent local storage (e.g. from SD card after reinstall)
+    if preferred_id and preferred_id.isdigit() and len(preferred_id) >= 6:
+        RustDesDevice.objects.create(
+            rid=preferred_id,
+            hardware_id=hardware_id,
+            uuid=uuid if uuid else hardware_id,
+            username=hardware_id if hardware_id else uuid,
+            hostname=hostname,
+            cpu='',
+            memory='',
+            os='Android',
+            version='',
+        )
+        result['id'] = preferred_id
+        result['status'] = 'ok'
+        result['action'] = 'registered_preferred'
+        return JsonResponse(result)
+
+    # Priority 5: Truly fresh installation on new physical hardware without existing ID
     for _attempt in range(50):
         candidate = str(random.randint(100_000_000, 999_999_999))
         if not RustDesDevice.objects.filter(rid=candidate).exists() and not RustDeskPeer.objects.filter(rid=candidate).exists():
             RustDesDevice.objects.create(
                 rid=candidate,
+                hardware_id=hardware_id,
                 uuid=uuid if uuid else hardware_id,
                 username=hardware_id if hardware_id else uuid,
                 hostname=hostname,
@@ -547,7 +608,33 @@ def api_devices_list(request):
             continue
         seen_ids.add(d.rid)
         peer = peers.get(d.rid)
-        is_online = bool(d.update_time and (now - d.update_time).total_seconds() <= 15)
+        is_online = bool(d.update_time and (now - d.update_time).total_seconds() <= 45)
+
+        # 3-Day Tag window calculation
+        password_updated_recent = False
+        password_days_left = 0
+        password_updated_at_str = None
+        if d.password_updated_at:
+            delta_seconds = (now - d.password_updated_at).total_seconds()
+            if 0 <= delta_seconds < (3 * 86400):
+                password_updated_recent = True
+                remaining_seconds = (3 * 86400) - delta_seconds
+                password_days_left = max(1, int(math.ceil(remaining_seconds / 86400.0)))
+            password_updated_at_str = d.password_updated_at.strftime('%Y-%m-%d %H:%M')
+
+        # Dual-status detection: Device network reachability vs RustDesk Core Service health
+        if not is_online:
+            service_status_label = 'offline'
+        elif getattr(d, 'rustdesk_service_running', True):
+            service_status_label = 'running'
+        else:
+            service_status_label = 'stalled'
+
+        reboot_pending = False
+        if getattr(d, 'last_reboot_requested_at', None):
+            if (timezone.now() - d.last_reboot_requested_at).total_seconds() <= 600:
+                reboot_pending = True
+
         data.append({
             'id': d.rid,
             'name': (peer.alias if peer and peer.alias else d.hostname) or f"Device {d.rid}",
@@ -558,8 +645,15 @@ def api_devices_list(request):
             'ip_address': d.ip_address,
             'battery_level': None,
             'online': is_online,
+            'rustdesk_service_running': getattr(d, 'rustdesk_service_running', True),
+            'service_status_label': service_status_label,
+            'reboot_pending': reboot_pending,
+            'last_reboot_requested_at': d.last_reboot_requested_at.isoformat() if getattr(d, 'last_reboot_requested_at', None) else None,
             'last_seen': d.update_time.isoformat() if d.update_time else None,
-            'info': {'cpu': d.cpu, 'memory': d.memory, 'version': d.version, 'uuid': d.uuid},
+            'password_updated_recent': password_updated_recent,
+            'password_days_left': password_days_left,
+            'password_updated_at': password_updated_at_str,
+            'info': {'cpu': d.cpu, 'memory': d.memory, 'version': d.version, 'uuid': d.uuid, 'hardware_id': d.hardware_id},
         })
     return JsonResponse({'devices': data, 'count': len(data)})
 
@@ -619,6 +713,85 @@ def api_device_delete(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+@require_ninja_api_key
+def api_device_reboot(request):
+    """
+    Queue a remote system reboot for a rooted Android device.
+    Requires: id (or device_ids list)
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        device_ids = data.get('device_ids', [])
+        if not device_ids and 'id' in data:
+            device_ids = [str(data['id']).strip()]
+
+        if not device_ids:
+            return JsonResponse({'error': 'device id required'}, status=400)
+
+        now = timezone.now()
+        updated_count = RustDesDevice.objects.filter(rid__in=device_ids).update(
+            last_reboot_requested_at=now
+        )
+
+        # Broadcast instant reboot command via MQTT
+        try:
+            from . import mqtt_service
+            for dev_id in device_ids:
+                mqtt_service.publish_device_command(str(dev_id), {
+                    'action': 'reboot',
+                    'timestamp': int(now.timestamp()),
+                    'device_id': str(dev_id)
+                })
+        except Exception as mqtt_err:
+            logger.warning(f"[api_device_reboot] MQTT publish warning: {mqtt_err}")
+
+        return JsonResponse({
+            'status': 'ok',
+            'device_ids': device_ids,
+            'count': updated_count,
+            'message': f'Remote reboot command successfully queued and broadcast via MQTT for {updated_count} device(s).'
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_ninja_api_key
+def api_device_reboot_ack(request):
+    """
+    Device acknowledges receipt and execution of reboot command.
+    Clears last_reboot_requested_at.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        rid = str(data.get('id', '')).strip()
+        if not rid:
+            return JsonResponse({'error': 'id required'}, status=400)
+
+        dev = RustDesDevice.objects.filter(rid=rid).first()
+        if dev:
+            # Device acknowledges reboot execution.
+            # Do NOT clear last_reboot_requested_at here!
+            # The device is now actively executing 'su -c reboot' and restarting.
+            # It must remain in rebooting/disabled state until it boots back up and sends
+            # an online telemetry/heartbeat signal.
+            logger.info(f"[api_device_reboot_ack] Device {rid} acknowledged reboot execution; restart in progress.")
+
+        return JsonResponse({
+            'status': 'ok',
+            'id': rid,
+            'message': 'Reboot command acknowledged by device. Device restart in progress.'
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+
 DEVICE_PASSWORDS_FILE = os.path.join(settings.BASE_DIR, 'db', 'device_passwords.json')
 
 def load_device_passwords():
@@ -662,8 +835,9 @@ def api_device_password(request):
                 return JsonResponse({'error': 'Superadmin password is required to change device password'}, status=403)
 
             # Authenticate superadmin password against UserProfile
-            admin_user = UserProfile.objects.filter(Q(is_admin=True) | Q(is_superuser=True)).first()
-            if not admin_user or not check_password(superadmin_pass, admin_user.password):
+            admin_users = UserProfile.objects.filter(Q(is_admin=True) | Q(is_superuser=True))
+            authenticated = any(check_password(superadmin_pass, admin.password) for admin in admin_users)
+            if not authenticated:
                 return JsonResponse({'error': 'Invalid superadmin password. Authorization denied.'}, status=403)
 
             passwords[rid] = new_pass
@@ -719,6 +893,56 @@ def api_device_password(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'GET or POST required'}, status=405)
+
+
+@csrf_exempt
+@require_ninja_api_key
+def api_device_view_password(request):
+    """
+    Reveal the device's latest permanent password upon Superadmin authentication.
+    Requires: id, superadmin_password
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        rid = str(data.get('id', '')).strip()
+        superadmin_pass = data.get('superadmin_password', '').strip()
+
+        if not rid:
+            return JsonResponse({'error': 'Device ID is required'}, status=400)
+        if not superadmin_pass:
+            return JsonResponse({'error': 'Superadmin authorization password is required'}, status=403)
+
+        admin_users = UserProfile.objects.filter(Q(is_admin=True) | Q(is_superuser=True))
+        authenticated = any(check_password(superadmin_pass, admin.password) for admin in admin_users)
+
+        if not authenticated:
+            return JsonResponse({'error': 'Invalid Superadmin authorization password.'}, status=403)
+
+        passwords = load_device_passwords()
+        pwd = passwords.get(rid)
+
+        # Fallback to queued update or system default
+        if not pwd:
+            updates = load_device_config_updates()
+            if rid in updates and 'password' in updates[rid]:
+                pwd = updates[rid]['password']
+
+        if not pwd:
+            pwd = getattr(settings, 'PERMANENT_PASSWORD', '') or 'NinjaDesk@2026'
+
+        dev = RustDesDevice.objects.filter(rid=rid).first()
+        updated_at_str = dev.password_updated_at.strftime('%Y-%m-%d %H:%M:%S') if dev and dev.password_updated_at else None
+
+        return JsonResponse({
+            'status': 'ok',
+            'id': rid,
+            'password': pwd,
+            'password_updated_at': updated_at_str
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 CONFIG_UPDATES_FILE = os.path.join(settings.BASE_DIR, 'db', 'device_config_updates.json')
@@ -803,6 +1027,19 @@ def api_device_config(request):
                 )
         else:
             update_fields = {'ip_address': client_ip}
+            # Auto-revive soft-deleted device upon receiving active communication signal
+            if getattr(dev_obj, 'is_deleted', False):
+                dev_obj.is_deleted = False
+                dev_obj.deleted_at = None
+                update_fields['is_deleted'] = False
+                update_fields['deleted_at'] = None
+
+            # Telemetry for RustDesk core service status (1=running, 0=stalled)
+            srv_running_param = request.GET.get('service_running')
+            if srv_running_param is not None:
+                srv_running = str(srv_running_param).strip().lower() in ('1', 'true', 'yes')
+                update_fields['rustdesk_service_running'] = srv_running
+
             # ONLY update update_time if device is actively belonging to this server.
             # If migrated_away is True, do NOT mark device online on this old server!
             if not is_migrated_away:
@@ -816,6 +1053,24 @@ def api_device_config(request):
 
         target_cfg = updates.get(rid)
         dev_ver = dev_obj.config_version if dev_obj else 0
+
+        # Check if remote reboot is queued for this device (valid within 10 minutes)
+        reboot_queued = False
+        if dev_obj and getattr(dev_obj, 'last_reboot_requested_at', None):
+            now_tz = timezone.now()
+            elapsed_reboot = (now_tz - dev_obj.last_reboot_requested_at).total_seconds()
+            if elapsed_reboot <= 600:
+                if elapsed_reboot >= 8:
+                    # Device has completed reboot and reconnected online! Clear reboot state.
+                    dev_obj.last_reboot_requested_at = None
+                    RustDesDevice.objects.filter(rid=rid).update(last_reboot_requested_at=None)
+                    reboot_queued = False
+                    logger.info(f"[api_device_config] Device {rid} reconnected online after reboot. Cleared reboot state.")
+                else:
+                    reboot_queued = True
+            else:
+                dev_obj.last_reboot_requested_at = None
+                RustDesDevice.objects.filter(rid=rid).update(last_reboot_requested_at=None)
 
         # Auto-clear pending state if device has already applied or reports target version.
         # IMPORTANT: Do NOT auto-clear if entry has an undelivered 'password' field —
@@ -849,6 +1104,8 @@ def api_device_config(request):
             }
             if 'password' in target_cfg:
                 resp['password'] = target_cfg['password']
+            if reboot_queued:
+                resp['reboot'] = True
             return JsonResponse(resp)
         elif dev_ver < cfg.version and cfg.version > 0:
             # Device has outdated config version. ONLY auto-push if this device has NOT been
@@ -873,9 +1130,14 @@ def api_device_config(request):
                     'hbbr_port': str(cfg.hbbr_port),
                     'api_server': target_api,
                 }
+                if reboot_queued:
+                    resp['reboot'] = True
                 return JsonResponse(resp)
 
-        return JsonResponse({'id': rid, 'pending': False, 'version': dev_ver, 'server_version': cfg.version, 'api_server': api_server_url})
+        resp = {'id': rid, 'pending': False, 'version': dev_ver, 'server_version': cfg.version, 'api_server': api_server_url}
+        if reboot_queued:
+            resp['reboot'] = True
+        return JsonResponse(resp)
 
     elif request.method == 'POST':
         # Enforce that only Superadmin can push server configurations to devices
@@ -1036,27 +1298,35 @@ def api_device_config_ack(request):
         data = json.loads(request.body.decode('utf-8'))
         rid = str(data.get('id', '')).strip()
         version = int(data.get('version', 0))
+        password_ack = bool(data.get('password_ack', False))
+
         updates = load_device_config_updates()
+        had_password_pending = False
         if rid in updates:
             updates[rid]['pending'] = False
-            updates[rid].pop('password', None)
+            if 'password' in updates[rid]:
+                had_password_pending = True
+                updates[rid].pop('password', None)
             updates[rid]['acknowledged_at'] = datetime.datetime.now().isoformat()
             if version > 0:
                 updates[rid]['version'] = version
-            # If the device ACK'd a migration to a different server (migrated_away=True),
-            # keep that flag so the auto-push block continues to suppress re-pushing our config.
-            # The flag is only cleared when an admin explicitly pushes THIS server's own config.
             save_device_config_updates(updates)
 
         # Update RustDesDevice model with new config version, confirmation timestamp, and refresh update_time
         now = datetime.datetime.now()
+        update_kwargs = {'config_updated_at': now, 'update_time': now}
         if version > 0:
-            RustDesDevice.objects.filter(rid=rid).update(config_version=version, config_updated_at=now, update_time=now)
+            update_kwargs['config_version'] = version
         else:
             cfg = get_or_create_server_config_state()
-            RustDesDevice.objects.filter(rid=rid).update(config_version=cfg.version, config_updated_at=now, update_time=now)
+            update_kwargs['config_version'] = cfg.version
 
-        return JsonResponse({'status': 'ok', 'id': rid, 'version': version})
+        if password_ack or had_password_pending:
+            update_kwargs['password_updated_at'] = now
+
+        RustDesDevice.objects.filter(rid=rid).update(**update_kwargs)
+
+        return JsonResponse({'status': 'ok', 'id': rid, 'version': version, 'password_ack': (password_ack or had_password_pending)})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -1075,15 +1345,19 @@ def api_device_sync_status(request):
             peers[p.rid] = p
 
     now = datetime.datetime.now()
-    cutoff = now - datetime.timedelta(seconds=15)
+    cutoff = now - datetime.timedelta(seconds=45)
 
-    total = devices.count()
+    seen_ids = set()
+    device_list = []
     synced = 0
     pending_count = 0
     outdated = 0
 
-    device_list = []
     for d in devices:
+        if not d.rid or d.rid in seen_ids:
+            continue
+        seen_ids.add(d.rid)
+
         is_online = bool(d.update_time and d.update_time >= cutoff)
         dev_ver = d.config_version
         target_entry = updates.get(d.rid, {})
@@ -1125,6 +1399,7 @@ def api_device_sync_status(request):
             'last_seen': d.update_time.strftime('%Y-%m-%d %H:%M:%S') if d.update_time else None,
         })
 
+    total = len(device_list)
     sync_pct = round((synced / total * 100)) if total > 0 else 100
 
     history_items = list(ServerConfigVersion.objects.order_by('-id')[:20].values(

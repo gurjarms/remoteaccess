@@ -310,26 +310,25 @@ def index(request):
     peer_id = request.GET.get('peer')
     if peer_id:
         is_default_peer = peer_id == DEFAULT_PEER_ID
-        context = {
-            'domain': getattr(_settings, 'ID_SERVER', '') or request.get_host().split(":")[0],
+        context = get_server_context(request)
+        context.update({
             'peer_id': peer_id,
             'peer_alias': request.GET.get('alias') or (DEFAULT_PEER_ALIAS if is_default_peer else peer_id),
             'peer_hostname': request.GET.get('hostname') or (DEFAULT_PEER_HOSTNAME if is_default_peer else peer_id),
-        }
+        })
         return render(request, 'webui.html', context)
     return redirect('/webui/devices/')
 
 
 def remote_view(request):
-    domain = getattr(_settings, 'ID_SERVER', '') or request.get_host().split(":")[0]
     peer_id = request.GET.get('peer') or DEFAULT_PEER_ID
     is_default_peer = peer_id == DEFAULT_PEER_ID
-    context = {
-        'domain': domain,
+    context = get_server_context(request)
+    context.update({
         'peer_id': peer_id,
         'peer_alias': request.GET.get('alias') or (DEFAULT_PEER_ALIAS if is_default_peer else peer_id),
         'peer_hostname': request.GET.get('hostname') or (DEFAULT_PEER_HOSTNAME if is_default_peer else peer_id),
-    }
+    })
     return render(request, 'webui.html', context)
 
 

@@ -485,15 +485,15 @@
             </div>
             <div class="form-group">
               <label>Target Server Public Key</label>
-              <input type="text" class="form-input" id="migServerKey" value="DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=" required>
+              <input type="text" class="form-input" id="migServerKey" value="{{ public_key }}" required>
             </div>
             <div class="form-group">
               <label>HBBS Port</label>
-              <input type="text" class="form-input" id="migHbbsPort" value="21116" required>
+              <input type="text" class="form-input" id="migHbbsPort" value="{{ hbbs_port|default:'21116' }}" required>
             </div>
             <div class="form-group">
               <label>HBBR Port</label>
-              <input type="text" class="form-input" id="migHbbrPort" value="21117" required>
+              <input type="text" class="form-input" id="migHbbrPort" value="{{ hbbr_port|default:'21117' }}" required>
             </div>
           </div>
 

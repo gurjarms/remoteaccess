@@ -210,3 +210,8 @@ LANGUAGES = (
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 )
+
+# MQTT Broker Settings
+MQTT_HOST = os.environ.get("MQTT_HOST", ID_SERVER)
+MQTT_PORT = int(os.environ.get("MQTT_PORT", "1883"))
+MQTT_ENABLED = os.environ.get("MQTT_ENABLED", "True").lower() == "true"
