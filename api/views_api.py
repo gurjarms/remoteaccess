@@ -731,6 +731,22 @@ def api_device_reboot(request):
         if not device_ids:
             return JsonResponse({'error': 'device id required'}, status=400)
 
+        # Disallow rebooting devices that have been migrated away to another server
+        updates = load_device_config_updates()
+        active_device_ids = []
+        for did in device_ids:
+            target_cfg = updates.get(str(did).strip())
+            if target_cfg and target_cfg.get('migrated_away', False):
+                logger.warning(f"[api_device_reboot] Device {did} was migrated away. Blocking reboot from old server.")
+            else:
+                active_device_ids.append(did)
+
+        if not active_device_ids:
+            return JsonResponse({
+                'error': 'The selected device has been migrated to another server and cannot be rebooted from this server.'
+            }, status=400)
+
+        device_ids = active_device_ids
         now = timezone.now()
         updated_count = RustDesDevice.objects.filter(rid__in=device_ids).update(
             last_reboot_requested_at=now
@@ -1056,7 +1072,7 @@ def api_device_config(request):
 
         # Check if remote reboot is queued for this device (valid within 10 minutes)
         reboot_queued = False
-        if dev_obj and getattr(dev_obj, 'last_reboot_requested_at', None):
+        if dev_obj and getattr(dev_obj, 'last_reboot_requested_at', None) and not is_migrated_away:
             now_tz = timezone.now()
             elapsed_reboot = (now_tz - dev_obj.last_reboot_requested_at).total_seconds()
             if elapsed_reboot <= 600:

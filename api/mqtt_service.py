@@ -51,6 +51,17 @@ def _handle_device_status(rid: str, payload_str: str):
         service_running = bool(data.get('service_running', data.get('service', True)))
         now = timezone.now()
 
+        # Ignore telemetry if device has been intentionally migrated away to another server
+        try:
+            from api.views_api import load_device_config_updates
+            updates = load_device_config_updates()
+            target_cfg = updates.get(rid)
+            if target_cfg and target_cfg.get('migrated_away', False):
+                logger.debug(f"[MQTT] Device {rid} is marked migrated_away. Ignoring status packet on this server.")
+                return
+        except Exception:
+            pass
+
         dev = RustDesDevice.objects.filter(rid=rid).first()
         if dev:
             update_fields = ['rustdesk_service_running']
@@ -567,6 +578,17 @@ def publish_device_command(device_id: str, command_dict: dict) -> bool:
     Sends a high-priority command directly to a device over MQTT.
     Topic: ninjadesk/device/<device_id>/command
     """
+    # Prevent sending commands to devices migrated away to another server
+    try:
+        from api.views_api import load_device_config_updates
+        updates = load_device_config_updates()
+        target_cfg = updates.get(device_id)
+        if target_cfg and target_cfg.get('migrated_away', False):
+            logger.warning(f"[MQTT] Cannot publish command to {device_id}: device has been migrated away from this server.")
+            return False
+    except Exception:
+        pass
+
     topic = f"ninjadesk/device/{device_id}/command"
     payload = json.dumps(command_dict)
 
