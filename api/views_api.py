@@ -17,6 +17,7 @@ from django.db.models import Q
 import copy
 from django.views.decorators.csrf import csrf_exempt
 from .views_front import *
+from django.utils.translation import gettext as _
 from django.utils import timezone
 import logging
 
