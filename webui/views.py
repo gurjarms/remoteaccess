@@ -513,8 +513,31 @@ def api_health_status(request):
         if fallback not in hosts_to_try:
             hosts_to_try.append(fallback)
 
-    hbbs_ok = any(check_port_status(h, hbbs_port, timeout=0.35) for h in hosts_to_try)
-    hbbr_ok = any(check_port_status(h, hbbr_port, timeout=0.35) for h in hosts_to_try)
+    # Clean all hosts: strip protocol (http/https), port, trailing slash
+    cleaned_hosts = []
+    for h in hosts_to_try:
+        if not h:
+            continue
+        clean = re.sub(r'^https?://', '', str(h)).strip().split('/')[0].split(':')[0]
+        if clean and clean not in cleaned_hosts:
+            cleaned_hosts.append(clean)
+
+    hbbs_port_int = int(hbbs_port) if str(hbbs_port).isdigit() else 21116
+    hbbr_port_int = int(hbbr_port) if str(hbbr_port).isdigit() else 21117
+
+    hbbs_ok = False
+    hbbr_ok = False
+    probe_details = []
+    for ch in cleaned_hosts:
+        h_hbbs = check_port_status(ch, hbbs_port_int, timeout=0.3)
+        h_hbbr = check_port_status(ch, hbbr_port_int, timeout=0.3)
+        probe_details.append({'host': ch, 'hbbs': h_hbbs, 'hbbr': h_hbbr})
+        if h_hbbs:
+            hbbs_ok = True
+        if h_hbbr:
+            hbbr_ok = True
+        if hbbs_ok and hbbr_ok:
+            break
     
     now = datetime.datetime.now()
     devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False)
@@ -533,6 +556,7 @@ def api_health_status(request):
         'status': 'ok',
         'server_time': now.isoformat(),
         'domain': domain,
+        'probe_details': probe_details,
         'services': {
             'hbbs': {'port': hbbs_port, 'online': hbbs_ok, 'protocol': 'Signaling / Rendezvous'},
             'hbbr': {'port': hbbr_port, 'online': hbbr_ok, 'protocol': 'Relay & NAT Traversal'},
