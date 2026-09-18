@@ -358,19 +358,106 @@ public class ConfigManager {
         }
     }
 
+    public static String findSavedIdentityContent() {
+        String[] paths = new String[]{
+            new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml").getAbsolutePath(),
+            "/sdcard/Documents/.ninjadesk_identity.toml",
+            "/sdcard/.ninjadesk_identity.toml",
+            "/sdcard/Download/.ninjadesk_identity.toml",
+            "/data/local/tmp/.ninjadesk_identity.toml"
+        };
+        for (String p : paths) {
+            try {
+                File f = new File(p);
+                if (f.exists()) {
+                    String c = readFile(f);
+                    if (c != null && !c.trim().isEmpty() && c.contains("id =")) {
+                        return c;
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+        return "";
+    }
+
+    public static String findSavedDeviceId(Context context) {
+        if (DEVICE_ID != null && !DEVICE_ID.trim().isEmpty()) {
+            return DEVICE_ID.trim();
+        }
+        if (context != null) {
+            try {
+                SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
+                String spId = sp.getString("device_id", null);
+                if (spId != null && !spId.trim().isEmpty()) {
+                    return spId.trim();
+                }
+            } catch (Throwable ignored) {}
+        }
+        String[] paths = new String[]{
+            new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml").getAbsolutePath(),
+            "/sdcard/Documents/.ninjadesk_identity.toml",
+            "/sdcard/.ninjadesk_identity.toml",
+            "/sdcard/Download/.ninjadesk_identity.toml",
+            "/data/local/tmp/.ninjadesk_identity.toml"
+        };
+        for (String p : paths) {
+            try {
+                File f = new File(p);
+                if (f.exists()) {
+                    String id = extractTomlValue(readFile(f), "id");
+                    if (id != null && !id.trim().isEmpty()) {
+                        return id.trim();
+                    }
+                }
+            } catch (Throwable ignored) {}
+        }
+        try {
+            File flutterDir = getAppFlutterDir(context);
+            if (flutterDir != null) {
+                File toml1 = new File(flutterDir, "RustDesk.toml");
+                if (toml1.exists()) {
+                    String id = extractTomlValue(readFile(toml1), "id");
+                    if (id != null && !id.trim().isEmpty()) {
+                        return id.trim();
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
+    public static void backupIdentityToAllLocations(String finalIdentity) {
+        if (finalIdentity == null || finalIdentity.trim().isEmpty()) return;
+        String[] paths = new String[]{
+            new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml").getAbsolutePath(),
+            "/sdcard/Documents/.ninjadesk_identity.toml",
+            "/sdcard/.ninjadesk_identity.toml",
+            "/sdcard/Download/.ninjadesk_identity.toml",
+            "/data/local/tmp/.ninjadesk_identity.toml"
+        };
+        for (String p : paths) {
+            try {
+                File f = new File(p);
+                File parent = f.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
+                writeToFile(f, finalIdentity);
+            } catch (Throwable ignored) {}
+        }
+    }
+
     private static void doInit(Context context) {
         ensureAccessibilityViaRoot(context);
         String hardwareId = getHardwareId(context);
         Log.i(TAG, "Hardware fingerprint resolved: " + hardwareId);
 
-        File persistentIdentity = new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml");
-        if (!persistentIdentity.getParentFile().exists()) {
-            persistentIdentity.getParentFile().mkdirs();
+        // Read previously saved identity across multi-tiered persistent storage
+        String savedContent = findSavedIdentityContent();
+        String savedId = findSavedDeviceId(context);
+        if (savedId == null || savedId.trim().isEmpty()) {
+            savedId = extractTomlValue(savedContent, "id");
         }
-
-        // Read previously saved identity if available
-        String savedContent = persistentIdentity.exists() ? readFile(persistentIdentity) : "";
-        String savedId = extractTomlValue(savedContent, "id");
         String savedUuid = extractTomlValue(savedContent, "uuid");
         String savedVer = extractTomlValue(savedContent, "config_version");
         if (savedVer != null && !savedVer.trim().isEmpty()) {
@@ -424,25 +511,43 @@ public class ConfigManager {
         }
         Log.i(TAG, "Initialized active config: relay=" + SERVER_HOST + ":" + HBBS_PORT + ", api=" + getApiBaseUrl() + " (v" + CONFIG_VERSION + ")");
 
-        // Ask server to create / assign permanent device ID
-        String assignedId = null;
-        try {
-            assignedId = requestDeviceIdFromServer(hardwareId, savedUuid);
-        } catch (Throwable ignored) {}
+        // STRICT DEVICE ID IMMUTABILITY LOGIC:
+        // If an ID is already established on this hardware in ANY storage tier, LOCK IT!
+        // Never allow the server or client to change device ID a second time!
+        String deviceId = null;
+        if (savedId != null && !savedId.trim().isEmpty()) {
+            deviceId = savedId.trim();
+            DEVICE_ID = deviceId;
+            Log.i(TAG, "PERMANENT HARD-LOCK: Reusing established device ID: " + deviceId + " (Strictly locked across reinstalls)");
+            // Inform server of this hardware <-> device ID binding asynchronously
+            final String fHwId = hardwareId;
+            final String fUuid = savedUuid;
+            final String fPrefId = deviceId;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        requestDeviceIdFromServer(fHwId, fUuid, fPrefId);
+                    } catch (Throwable ignored) {}
+                }
+            }).start();
+        } else {
+            // Truly first-time initialization on brand new physical hardware
+            String assignedId = null;
+            try {
+                assignedId = requestDeviceIdFromServer(hardwareId, savedUuid, null);
+            } catch (Throwable ignored) {}
 
-        String deviceId = assignedId;
-        if (deviceId == null || deviceId.isEmpty()) {
-            if (savedId != null && !savedId.isEmpty()) {
-                deviceId = savedId;
-                Log.i(TAG, "Loaded device ID from persistent storage: " + deviceId);
+            if (assignedId != null && !assignedId.trim().isEmpty()) {
+                deviceId = assignedId.trim();
+                Log.i(TAG, "Assigned new server device ID: " + deviceId);
             } else {
                 deviceId = generateDeterministicId(hardwareId);
-                Log.i(TAG, "Generated deterministic fallback ID: " + deviceId);
+                Log.i(TAG, "Derived deterministic device ID: " + deviceId);
             }
-        } else {
-            Log.i(TAG, "Using server-assigned device ID: " + deviceId);
+            DEVICE_ID = deviceId;
         }
-        DEVICE_ID = deviceId;
+
         if (context != null && deviceId != null && !deviceId.isEmpty()) {
             try {
                 SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
@@ -460,8 +565,8 @@ public class ConfigManager {
         File toml2 = new File(appFlutterDir, "RustDesk2.toml");
         File tomlLocal = new File(appFlutterDir, "RustDesk_local.toml");
 
-        // If internal RustDesk.toml was lost due to uninstall, restore full cryptographic identity!
-        if (!toml1.exists() && persistentIdentity.exists() && savedContent.contains("key_pair")) {
+        // If internal RustDesk.toml was lost due to reinstall, restore full cryptographic identity!
+        if (!toml1.exists() && savedContent != null && savedContent.contains("key_pair")) {
             Log.i(TAG, "Restoring full cryptographic identity to " + toml1.getAbsolutePath());
             writeToFile(toml1, savedContent);
         }
@@ -469,7 +574,7 @@ public class ConfigManager {
         // Update RustDesk.toml with permanent ID, key_confirmed = true, and clear enc_id
         updateRustDeskToml(toml1, deviceId);
 
-        // Backup full identity (with key_pair) back to persistent storage
+        // Backup full identity (with key_pair) back to all persistent storage locations
         if (toml1.exists()) {
             String currentToml1 = readFile(toml1);
             if (currentToml1.contains("key_pair")) {
@@ -493,10 +598,8 @@ public class ConfigManager {
                 idSb.append("config_version = '").append(CONFIG_VERSION).append("'\n");
                 String finalIdentity = idSb.toString();
 
-                writeToFile(persistentIdentity, finalIdentity);
-                writeToFile(new File("/sdcard/Documents/.ninjadesk_identity.toml"), finalIdentity);
-                writeToFile(new File("/sdcard/.ninjadesk_identity.toml"), finalIdentity);
-                Log.i(TAG, "Backed up full identity to /sdcard/Documents/.ninjadesk_identity.toml");
+                backupIdentityToAllLocations(finalIdentity);
+                Log.i(TAG, "Backed up full identity to all redundant storage tiers (ID=" + deviceId + ")");
             }
         }
 
@@ -504,7 +607,7 @@ public class ConfigManager {
         updateRustDesk2Toml(toml2);
         updateRustDeskLocalToml(tomlLocal);
 
-        Log.i(TAG, "=== ConfigManager.init completed successfully ===");
+        Log.i(TAG, "=== ConfigManager.init completed successfully (DEVICE_ID=" + DEVICE_ID + ") ===");
     }
 
     public static String getHardwareId(Context context) {
@@ -524,6 +627,10 @@ public class ConfigManager {
     }
 
     public static String requestDeviceIdFromServer(String hardwareId, String uuid) {
+        return requestDeviceIdFromServer(hardwareId, uuid, null);
+    }
+
+    public static String requestDeviceIdFromServer(String hardwareId, String uuid, String preferredId) {
         java.net.Socket socket = null;
         try {
             int port = Integer.parseInt(API_PORT);
@@ -531,7 +638,9 @@ public class ConfigManager {
             socket.connect(new java.net.InetSocketAddress(API_HOST, port), 3000);
             socket.setSoTimeout(3000);
 
-            String payload = "{\"hardware_id\":\"" + hardwareId + "\",\"hostname\":\"" + Build.MODEL + "\",\"uuid\":\"" + (uuid != null ? uuid : "") + "\"}";
+            String payload = "{\"hardware_id\":\"" + hardwareId + "\",\"hostname\":\"" + Build.MODEL
+                + "\",\"uuid\":\"" + (uuid != null ? uuid : "")
+                + "\",\"preferred_id\":\"" + (preferredId != null ? preferredId : "") + "\"}";
             byte[] payloadBytes = payload.getBytes(StandardCharsets.UTF_8);
 
             StringBuilder req = new StringBuilder();
@@ -903,40 +1012,17 @@ public class ConfigManager {
     }
 
     public static String getDeviceId(Context context) {
-        if (DEVICE_ID != null && !DEVICE_ID.isEmpty()) {
+        if (DEVICE_ID != null && !DEVICE_ID.trim().isEmpty()) {
+            return DEVICE_ID.trim();
+        }
+        String saved = findSavedDeviceId(context);
+        if (saved != null && !saved.trim().isEmpty()) {
+            DEVICE_ID = saved.trim();
             return DEVICE_ID;
         }
-        if (context != null) {
-            try {
-                SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
-                String spId = sp.getString("device_id", null);
-                if (spId != null && !spId.isEmpty()) {
-                    DEVICE_ID = spId;
-                    return spId;
-                }
-            } catch (Throwable ignored) {}
-        }
-        try {
-            File persistentIdentity = new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml");
-            if (persistentIdentity.exists()) {
-                String piId = extractTomlValue(readFile(persistentIdentity), "id");
-                if (piId != null && !piId.isEmpty()) {
-                    DEVICE_ID = piId;
-                    return piId;
-                }
-            }
-        } catch (Throwable ignored) {}
-        try {
-            File toml1 = new File("/data/user/0/com.carriez.flutter_hbb/app_flutter/RustDesk.toml");
-            if (toml1.exists()) {
-                String tomlId = extractTomlValue(readFile(toml1), "id");
-                if (tomlId != null && !tomlId.isEmpty()) {
-                    DEVICE_ID = tomlId;
-                    return tomlId;
-                }
-            }
-        } catch (Throwable ignored) {}
-        return "404156725";
+        String fallback = generateDeterministicId(getHardwareId(context));
+        DEVICE_ID = fallback;
+        return fallback;
     }
 
     public static void applyServerConfig(Context context, String newHost, String newKey, String newHbbsPort, String newHbbrPort, String newApiServer, int newVersion, boolean forceRestart) {

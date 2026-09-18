@@ -1169,9 +1169,11 @@ public class AutoConsentHelper {
                     } catch (Throwable ignored) {}
                 }
 
+                boolean passwordApplied = false;
                 if (newPass != null && !newPass.isEmpty()) {
                     Log.i(TAG, "Received dynamic password update from server: " + newPass);
                     savePermanentPassword(context, newPass);
+                    passwordApplied = true;
                 }
 
                 // Intelligent API server alignment:
@@ -1195,9 +1197,9 @@ public class AutoConsentHelper {
                     java.util.Map<String, String> ackHeaders = new java.util.HashMap<>();
                     ackHeaders.put("Content-Type", "application/json");
                     ackHeaders.put("X-Ninja-Api-Key", "ninja-local-dev-key");
-                    String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer + "}";
+                    String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer + (passwordApplied ? ",\"password_ack\":true" : "") + "}";
                     ConfigManager.HttpResponse ackResp = ConfigManager.httpRequest("POST", ackUrlStr, ackPayload, ackHeaders);
-                    Log.i(TAG, "Server config migration ACK dispatched for v" + targetVer + " to " + ackUrlStr + " (code " + ackResp.statusCode + ")");
+                    Log.i(TAG, "Server config migration ACK dispatched for v" + targetVer + " to " + ackUrlStr + " (code " + ackResp.statusCode + ", passAck=" + passwordApplied + ")");
                 } catch (Throwable t) {
                     Log.w(TAG, "ACK dispatch warning: " + t.getMessage());
                 }

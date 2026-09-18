@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^devices/?$', views.api_devices_list),
     url(r'^device/rename/?$', views.api_device_rename),
     url(r'^device/password/?$', views.api_device_password),
+    url(r'^device/view_password/?$', views.api_device_view_password),
     url(r'^device/delete/?$', views.api_device_delete),
     url(r'^device/config/ack/?$', views.api_device_config_ack),
     url(r'^device/config/?$', views.api_device_config),

@@ -312,6 +312,14 @@
               <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
                 ${d.hostname || 'Android / Windows Node'}
               </div>
+              ${d.password_updated_recent ? `
+              <div style="margin-top: 6px;">
+                <span class="sync-badge synced" style="font-size: 10px; padding: 3px 8px; display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; color: #10b981; font-weight: 700;" title="Password updated on ${d.password_updated_at || 'Recently'}">
+                  <span class="led-diode online" style="width: 6px; height: 6px; box-shadow: 0 0 6px #10b981;"></span>
+                  <span>PWD UPDATED (${d.password_days_left}d left)</span>
+                </span>
+              </div>
+              ` : ''}
             </div>
 
             <div class="device-status-badge">
@@ -349,7 +357,7 @@
           </div>
 
           <!-- ACTION BUTTONS -->
-          <div class="card-actions-grid">
+          <div class="card-actions-grid" style="grid-template-columns: 1.2fr 0.9fr 0.9fr 0.9fr; gap: 6px;">
             ${CAN_REMOTE_CONNECT ? `
             <button class="tactile-btn tactile-btn-primary" onclick="triggerRemoteAccess('${d.id}', '${safeName}', '${safeHost}')">
               <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/></svg>
@@ -362,6 +370,10 @@
               <span>Pass</span>
             </button>
             ` : ''}
+            <button class="tactile-btn tactile-btn-secondary" onclick="triggerViewPassword('${d.id}', '${safeName}')" title="See Permanent Device Password (Superadmin)">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <span>See Pass</span>
+            </button>
             <button class="tactile-btn tactile-btn-secondary" onclick="triggerSpecs(${safeInfo})" title="View Telemetry Specs">
               <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
               <span>Specs</span>

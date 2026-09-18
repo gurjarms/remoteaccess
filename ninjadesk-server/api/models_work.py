@@ -86,6 +86,8 @@ class RustDesDevice(models.Model):
     update_time = models.DateTimeField(verbose_name=('设备更新时间'), auto_now=True, blank=True)
     is_deleted = models.BooleanField(verbose_name=_('已软删除'), default=False)
     deleted_at = models.DateTimeField(verbose_name=_('软删除时间'), null=True, blank=True)
+    hardware_id = models.CharField(verbose_name=_('硬件标识'), max_length=128, blank=True, default='', db_index=True)
+    password_updated_at = models.DateTimeField(verbose_name=_('密码更新确认时间'), null=True, blank=True)
 
     class Meta:
         ordering = ('-rid',)

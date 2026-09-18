@@ -1107,6 +1107,76 @@
     </div>
   </div>
 
+  <!-- 6. VIEW DEVICE PASSWORD MODAL (SUPERADMIN) -->
+  <div class="modal-overlay" id="view-password-modal">
+    <div class="modal-chassis" style="max-width: 480px;">
+      <div class="modal-header" style="border-bottom-color: rgba(2, 132, 199, 0.3);">
+        <div class="modal-title" style="color: var(--accent-blue);">
+          <svg class="icon icon-md" viewBox="0 0 24 24">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <span>Device Security Password</span>
+        </div>
+        <button class="modal-close" onclick="closeModal('view-password-modal')">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <div class="lcd-screen" style="padding: 10px 14px; margin-bottom: 16px;">
+          <div>
+            <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device Target</div>
+            <div id="view-pass-device-name" style="font-size: 14px; font-weight: 700; color: var(--text-main);">--</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device ID</div>
+            <div id="view-pass-device-id" style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--lcd-text);">--</div>
+          </div>
+        </div>
+
+        <!-- Superadmin auth prompt -->
+        <div id="view-pass-auth-section">
+          <label class="form-label" for="view-pass-admin-input">Enter Superadmin Password to Authenticate:</label>
+          <input type="password" id="view-pass-admin-input" class="form-input" placeholder="Superadmin Account Password" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitViewPassword()">
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
+            🔒 Verification required. Plaintext credential retrieval is restricted to Superadministrators.
+          </div>
+        </div>
+
+        <!-- Revealed password display (initially hidden) -->
+        <div id="view-pass-result-section" style="display: none; margin-top: 14px;">
+          <div style="font-size: 11px; font-weight: 700; color: #10b981; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+            <span class="led-diode online" style="width: 7px; height: 7px;"></span>
+            <span>AUTHENTICATED • LATEST PERMANENT PASSWORD</span>
+          </div>
+          <div class="lcd-screen" style="padding: 14px; background: rgba(2, 132, 199, 0.08); border-color: rgba(2, 132, 199, 0.5);">
+            <div style="flex: 1;">
+              <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase; margin-bottom: 2px;">Permanent Password</div>
+              <div id="view-pass-value" style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 800; color: var(--lcd-text); letter-spacing: 1px;">--</div>
+            </div>
+            <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyRevealedPassword()">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <div id="view-pass-timestamp" style="font-size: 11px; color: var(--text-muted); margin-top: 8px;"></div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;" id="view-pass-footer-buttons">
+        <button class="tactile-btn tactile-btn-secondary" onclick="closeModal('view-password-modal')">Close</button>
+        <button class="tactile-btn tactile-btn-primary" id="view-pass-submit-btn" onclick="submitViewPassword()">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Verify & Reveal</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ============================================================================
     // GLOBAL THEME CONTROLLER
@@ -1385,6 +1455,71 @@
         showToast(e.message, true);
       } finally {
         if (btn) btn.disabled = false;
+      }
+    }
+
+    // ============================================================================
+    // SUPERADMIN VIEW PASSWORD HANDLERS
+    // ============================================================================
+    let currentViewPassId = '';
+    let currentRevealedPassword = '';
+
+    function triggerViewPassword(id, name) {
+      currentViewPassId = id;
+      currentRevealedPassword = '';
+      document.getElementById('view-pass-device-name').textContent = name || `Device ${id}`;
+      document.getElementById('view-pass-device-id').textContent = id;
+      document.getElementById('view-pass-admin-input').value = '';
+      document.getElementById('view-pass-auth-section').style.display = 'block';
+      document.getElementById('view-pass-result-section').style.display = 'none';
+      document.getElementById('view-pass-submit-btn').style.display = 'inline-flex';
+      openModal('view-password-modal');
+      setTimeout(() => document.getElementById('view-pass-admin-input').focus(), 150);
+    }
+
+    async function submitViewPassword() {
+      const saPass = document.getElementById('view-pass-admin-input').value;
+      if (!saPass) {
+        return showToast('Superadmin password required', true);
+      }
+      const btn = document.getElementById('view-pass-submit-btn');
+      if (btn) btn.disabled = true;
+      try {
+        const res = await fetch('/api/device/view_password/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Ninja-Api-Key': '{{ api_key }}'
+          },
+          body: JSON.stringify({
+            id: currentViewPassId,
+            superadmin_password: saPass
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          currentRevealedPassword = data.password;
+          document.getElementById('view-pass-value').textContent = data.password;
+          document.getElementById('view-pass-timestamp').textContent = data.password_updated_at 
+            ? `Confirmed on device: ${data.password_updated_at}`
+            : 'Default / Active system password';
+          document.getElementById('view-pass-auth-section').style.display = 'none';
+          document.getElementById('view-pass-result-section').style.display = 'block';
+          document.getElementById('view-pass-submit-btn').style.display = 'none';
+          showToast('Authenticated! Password revealed.');
+        } else {
+          showToast(data.error || 'Authentication denied', true);
+        }
+      } catch (e) {
+        showToast(e.message, true);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function copyRevealedPassword() {
+      if (currentRevealedPassword) {
+        copyToClipboard(currentRevealedPassword, 'Password');
       }
     }
   </script>
