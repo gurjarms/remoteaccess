@@ -468,11 +468,53 @@ def api_health_status(request):
     domain = getattr(_settings, 'ID_SERVER', '') or request.get_host().split(":")[0]
     hbbs_port = getattr(_settings, 'HBBS_PORT', 21116)
     hbbr_port = getattr(_settings, 'HBBR_PORT', 21117)
-    hosts_to_try = ['127.0.0.1', 'host.docker.internal']
-    if domain and domain not in ('127.0.0.1', 'localhost', '0.0.0.0'):
-        hosts_to_try.insert(0, domain)
-    hbbs_ok = any(check_port_status(h, hbbs_port) for h in hosts_to_try)
-    hbbr_ok = any(check_port_status(h, hbbr_port) for h in hosts_to_try)
+
+    try:
+        from api.views_api import get_or_create_server_config_state
+        cfg = get_or_create_server_config_state()
+        if cfg:
+            if cfg.server_host:
+                domain = cfg.server_host
+            if cfg.hbbs_port:
+                hbbs_port = cfg.hbbs_port
+            if cfg.hbbr_port:
+                hbbr_port = cfg.hbbr_port
+    except Exception:
+        pass
+
+    hosts_to_try = []
+
+    # 1. Any IP in host header (e.g. 103.174.10.206 from sslip.io)
+    raw_host = request.get_host().split(":")[0]
+    ip_match = re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', raw_host)
+    if ip_match and ip_match.group(0) not in hosts_to_try:
+        hosts_to_try.append(ip_match.group(0))
+
+    # 2. Configured domain if valid
+    if domain and domain not in ('127.0.0.1', 'localhost', '0.0.0.0') and domain not in hosts_to_try:
+        hosts_to_try.append(domain)
+
+    # 3. Host gateway from container routing table
+    try:
+        with open('/proc/net/route', 'r') as f:
+            for line in f:
+                fields = line.strip().split()
+                if len(fields) >= 3 and fields[1] == '00000000':
+                    import struct
+                    gw_hex = fields[2]
+                    gw_ip = socket.inet_ntoa(struct.pack("<L", int(gw_hex, 16)))
+                    if gw_ip not in hosts_to_try:
+                        hosts_to_try.append(gw_ip)
+    except Exception:
+        pass
+
+    # 4. Standard Docker host IP fallbacks
+    for fallback in ['172.17.0.1', '10.0.1.1', 'host.docker.internal', '127.0.0.1']:
+        if fallback not in hosts_to_try:
+            hosts_to_try.append(fallback)
+
+    hbbs_ok = any(check_port_status(h, hbbs_port, timeout=0.35) for h in hosts_to_try)
+    hbbr_ok = any(check_port_status(h, hbbr_port, timeout=0.35) for h in hosts_to_try)
     
     now = datetime.datetime.now()
     devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False)
