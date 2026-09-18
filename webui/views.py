@@ -468,8 +468,11 @@ def api_health_status(request):
     domain = getattr(_settings, 'ID_SERVER', '') or request.get_host().split(":")[0]
     hbbs_port = getattr(_settings, 'HBBS_PORT', 21116)
     hbbr_port = getattr(_settings, 'HBBR_PORT', 21117)
-    hbbs_ok = check_port_status('127.0.0.1', hbbs_port)
-    hbbr_ok = check_port_status('127.0.0.1', hbbr_port)
+    hosts_to_try = ['127.0.0.1', 'host.docker.internal']
+    if domain and domain not in ('127.0.0.1', 'localhost', '0.0.0.0'):
+        hosts_to_try.insert(0, domain)
+    hbbs_ok = any(check_port_status(h, hbbs_port) for h in hosts_to_try)
+    hbbr_ok = any(check_port_status(h, hbbr_port) for h in hosts_to_try)
     
     now = datetime.datetime.now()
     devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False)
