@@ -105,6 +105,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -134,18 +135,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'rustdesk_server_api.wsgi.application'
-
+ASGI_APPLICATION = 'rustdesk_server_api.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db/db.sqlite3',
+        'OPTIONS': {
+            'timeout': 30,
+        },
     }
 }
+CONN_MAX_AGE = int(os.environ.get("CONN_MAX_AGE", "60"))
 if DATABASE_TYPE == 'MYSQL' and MYSQL_DBNAME != '-' and MYSQL_USER != '-' and MYSQL_PASSWORD != '-':
     # 简单通过数据库名、账密信息过滤下，防止用户未配置mysql却使用mysql
     DATABASES = {
@@ -200,6 +204,15 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 LANGUAGES = (
     ('zh-hans', '中文简体'),

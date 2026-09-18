@@ -6,8 +6,8 @@
     "hbbs_port": "21116",
     "hbbr_port": "21117",
     "api_server": "http://192.168.1.22:8000",
-    "version": 196,
-    "updated_at": "2026-09-18T16:26:27.099074",
+    "version": 258,
+    "updated_at": "2026-09-18T16:57:38.306460",
     "migrated_away": false
   },
   "489629155": {
@@ -17,21 +17,43 @@
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 197,
-    "acknowledged_at": "2026-09-18T16:28:33.084743",
+    "version": 259,
+    "acknowledged_at": "2026-09-18T17:01:58.006442",
     "api_server": "http://192.168.1.43:8000",
-    "updated_at": "2026-09-18T16:28:32.888646",
+    "updated_at": "2026-09-18T17:01:55.246969",
     "migrated_away": true
   },
   "619222512": {
     "pending": true,
-    "server_host": "192.168.1.22",
+    "server_host": "192.168.1.43",
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "api_server": "http://192.168.1.22:8000",
-    "version": 196,
-    "updated_at": "2026-09-18T16:26:27.099043",
-    "migrated_away": false
+    "api_server": "http://192.168.1.43:8000",
+    "version": 259,
+    "updated_at": "2026-09-18T17:01:55.246959",
+    "migrated_away": true
+  },
+  "test_unified_pass_001": {
+    "pending": true,
+    "server_host": "192.168.1.43",
+    "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
+    "hbbs_port": "21116",
+    "hbbr_port": "21117",
+    "api_server": "http://192.168.1.43:8000",
+    "version": 259,
+    "updated_at": "2026-09-18T17:01:55.246932",
+    "migrated_away": true
+  },
+  "404156725": {
+    "pending": true,
+    "server_host": "192.168.1.43",
+    "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
+    "hbbs_port": "21116",
+    "hbbr_port": "21117",
+    "api_server": "http://192.168.1.43:8000",
+    "version": 259,
+    "updated_at": "2026-09-18T17:01:55.246975",
+    "migrated_away": true
   }
 }
