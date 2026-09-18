@@ -347,7 +347,7 @@
             <div style="font-weight: 600; color: var(--text-main);">${d.name || d.hostname}</div>
             ${d.password_updated_recent ? `
               <div style="margin-top: 2px;">
-                <span style="font-size: 10px; color: #10b981; font-weight: 700;">● PWD UPDATED (${d.password_days_left}d left)</span>
+                <span style="font-size: 10px; color: #10b981; font-weight: 700;">● PWD UPDATED: ${d.password_updated_at || 'Recently'}</span>
               </div>
             ` : ''}
           </td>

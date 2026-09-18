@@ -17,8 +17,10 @@ from django.db.models import Q
 import copy
 from django.views.decorators.csrf import csrf_exempt
 from .views_front import *
-from django.utils.translation import gettext as _
 from django.utils import timezone
+import logging
+
+logger = logging.getLogger('ninjadesk.api')
 
 
 def get_or_create_server_config_state():

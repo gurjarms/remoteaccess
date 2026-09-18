@@ -338,7 +338,7 @@
               <div style="margin-top: 6px;">
                 <span class="sync-badge synced" style="font-size: 10px; padding: 3px 8px; display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; color: #10b981; font-weight: 700;" title="Password updated on ${d.password_updated_at || 'Recently'}">
                   <span class="led-diode online" style="width: 6px; height: 6px; box-shadow: 0 0 6px #10b981;"></span>
-                  <span>PWD UPDATED (${d.password_days_left}d left)</span>
+                  <span>PWD UPDATED: ${d.password_updated_at || 'Recently'}</span>
                 </span>
               </div>
               ` : ''}
