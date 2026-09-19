@@ -27,7 +27,10 @@ logger = logging.getLogger('ninjadesk.api')
 def get_or_create_server_config_state():
     cfg = ServerConfigVersion.objects.order_by('-id').first()
     if not cfg:
-        default_host = getattr(settings, 'ID_SERVER', '') or getattr(settings, 'SERVER_HOST', '') or '127.0.0.1'
+        raw_default_host = getattr(settings, 'ID_SERVER', '') or getattr(settings, 'SERVER_HOST', '')
+        if raw_default_host:
+            raw_default_host = re.sub(r'^https?://', '', raw_default_host).split('/')[0].split(':')[0]
+        default_host = raw_default_host if raw_default_host else '127.0.0.1'
         default_key = getattr(settings, 'SERVER_KEY', getattr(settings, 'KEY', 'DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ='))
         default_hbbs = str(getattr(settings, 'HBBS_PORT', '21116'))
         default_hbbr = str(getattr(settings, 'HBBR_PORT', '21117'))
@@ -1218,17 +1221,33 @@ def api_device_config(request):
             target_version = cfg.version
 
             # Determine if this push targets a different server_host than this server's own cfg.
-            is_migration_to_different_server = (server_host != old_server_host)
+            clean_server_host = sanitize_server_host(server_host)
+            clean_old_server_host = sanitize_server_host(old_server_host)
+            is_migration_to_different_server = bool(clean_server_host and clean_old_server_host and clean_server_host != clean_old_server_host)
 
             # Dynamically compute target API server URL for this migration
             target_api_server = data.get('api_server', '').strip()
             if not target_api_server:
-                if is_migration_to_different_server:
-                    req_port = request.get_port()
-                    port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
-                    target_api_server = f"{request.scheme}://{server_host}{port_str}"
+                if clean_server_host and clean_server_host not in ('127.0.0.1', 'localhost', '0.0.0.0'):
+                    is_lan = clean_server_host.startswith('192.168.') or clean_server_host.startswith('10.') or clean_server_host.startswith('172.')
+                    if is_lan:
+                        req_port = request.get_port()
+                        port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ":8000"
+                        target_api_server = f"{request.scheme}://{clean_server_host}{port_str}"
+                    else:
+                        # Public domain or public IP uses standard HTTP/HTTPS ports (never :8000)
+                        target_api_server = f"{request.scheme}://{clean_server_host}"
                 else:
-                    target_api_server = request.build_absolute_uri('/')[:-1]
+                    uri_base = request.build_absolute_uri('/')[:-1]
+                    if '127.0.0.1' in uri_base or 'localhost' in uri_base:
+                        ext_host = getattr(settings, 'ID_SERVER', '') or request.get_host().split(':')[0]
+                        ext_host = re.sub(r'^https?://', '', ext_host).split('/')[0].split(':')[0]
+                        if ext_host and ext_host not in ('127.0.0.1', 'localhost', '0.0.0.0'):
+                            target_api_server = f"{request.scheme}://{ext_host}"
+                        else:
+                            target_api_server = uri_base
+                    else:
+                        target_api_server = uri_base
             import time
             current_push_id = str(int(time.time() * 1000))
 
