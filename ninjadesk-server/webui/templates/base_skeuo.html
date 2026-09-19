@@ -900,7 +900,7 @@
           <div>
             <div class="brand-title">
               Ninja Remote Dashboard
-              <span class="brand-tag">v2.4 SECURE</span>
+              <span class="brand-tag">v1.0 </span>
             </div>
             <div class="brand-sub">Ninja Remote Access Control Switchboard</div>
           </div>
@@ -934,7 +934,8 @@
           <!-- SERVER HEARTBEAT POD -->
           <div class="heartbeat-pod" title="Status of Host Services & Active Online Devices">
             <span class="led-diode online" id="global-status-led"></span>
-            <span id="global-status-text" class="global-status-text">HOST SERVICES: ONLINE &bull; {{ online_devices_count|default:"0" }} ONLINE</span>
+            <span id="global-status-text" class="global-status-text">HOST SERVICES: ONLINE &bull; {{
+              online_devices_count|default:"0" }} ONLINE</span>
             <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 8px; font-size: 11px;"
               onclick="checkGlobalHealth()" title="Check Host Services & Online Device Telemetry">
               <svg class="icon icon-sm" viewBox="0 0 24 24">
@@ -1147,9 +1148,10 @@
           Superadmin Password (Master Verification)
         </label>
         <input type="password" id="pass-admin-password" class="form-input"
-          placeholder="Enter Superadmin Account Password" autocomplete="current-password">
+          placeholder="Enter Superadmin Password to Authorize" autocomplete="current-password">
         <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
-          🔒 Single master field required to either view or update device credentials.
+          🔒 Any user (field tech, admin, operator) can change device credentials by entering any valid Superadmin
+          password.
         </div>
       </div>
 
@@ -1697,7 +1699,7 @@
       const superadmin_password = document.getElementById('pass-admin-password').value;
 
       if (!superadmin_password) {
-        return showToast('Superadmin password required to authenticate change', true);
+        return showToast('Superadmin password required to authenticate device change', true);
       }
       if (!password) {
         return showToast('Please enter the new device password', true);

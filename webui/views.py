@@ -135,7 +135,7 @@ def get_server_context(request, active_nav='devices'):
         'can_manage_users': bool(user and user.has_ninja_perm('perm_manage_users')),
         'can_manage_roles': bool(user and user.has_ninja_perm('perm_manage_roles')),
         'can_rename_device': bool(user and user.has_ninja_perm('perm_rename_device')),
-        'can_change_password': bool(user and user.has_ninja_perm('perm_device_password')),
+        'can_change_password': bool(user),
         'can_remote_connect': bool(user and user.has_ninja_perm('perm_remote_connect')),
     }
 

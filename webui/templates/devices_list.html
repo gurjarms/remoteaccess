@@ -240,7 +240,7 @@
   let rawDevices = [];
   let currentFilter = 'all';
   const CAN_RENAME = {% if can_rename_device %}true{% else %} false{% endif %};
-  const CAN_CHANGE_PASSWORD = {% if can_change_password %}true{% else %} false{% endif %};
+  const CAN_CHANGE_PASSWORD = true;
   const CAN_REMOTE_CONNECT = {% if can_remote_connect %}true{% else %} false{% endif %};
 
   async function loadDevices() {

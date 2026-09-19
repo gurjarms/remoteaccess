@@ -848,15 +848,17 @@ def api_device_password(request):
             data = json.loads(request.body.decode('utf-8'))
             rid = str(data.get('id', '')).strip()
             new_pass = data.get('password', '').strip()
-            superadmin_pass = data.get('superadmin_password', '').strip()
+            superadmin_pass = (data.get('superadmin_password') or data.get('admin_password') or '').strip()
 
             if not rid or not new_pass:
                 return JsonResponse({'error': 'Device ID and new password are required'}, status=400)
             if not superadmin_pass:
                 return JsonResponse({'error': 'Superadmin password is required to change device password'}, status=403)
 
-            # Authenticate superadmin password against UserProfile
-            admin_users = UserProfile.objects.filter(Q(is_admin=True) | Q(is_superuser=True))
+            # Authenticate against any active Superadmin user profile
+            admin_users = UserProfile.objects.filter(
+                Q(is_admin=True) | Q(is_superuser=True) | Q(role__name__iexact='superadmin') | Q(role__name__iexact='super admin')
+            ).filter(is_active=True)
             authenticated = any(check_password(superadmin_pass, admin.password) for admin in admin_users)
             if not authenticated:
                 return JsonResponse({'error': 'Invalid superadmin password. Authorization denied.'}, status=403)
@@ -928,14 +930,16 @@ def api_device_view_password(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
         rid = str(data.get('id', '')).strip()
-        superadmin_pass = data.get('superadmin_password', '').strip()
+        superadmin_pass = (data.get('superadmin_password') or data.get('admin_password') or '').strip()
 
         if not rid:
             return JsonResponse({'error': 'Device ID is required'}, status=400)
         if not superadmin_pass:
             return JsonResponse({'error': 'Superadmin authorization password is required'}, status=403)
 
-        admin_users = UserProfile.objects.filter(Q(is_admin=True) | Q(is_superuser=True))
+        admin_users = UserProfile.objects.filter(
+            Q(is_admin=True) | Q(is_superuser=True) | Q(role__name__iexact='superadmin') | Q(role__name__iexact='super admin')
+        ).filter(is_active=True)
         authenticated = any(check_password(superadmin_pass, admin.password) for admin in admin_users)
 
         if not authenticated:
