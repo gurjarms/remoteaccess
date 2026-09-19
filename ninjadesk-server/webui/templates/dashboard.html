@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NinjaDesk Central Control & Migration Dashboard</title>
+  <title>Ninja Remote Control & Migration Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -24,12 +25,16 @@
       --input-border: #334155;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg);
-      background-image: 
+      background-image:
         radial-gradient(at 10% 20%, rgba(0, 210, 255, 0.08) 0px, transparent 50%),
         radial-gradient(at 90% 80%, rgba(58, 123, 213, 0.08) 0px, transparent 50%);
       color: var(--text);
@@ -109,9 +114,21 @@
     }
 
     @keyframes pulse {
-      0% { transform: scale(0.95); opacity: 0.8; }
-      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px var(--emerald); }
-      100% { transform: scale(0.95); opacity: 0.8; }
+      0% {
+        transform: scale(0.95);
+        opacity: 0.8;
+      }
+
+      50% {
+        transform: scale(1.3);
+        opacity: 1;
+        box-shadow: 0 0 12px var(--emerald);
+      }
+
+      100% {
+        transform: scale(0.95);
+        opacity: 0.8;
+      }
     }
 
     /* GRID LAYOUT */
@@ -407,16 +424,17 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="container">
-    
+
     <!-- HEADER -->
     <header>
       <div class="brand">
         <div class="logo-badge">⚡</div>
         <div class="brand-text">
-          <h1>NinjaDesk Central Console</h1>
+          <h1>Ninja Remote Console</h1>
           <p>Centralized Device Management & Dynamic Server Migration</p>
         </div>
       </div>
@@ -427,7 +445,7 @@
     </header>
 
     <div class="grid">
-      
+
       <!-- DEVICE TABLE CARD -->
       <div class="card">
         <div class="card-header">
@@ -444,7 +462,8 @@
           <table>
             <thead>
               <tr>
-                <th style="width: 40px;"><input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"></th>
+                <th style="width: 40px;"><input type="checkbox" class="custom-checkbox" id="selectAllCheckbox"
+                    onchange="toggleSelectAll(this)"></th>
                 <th>Device ID</th>
                 <th>Custom Name / Alias</th>
                 <th>Platform / Model</th>
@@ -456,7 +475,8 @@
             </thead>
             <tbody id="deviceTableBody">
               <tr>
-                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading devices from server...</td>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Loading devices
+                  from server...</td>
               </tr>
             </tbody>
           </table>
@@ -474,7 +494,8 @@
           </div>
         </div>
         <p class="panel-subtitle">
-          Migrate selected TV boxes and endpoints to a new server IP or domain on-the-fly. Devices receive this update dynamically in background and reconnect automatically without user action.
+          Migrate selected TV boxes and endpoints to a new server IP or domain on-the-fly. Devices receive this update
+          dynamically in background and reconnect automatically without user action.
         </p>
 
         <form id="migrationForm" onsubmit="applyMigration(event)">
@@ -545,22 +566,29 @@
       <div class="form-group" style="margin-bottom: 12px;">
         <label>New Device Password</label>
         <div style="position: relative;">
-          <input type="password" class="form-input" id="pwModalNewPassword" placeholder="Enter new device password" style="width: 100%; padding-right: 38px;">
-          <button type="button" class="btn-icon-eye" onclick="togglePasswordVisibility('pwModalNewPassword', this)">👁️</button>
+          <input type="password" class="form-input" id="pwModalNewPassword" placeholder="Enter new device password"
+            style="width: 100%; padding-right: 38px;">
+          <button type="button" class="btn-icon-eye"
+            onclick="togglePasswordVisibility('pwModalNewPassword', this)">👁️</button>
         </div>
       </div>
       <div class="form-group" style="margin-bottom: 12px;">
         <label>Confirm New Password</label>
         <div style="position: relative;">
-          <input type="password" class="form-input" id="pwModalConfirmPassword" placeholder="Confirm new device password" style="width: 100%; padding-right: 38px;">
-          <button type="button" class="btn-icon-eye" onclick="togglePasswordVisibility('pwModalConfirmPassword', this)">👁️</button>
+          <input type="password" class="form-input" id="pwModalConfirmPassword"
+            placeholder="Confirm new device password" style="width: 100%; padding-right: 38px;">
+          <button type="button" class="btn-icon-eye"
+            onclick="togglePasswordVisibility('pwModalConfirmPassword', this)">👁️</button>
         </div>
       </div>
       <div class="form-group" style="margin-bottom: 16px;">
         <label style="color: #f59e0b;">Superadmin Password (Required)</label>
         <div style="position: relative;">
-          <input type="password" class="form-input" id="pwModalSuperadminPassword" placeholder="Enter Superadmin Password" style="width: 100%; padding-right: 38px; border-color: rgba(245, 158, 11, 0.4);">
-          <button type="button" class="btn-icon-eye" onclick="togglePasswordVisibility('pwModalSuperadminPassword', this)">👁️</button>
+          <input type="password" class="form-input" id="pwModalSuperadminPassword"
+            placeholder="Enter Superadmin Password"
+            style="width: 100%; padding-right: 38px; border-color: rgba(245, 158, 11, 0.4);">
+          <button type="button" class="btn-icon-eye"
+            onclick="togglePasswordVisibility('pwModalSuperadminPassword', this)">👁️</button>
         </div>
       </div>
       <div id="pwModalStatus" style="font-size: 13px; font-weight: 500; margin-bottom: 14px; display: none;"></div>
@@ -869,7 +897,7 @@
 
     function escapeHtml(str) {
       if (!str) return '';
-      return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+      return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
 
     function formatTime(iso) {
@@ -885,4 +913,5 @@
     setInterval(loadDevices, 4000);
   </script>
 </body>
+
 </html>

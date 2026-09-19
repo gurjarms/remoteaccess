@@ -117,6 +117,12 @@ def get_server_context(request, active_nav='devices'):
     is_super = bool(user and (user.is_superuser or user.is_admin))
     can_manage_users = bool(user and (is_super or (hasattr(user, 'has_ninja_perm') and user.has_ninja_perm('perm_manage_users'))))
     pending_count = UserProfile.objects.filter(is_approved=False).count() if can_manage_users else 0
+
+    now_dt = datetime.datetime.now()
+    active_devs = RustDesDevice.objects.filter(is_deleted=False)
+    total_devs = active_devs.count()
+    online_devs = sum(1 for d in active_devs if d.update_time and (now_dt - d.update_time).total_seconds() < 40)
+
     return {
         'domain': domain,
         'hbbs_port': hbbs_port,
@@ -124,9 +130,11 @@ def get_server_context(request, active_nav='devices'):
         'public_key': public_key,
         'api_key': api_key,
         'active_nav': active_nav,
-        'current_time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'current_time': now_dt.strftime('%Y-%m-%d %H:%M:%S'),
         'is_superadmin': is_super,  
         'pending_approval_count': pending_count,
+        'online_devices_count': online_devs,
+        'total_devices_count': total_devs,
         'api_port': getattr(_settings, 'API_PORT', 8000),
         'can_view_devices': bool(user and user.has_ninja_perm('perm_view_devices')),
         'can_view_dashboard': bool(user and user.has_ninja_perm('perm_view_dashboard')),
