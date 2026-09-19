@@ -13,14 +13,14 @@
   "489629155": {
     "pending": false,
     "password_updated_at": "2026-09-18T15:06:07.167560",
-    "server_host": "192.168.1.43",
+    "server_host": "nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 259,
-    "acknowledged_at": "2026-09-18T17:01:58.006442",
-    "api_server": "http://192.168.1.43:8000",
-    "updated_at": "2026-09-18T17:01:55.246969",
+    "version": 262,
+    "acknowledged_at": "2026-09-19T11:55:50.391223",
+    "api_server": "http://nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io:8000",
+    "updated_at": "2026-09-19T11:55:47.528662",
     "migrated_away": true
   },
   "619222512": {
