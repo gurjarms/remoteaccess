@@ -405,11 +405,9 @@
         <span>Pending & Outdated</span>
       </div>
       <div style="display: flex; align-items: baseline; gap: 8px;">
-        <span class="metric-val" id="stat-pending-count" style="color: #f59e0b; font-size: 24px;">{{
-          pending_devices_count }}</span>
+        <span class="metric-val" id="stat-pending-count" style="color: #f59e0b; font-size: 24px;">{{ pending_devices_count }}</span>
         <span style="font-size: 12px; color: var(--text-muted);">pending •</span>
-        <span class="metric-val" id="stat-outdated-count" style="color: #ef4444; font-size: 24px;">{{
-          outdated_devices_count }}</span>
+        <span class="metric-val" id="stat-outdated-count" style="color: #ef4444; font-size: 24px;">{{ outdated_devices_count }}</span>
         <span style="font-size: 12px; color: var(--text-muted);">outdated</span>
       </div>
       <div class="metric-sub">
@@ -432,8 +430,7 @@
         {{ domain }}:{{ hbbs_port }}
       </div>
       <div class="metric-sub">
-        Updated: <span id="stat-updated-at" style="color: var(--text-main); font-weight: 600;">{{ config_updated_at
-          }}</span>
+        Updated: <span id="stat-updated-at" style="color: var(--text-main); font-weight: 600;">{{ config_updated_at }}</span>
       </div>
     </div>
   </div>
@@ -496,9 +493,6 @@
     <div class="form-group">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
         <label class="form-label" style="margin-bottom: 0;">Relay & ID Server Host / IP</label>
-        <span class="badge-tag badge-superadmin" style="font-size: 10px; padding: 2px 7px;">
-          LATEST ACTIVE: <span id="label-active-host" style="font-family:'JetBrains Mono',monospace;">{{ domain }}</span>
-        </span>
       </div>
       <input type="text" id="target-host" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
         value="{{ domain }}" placeholder="e.g. 192.168.1.22 or remote.domain.com" autocomplete="off" autocorrect="off"

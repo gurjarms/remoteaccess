@@ -30,7 +30,7 @@
         }
     .end annotation
 
-    .line 1324
+    .line 1330
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask$1;->val$deviceId:Ljava/lang/String;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -43,7 +43,7 @@
 .method public run()V
     .registers 6
 
-    .line 1328
+    .line 1334
     const-string v0, "AutoConsentHelper"
 
     :try_start_2
@@ -53,26 +53,26 @@
 
     move-result-object v1
 
-    .line 1329
+    .line 1335
     new-instance v2, Ljava/util/HashMap;
 
     invoke-direct {v2}, Ljava/util/HashMap;-><init>()V
 
-    .line 1330
+    .line 1336
     const-string v3, "Content-Type"
 
     const-string v4, "application/json"
 
     invoke-interface {v2, v3, v4}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 1331
+    .line 1337
     const-string v3, "X-Ninja-Api-Key"
 
     const-string v4, "ninja-local-dev-key"
 
     invoke-interface {v2, v3, v4}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 1332
+    .line 1338
     new-instance v3, Ljava/lang/StringBuilder;
 
     invoke-direct {v3}, Ljava/lang/StringBuilder;-><init>()V
@@ -99,12 +99,12 @@
 
     move-result-object v3
 
-    .line 1333
+    .line 1339
     const-string v4, "POST"
 
     invoke-static {v4, v1, v3, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->httpRequest(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/util/Map;)Lcom/carriez/flutter_hbb/ConfigManager$HttpResponse;
 
-    .line 1334
+    .line 1340
     new-instance v2, Ljava/lang/StringBuilder;
 
     invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
@@ -127,14 +127,14 @@
     :try_end_51
     .catchall {:try_start_2 .. :try_end_51} :catchall_52
 
-    .line 1337
+    .line 1343
     goto :goto_6d
 
-    .line 1335
+    .line 1341
     :catchall_52
     move-exception v1
 
-    .line 1336
+    .line 1342
     new-instance v2, Ljava/lang/StringBuilder;
 
     invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
@@ -159,7 +159,7 @@
 
     invoke-static {v0, v1}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1338
+    .line 1344
     :goto_6d
     return-void
 .end method

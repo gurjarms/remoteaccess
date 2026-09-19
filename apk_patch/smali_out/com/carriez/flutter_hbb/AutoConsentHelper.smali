@@ -87,10 +87,10 @@
 
     sput-object v2, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
-    .line 1440
+    .line 1446
     sput-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
-    .line 1441
+    .line 1447
     sput-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttStarted:Z
 
     return-void
@@ -1114,16 +1114,16 @@
 .end method
 
 .method private static handleRemoteMqttCommand(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
-    .registers 7
+    .registers 11
 
-    .line 1536
+    .line 1542
     const-string p2, "AutoConsentHelper"
 
     if-nez p3, :cond_5
 
     return-void
 
-    .line 1537
+    .line 1543
     :cond_5
     :try_start_5
     const-string v0, "\"reboot\""
@@ -1132,26 +1132,231 @@
 
     move-result v0
 
-    if-nez v0, :cond_15
+    if-nez v0, :cond_bf
 
     const-string v0, "reboot"
 
     invoke-virtual {p3, v0}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
+    move-result v0
+
+    if-eqz v0, :cond_17
+
+    goto/16 :goto_bf
+
+    .line 1552
+    :cond_17
+    const-string p1, "\"nav\""
+
+    invoke-virtual {p3, p1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result p1
+    :try_end_1d
+    .catchall {:try_start_5 .. :try_end_1d} :catchall_10c
+
+    const-string v0, "\"volume_down\""
+
+    const-string v1, "\"volume_up\""
+
+    const-string v2, "\"power\""
+
+    const-string v3, "\"notifications\""
+
+    const-string v4, "\"recent\""
+
+    const-string v5, "\"recents\""
+
+    const-string v6, "\"home\""
+
+    if-nez p1, :cond_5f
+
+    :try_start_2d
+    const-string p1, "\"back\""
+
+    invoke-virtual {p3, p1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result p1
+
+    if-nez p1, :cond_5f
+
+    invoke-virtual {p3, v6}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result p1
+
+    if-nez p1, :cond_5f
+
+    invoke-virtual {p3, v5}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result p1
+
+    if-nez p1, :cond_5f
+
+    invoke-virtual {p3, v4}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result p1
+
+    if-nez p1, :cond_5f
+
+    invoke-virtual {p3, v3}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result p1
+
+    if-nez p1, :cond_5f
+
+    invoke-virtual {p3, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result p1
+
+    if-nez p1, :cond_5f
+
+    invoke-virtual {p3, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result p1
+
+    if-nez p1, :cond_5f
+
+    invoke-virtual {p3, v0}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result p1
+
+    if-eqz p1, :cond_10b
+
+    .line 1553
+    :cond_5f
+    const-string p1, "back"
+
+    .line 1554
+    invoke-virtual {p3, v6}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v6
+
+    if-eqz v6, :cond_6a
+
+    .line 1555
+    const-string p1, "home"
+
+    goto :goto_a5
+
+    .line 1556
+    :cond_6a
+    invoke-virtual {p3, v5}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v5
+
+    if-nez v5, :cond_a3
+
+    invoke-virtual {p3, v4}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v4
+
+    if-nez v4, :cond_a3
+
+    const-string v4, "\"apps\""
+
+    invoke-virtual {p3, v4}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v4
+
+    if-eqz v4, :cond_7f
+
+    goto :goto_a3
+
+    .line 1558
+    :cond_7f
+    invoke-virtual {p3, v3}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v3
+
+    if-eqz v3, :cond_88
+
+    .line 1559
+    const-string p1, "notifications"
+
+    goto :goto_a5
+
+    .line 1560
+    :cond_88
+    invoke-virtual {p3, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v2
+
+    if-eqz v2, :cond_91
+
+    .line 1561
+    const-string p1, "power"
+
+    goto :goto_a5
+
+    .line 1562
+    :cond_91
+    invoke-virtual {p3, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+    move-result v1
+
+    if-eqz v1, :cond_9a
+
+    .line 1563
+    const-string p1, "volume_up"
+
+    goto :goto_a5
+
+    .line 1564
+    :cond_9a
+    invoke-virtual {p3, v0}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
     move-result p3
 
-    if-eqz p3, :cond_61
+    if-eqz p3, :cond_a5
 
-    .line 1538
-    :cond_15
+    .line 1565
+    const-string p1, "volume_down"
+
+    goto :goto_a5
+
+    .line 1557
+    :cond_a3
+    :goto_a3
+    const-string p1, "recents"
+
+    .line 1567
+    :cond_a5
+    :goto_a5
+    new-instance p3, Ljava/lang/StringBuilder;
+
+    invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
+
+    const-string v0, "Executing Remote Navigation Action via MQTT: "
+
+    invoke-virtual {p3, v0}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-virtual {p3, p1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p3
+
+    invoke-virtual {p3}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p3
+
+    invoke-static {p2, p3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
+
+    .line 1568
+    invoke-static {p0, p1}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->performNavigationAction(Landroid/content/Context;Ljava/lang/String;)V
+
+    goto :goto_10b
+
+    .line 1544
+    :cond_bf
+    :goto_bf
     const-string p3, "Executing Instant Remote Reboot via MQTT command!"
 
     invoke-static {p2, p3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1540
+    .line 1546
     sget-object p3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
-    if-eqz p3, :cond_5e
+    if-eqz p3, :cond_108
 
     sget-object p3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
@@ -1159,9 +1364,9 @@
 
     move-result p3
 
-    if-eqz p3, :cond_5e
+    if-eqz p3, :cond_108
 
-    .line 1541
+    .line 1547
     new-instance p3, Ljava/lang/StringBuilder;
 
     invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
@@ -1186,7 +1391,7 @@
 
     move-result-object p3
 
-    .line 1542
+    .line 1548
     sget-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
     new-instance v1, Ljava/lang/StringBuilder;
@@ -1217,27 +1422,28 @@
 
     invoke-virtual {v0, v1, p3, v2}, Lcom/carriez/flutter_hbb/NinjaMqttClient;->publish(Ljava/lang/String;Ljava/lang/String;I)Z
 
-    .line 1545
-    :cond_5e
+    .line 1551
+    :cond_108
     invoke-static {p0, p1}, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->handleRemoteReboot(Landroid/content/Context;Ljava/lang/String;)V
-    :try_end_61
-    .catchall {:try_start_5 .. :try_end_61} :catchall_62
+    :try_end_10b
+    .catchall {:try_start_2d .. :try_end_10b} :catchall_10c
 
-    .line 1549
-    :cond_61
-    goto :goto_68
+    .line 1572
+    :cond_10b
+    :goto_10b
+    goto :goto_112
 
-    .line 1547
-    :catchall_62
+    .line 1570
+    :catchall_10c
     move-exception p0
 
-    .line 1548
+    .line 1571
     const-string p1, "handleRemoteMqttCommand error: "
 
     invoke-static {p2, p1, p0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1550
-    :goto_68
+    .line 1573
+    :goto_112
     return-void
 .end method
 
@@ -1534,94 +1740,142 @@
 .method public static onFlutterTextUpdated(Ljava/lang/Object;)V
     .registers 1
 
-    .line 1562
+    .line 1663
+    return-void
+.end method
+
+.method public static performNavigationAction(Landroid/content/Context;Ljava/lang/String;)V
+    .registers 5
+
+    .line 1576
+    if-nez p1, :cond_3
+
+    return-void
+
+    .line 1577
+    :cond_3
+    new-instance p0, Ljava/lang/Thread;
+
+    new-instance v0, Lcom/carriez/flutter_hbb/AutoConsentHelper$4;
+
+    invoke-direct {v0, p1}, Lcom/carriez/flutter_hbb/AutoConsentHelper$4;-><init>(Ljava/lang/String;)V
+
+    new-instance v1, Ljava/lang/StringBuilder;
+
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+
+    const-string v2, "NinjaNav-"
+
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object v1
+
+    invoke-virtual {v1, p1}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+
+    move-result-object p1
+
+    invoke-virtual {p1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+
+    move-result-object p1
+
+    invoke-direct {p0, v0, p1}, Ljava/lang/Thread;-><init>(Ljava/lang/Runnable;Ljava/lang/String;)V
+
+    .line 1650
+    invoke-virtual {p0}, Ljava/lang/Thread;->start()V
+
+    .line 1651
     return-void
 .end method
 
 .method public static registerCommandReceiver(Landroid/content/Context;)V
     .registers 5
 
-    .line 1175
+    .line 1180
     const-string v0, "AutoConsentHelper"
 
     sget-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->receiverRegistered:Z
 
-    if-nez v1, :cond_3e
+    if-nez v1, :cond_43
 
     if-nez p0, :cond_9
 
-    goto :goto_3e
+    goto :goto_43
 
-    .line 1177
+    .line 1182
     :cond_9
     :try_start_9
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$CommandReceiver;
 
     invoke-direct {v1}, Lcom/carriez/flutter_hbb/AutoConsentHelper$CommandReceiver;-><init>()V
 
-    .line 1178
+    .line 1183
     new-instance v2, Landroid/content/IntentFilter;
 
     invoke-direct {v2}, Landroid/content/IntentFilter;-><init>()V
 
-    .line 1179
+    .line 1184
     const-string v3, "com.carriez.flutter_hbb.SHOW_PASSWORD_DIALOG"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1180
+    .line 1185
     const-string v3, "com.carriez.flutter_hbb.RENAME_DEVICE"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1181
+    .line 1186
     const-string v3, "com.carriez.flutter_hbb.RETURN_HOME"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1182
+    .line 1187
+    const-string v3, "com.carriez.flutter_hbb.NAV_ACTION"
+
+    invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
+
+    .line 1188
     const-string v3, "com.carriez.flutter_hbb.REBOOT_DEVICE"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1183
+    .line 1189
     invoke-virtual {p0}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
 
     move-result-object p0
 
     invoke-virtual {p0, v1, v2}, Landroid/content/Context;->registerReceiver(Landroid/content/BroadcastReceiver;Landroid/content/IntentFilter;)Landroid/content/Intent;
 
-    .line 1184
+    .line 1190
     const/4 p0, 0x1
 
     sput-boolean p0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->receiverRegistered:Z
 
-    .line 1185
+    .line 1191
     const-string p0, "Command BroadcastReceiver registered successfully!"
 
     invoke-static {v0, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
-    :try_end_36
-    .catchall {:try_start_9 .. :try_end_36} :catchall_37
+    :try_end_3b
+    .catchall {:try_start_9 .. :try_end_3b} :catchall_3c
 
-    .line 1188
-    goto :goto_3d
+    .line 1194
+    goto :goto_42
 
-    .line 1186
-    :catchall_37
+    .line 1192
+    :catchall_3c
     move-exception p0
 
-    .line 1187
+    .line 1193
     const-string v1, "registerCommandReceiver error: "
 
     invoke-static {v0, v1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1189
-    :goto_3d
+    .line 1195
+    :goto_42
     return-void
 
-    .line 1175
-    :cond_3e
-    :goto_3e
+    .line 1180
+    :cond_43
+    :goto_43
     return-void
 .end method
 
@@ -3092,29 +3346,29 @@
 .method public static startConfigSyncPoller(Landroid/content/Context;)V
     .registers 3
 
-    .line 1553
+    .line 1654
     if-nez p0, :cond_3
 
     return-void
 
-    .line 1554
+    .line 1655
     :cond_3
     invoke-static {p0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->startMqttDaemon(Landroid/content/Context;)V
 
-    .line 1555
+    .line 1656
     sget-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
     if-eqz v0, :cond_b
 
     return-void
 
-    .line 1556
+    .line 1657
     :cond_b
     const/4 v0, 0x1
 
     sput-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
-    .line 1557
+    .line 1658
     new-instance v0, Ljava/lang/Thread;
 
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;
@@ -3125,7 +3379,7 @@
 
     invoke-virtual {v0}, Ljava/lang/Thread;->start()V
 
-    .line 1558
+    .line 1659
     return-void
 .end method
 
@@ -3154,7 +3408,7 @@
 
     monitor-enter v0
 
-    .line 1529
+    .line 1535
     :try_start_3
     sget-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttStarted:Z
 
@@ -3164,13 +3418,13 @@
 
     goto :goto_1e
 
-    .line 1530
+    .line 1536
     :cond_a
     const/4 v1, 0x1
 
     sput-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttStarted:Z
 
-    .line 1531
+    .line 1537
     new-instance v1, Ljava/lang/Thread;
 
     new-instance v2, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttDaemonTask;
@@ -3185,19 +3439,19 @@
     :try_end_1c
     .catchall {:try_start_3 .. :try_end_1c} :catchall_20
 
-    .line 1532
+    .line 1538
     monitor-exit v0
 
     return-void
 
-    .line 1529
+    .line 1535
     :cond_1e
     :goto_1e
     monitor-exit v0
 
     return-void
 
-    .line 1528
+    .line 1534
     :catchall_20
     move-exception p0
 

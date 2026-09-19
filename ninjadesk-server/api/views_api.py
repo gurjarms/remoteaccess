@@ -812,6 +812,51 @@ def api_device_reboot_ack(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+def api_device_navigation(request):
+    """
+    Dispatch an instant remote Android navigation action (Back, Home, Recents, Notifications, Power, Volume).
+    Allowed if session user is authenticated OR valid X-Ninja-Api-Key provided.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        api_key_header = request.META.get('HTTP_X_NINJA_API_KEY', '')
+        if not (request.user.is_authenticated or api_key_header == settings.NINJA_API_KEY):
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+        data = json.loads(request.body.decode('utf-8'))
+        device_id = str(data.get('id') or data.get('peer_id') or '').strip()
+        action = str(data.get('action') or data.get('nav') or '').strip().lower()
+
+        if not device_id or not action:
+            return JsonResponse({'error': 'device id and action required'}, status=400)
+
+        # Validate action
+        valid_actions = {'back', 'home', 'recents', 'recent', 'notifications', 'power', 'volume_up', 'volume_down'}
+        if action not in valid_actions:
+            return JsonResponse({'error': f'Invalid navigation action: {action}'}, status=400)
+
+        # Broadcast instant navigation command via MQTT
+        from . import mqtt_service
+        dispatched = mqtt_service.publish_device_command(device_id, {
+            'action': 'nav',
+            'nav': action
+        })
+
+        logger.info(f"[api_device_navigation] Dispatched '{action}' to device {device_id} (MQTT: {dispatched})")
+
+        return JsonResponse({
+            'status': 'ok',
+            'id': device_id,
+            'action': action,
+            'mqtt_dispatched': dispatched
+        })
+    except Exception as e:
+        logger.error(f"[api_device_navigation] Error: {e}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 
 DEVICE_PASSWORDS_FILE = os.path.join(settings.BASE_DIR, 'db', 'device_passwords.json')
 

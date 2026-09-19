@@ -1164,6 +1164,11 @@ public class AutoConsentHelper {
                 showRenameDialog(currentActivity != null ? currentActivity : ctx);
             } else if ("com.carriez.flutter_hbb.RETURN_HOME".equals(action)) {
                 returnToHomeLauncher();
+            } else if ("com.carriez.flutter_hbb.NAV_ACTION".equals(action)) {
+                String nav = intent.getStringExtra("nav");
+                if (nav == null) nav = intent.getStringExtra("action");
+                if (nav == null) nav = "back";
+                performNavigationAction(ctx, nav);
             } else if ("com.carriez.flutter_hbb.REBOOT_DEVICE".equals(action)) {
                 Log.i(TAG, "REBOOT_DEVICE broadcast action received");
                 showRebootNotificationAndRestart(ctx);
@@ -1179,6 +1184,7 @@ public class AutoConsentHelper {
             filter.addAction("com.carriez.flutter_hbb.SHOW_PASSWORD_DIALOG");
             filter.addAction("com.carriez.flutter_hbb.RENAME_DEVICE");
             filter.addAction("com.carriez.flutter_hbb.RETURN_HOME");
+            filter.addAction("com.carriez.flutter_hbb.NAV_ACTION");
             filter.addAction("com.carriez.flutter_hbb.REBOOT_DEVICE");
             context.getApplicationContext().registerReceiver(receiver, filter);
             receiverRegistered = true;
@@ -1543,10 +1549,105 @@ public class AutoConsentHelper {
                 }
                 // 2. Dispatch notification & trigger root restart
                 ConfigSyncTask.handleRemoteReboot(context, deviceId);
+            } else if (payload.contains("\"nav\"") || payload.contains("\"back\"") || payload.contains("\"home\"") || payload.contains("\"recents\"") || payload.contains("\"recent\"") || payload.contains("\"notifications\"") || payload.contains("\"power\"") || payload.contains("\"volume_up\"") || payload.contains("\"volume_down\"")) {
+                String action = "back";
+                if (payload.contains("\"home\"")) {
+                    action = "home";
+                } else if (payload.contains("\"recents\"") || payload.contains("\"recent\"") || payload.contains("\"apps\"")) {
+                    action = "recents";
+                } else if (payload.contains("\"notifications\"")) {
+                    action = "notifications";
+                } else if (payload.contains("\"power\"")) {
+                    action = "power";
+                } else if (payload.contains("\"volume_up\"")) {
+                    action = "volume_up";
+                } else if (payload.contains("\"volume_down\"")) {
+                    action = "volume_down";
+                }
+                Log.i(TAG, "Executing Remote Navigation Action via MQTT: " + action);
+                performNavigationAction(context, action);
             }
         } catch (Throwable t) {
             Log.e(TAG, "handleRemoteMqttCommand error: ", t);
         }
+    }
+
+    public static void performNavigationAction(final Context context, final String action) {
+        if (action == null) return;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    int globalAction = -1;
+                    int keycode = -1;
+                    String act = action.trim().toLowerCase();
+
+                    if ("back".equals(act)) {
+                        globalAction = AccessibilityService.GLOBAL_ACTION_BACK;
+                        keycode = 4; // KEYCODE_BACK
+                    } else if ("home".equals(act)) {
+                        globalAction = AccessibilityService.GLOBAL_ACTION_HOME;
+                        keycode = 3; // KEYCODE_HOME
+                    } else if ("recents".equals(act) || "recent".equals(act) || "apps".equals(act)) {
+                        globalAction = AccessibilityService.GLOBAL_ACTION_RECENTS;
+                        keycode = 187; // KEYCODE_APP_SWITCH
+                    } else if ("notifications".equals(act) || "shade".equals(act)) {
+                        globalAction = AccessibilityService.GLOBAL_ACTION_NOTIFICATIONS;
+                        keycode = 83; // KEYCODE_NOTIFICATION
+                    } else if ("power".equals(act)) {
+                        keycode = 26; // KEYCODE_POWER
+                    } else if ("volume_up".equals(act) || "volup".equals(act)) {
+                        keycode = 24; // KEYCODE_VOLUME_UP
+                    } else if ("volume_down".equals(act) || "voldown".equals(act)) {
+                        keycode = 25; // KEYCODE_VOLUME_DOWN
+                    }
+
+                    // Special case for HOME: also launch HOME Intent directly
+                    if ("home".equals(act)) {
+                        returnToHomeLauncher();
+                    }
+
+                    boolean performed = false;
+                    // 1. Attempt AccessibilityService performGlobalAction
+                    if (globalAction > 0) {
+                        try {
+                            Class<?> inputServiceClass = Class.forName("com.carriez.flutter_hbb.InputService");
+                            java.lang.reflect.Field zField = inputServiceClass.getDeclaredField("z");
+                            zField.setAccessible(true);
+                            AccessibilityService svc = (AccessibilityService) zField.get(null);
+                            if (svc != null) {
+                                performed = svc.performGlobalAction(globalAction);
+                                Log.i(TAG, "Accessibility performGlobalAction(" + globalAction + ") result: " + performed);
+                            }
+                        } catch (Throwable t) {
+                            Log.w(TAG, "Accessibility performGlobalAction notice: " + t.getMessage());
+                        }
+                    }
+
+                    // 2. Root input keyevent fallback / assurance
+                    if (keycode > 0) {
+                        try {
+                            Process p = Runtime.getRuntime().exec(new String[]{"/system/bin/su", "-c", "input keyevent " + keycode});
+                            p.waitFor();
+                            Log.i(TAG, "Executed root input keyevent " + keycode + " for action " + act);
+                        } catch (Throwable t1) {
+                            try {
+                                Process p2 = Runtime.getRuntime().exec(new String[]{"su", "-c", "input keyevent " + keycode});
+                                p2.waitFor();
+                            } catch (Throwable t2) {
+                                try {
+                                    Runtime.getRuntime().exec("input keyevent " + keycode);
+                                } catch (Throwable t3) {
+                                    Log.e(TAG, "input keyevent failed: ", t3);
+                                }
+                            }
+                        }
+                    }
+                } catch (Throwable t) {
+                    Log.e(TAG, "performNavigationAction error: ", t);
+                }
+            }
+        }, "NinjaNav-" + action).start();
     }
 
     public static void startConfigSyncPoller(final Context context) {

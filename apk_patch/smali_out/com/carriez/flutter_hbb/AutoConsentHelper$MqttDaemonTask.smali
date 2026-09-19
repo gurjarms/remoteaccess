@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/content/Context;)V
     .registers 2
 
-    .line 1484
+    .line 1490
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 1485
+    .line 1491
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttDaemonTask;->context:Landroid/content/Context;
 
-    .line 1486
+    .line 1492
     return-void
 .end method
 
@@ -40,7 +40,7 @@
 .method public run()V
     .registers 14
 
-    .line 1491
+    .line 1497
     const-string v0, "{\"id\":\""
 
     const-string v1, "/status"
@@ -56,17 +56,17 @@
 
     move-result-object v4
 
-    .line 1492
+    .line 1498
     invoke-static {}, Lcom/carriez/flutter_hbb/ConfigManager;->getMqttHost()Ljava/lang/String;
 
     move-result-object v6
 
-    .line 1493
+    .line 1499
     invoke-static {}, Lcom/carriez/flutter_hbb/ConfigManager;->getMqttPort()I
 
     move-result v7
 
-    .line 1494
+    .line 1500
     new-instance v5, Ljava/lang/StringBuilder;
 
     invoke-direct {v5}, Ljava/lang/StringBuilder;-><init>()V
@@ -87,7 +87,7 @@
 
     move-result-object v9
 
-    .line 1495
+    .line 1501
     new-instance v5, Ljava/lang/StringBuilder;
 
     invoke-direct {v5}, Ljava/lang/StringBuilder;-><init>()V
@@ -110,14 +110,14 @@
 
     move-result-object v10
 
-    .line 1497
+    .line 1503
     new-instance v11, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttCallbackHandler;
 
     iget-object v5, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttDaemonTask;->context:Landroid/content/Context;
 
     invoke-direct {v11, v5, v4, v6, v7}, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttCallbackHandler;-><init>(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;I)V
 
-    .line 1498
+    .line 1504
     new-instance v12, Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
     new-instance v5, Ljava/lang/StringBuilder;
@@ -145,7 +145,7 @@
     # setter for: Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
     invoke-static {v12}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$302(Lcom/carriez/flutter_hbb/NinjaMqttClient;)Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
-    .line 1506
+    .line 1512
     # getter for: Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$300()Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
@@ -155,14 +155,14 @@
     :try_end_6c
     .catchall {:try_start_8 .. :try_end_6c} :catchall_e5
 
-    .line 1510
+    .line 1516
     :goto_6c
     const-wide/16 v5, 0x7530
 
     :try_start_6e
     invoke-static {v5, v6}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 1511
+    .line 1517
     # getter for: Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$300()Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
@@ -181,14 +181,14 @@
 
     if-eqz v5, :cond_c5
 
-    .line 1512
+    .line 1518
     iget-object v5, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttDaemonTask;->context:Landroid/content/Context;
 
     invoke-static {v5}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->isRustDeskCoreServiceActive(Landroid/content/Context;)Z
 
     move-result v5
 
-    .line 1513
+    .line 1519
     new-instance v6, Ljava/lang/StringBuilder;
 
     invoke-direct {v6}, Ljava/lang/StringBuilder;-><init>()V
@@ -221,7 +221,7 @@
 
     move-result-object v5
 
-    .line 1514
+    .line 1520
     # getter for: Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$300()Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
@@ -254,16 +254,16 @@
     .catch Ljava/lang/InterruptedException; {:try_start_6e .. :try_end_c5} :catch_e2
     .catchall {:try_start_6e .. :try_end_c5} :catchall_c6
 
-    .line 1520
+    .line 1526
     :cond_c5
     :goto_c5
     goto :goto_6c
 
-    .line 1518
+    .line 1524
     :catchall_c6
     move-exception v5
 
-    .line 1519
+    .line 1525
     :try_start_c7
     new-instance v6, Ljava/lang/StringBuilder;
 
@@ -293,26 +293,26 @@
 
     goto :goto_c5
 
-    .line 1516
+    .line 1522
     :catch_e2
     move-exception v0
 
-    .line 1517
+    .line 1523
     nop
 
-    .line 1524
+    .line 1530
     goto :goto_eb
 
-    .line 1522
+    .line 1528
     :catchall_e5
     move-exception v0
 
-    .line 1523
+    .line 1529
     const-string v1, "MqttDaemonTask error: "
 
     invoke-static {v3, v1, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1525
+    .line 1531
     :goto_eb
     return-void
 .end method
