@@ -1,0 +1,924 @@
+{% extends 'base_skeuo.html' %}
+
+{% block title %}Client App Releases - Android, Windows, Linux - NinjaDesk Central{% endblock %}
+
+{% block extra_head %}
+<style>
+  .apps-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  /* SKEUOMORPHIC PLATFORM TAB SWITCHER */
+  .platform-tab-strip {
+    display: flex;
+    gap: 8px;
+    background: var(--panel-surface);
+    border: 1px solid var(--card-border);
+    padding: 6px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow-inset);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .platform-tab-btn {
+    flex: 1;
+    min-width: 160px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .platform-tab-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .platform-tab-btn.active {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--lcd-text);
+    box-shadow: var(--card-shadow-outset), 0 0 12px rgba(0, 240, 255, 0.15);
+  }
+
+  .tab-badge {
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+  }
+
+  .platform-tab-btn.active .tab-badge {
+    background: rgba(0, 240, 255, 0.2);
+    color: var(--lcd-text);
+  }
+
+  /* TAB PANELS */
+  .platform-panel {
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .platform-panel.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* UPLOAD DROP ZONE & FORM */
+  .upload-box {
+    background: var(--panel-surface);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: var(--card-shadow-outset);
+    margin-bottom: 24px;
+  }
+
+  .dropzone-area {
+    border: 2px dashed var(--card-border);
+    border-radius: 10px;
+    padding: 28px 20px;
+    text-align: center;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .dropzone-area:hover,
+  .dropzone-area.dragover {
+    border-color: var(--lcd-text);
+    background: rgba(0, 240, 255, 0.03);
+    box-shadow: inset 0 0 12px rgba(0, 240, 255, 0.1);
+  }
+
+  .file-preview-strip {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: rgba(0, 240, 255, 0.06);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    margin-bottom: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+
+  .upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  .checkbox-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    user-select: none;
+  }
+
+  .progress-wrap {
+    display: none;
+    margin-top: 14px;
+    margin-bottom: 8px;
+  }
+
+  .progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--card-bg);
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--btn-grad);
+    box-shadow: 0 0 8px rgba(2, 132, 199, 0.6);
+    transition: width 0.15s ease;
+  }
+
+  /* PUBLIC PERMALINK POD */
+  .permalink-pod {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="apps-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">
+      <a href="/webui/devices/" style="color: var(--lcd-text); text-decoration: none;">&larr; Hardware Console</a>
+      <span>/</span>
+      <span>Client Applications Matrix</span>
+    </div>
+    <div class="brand-title" style="font-size: 22px; display: flex; align-items: center; gap: 10px;">
+      <span>Multi-Platform Client Distribution</span>
+      <span class="badge-tag badge-outline" style="font-size: 11px;">BINARIES &amp; RELEASES</span>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center;">
+    {% if is_superadmin %}
+    <span class="badge-tag badge-superadmin" style="padding: 6px 12px;">
+      <span class="led-diode online" style="width: 6px; height: 6px;"></span>
+      SUPERADMIN UPLOAD AUTHORIZED
+    </span>
+    {% else %}
+    <span class="badge-tag" style="padding: 6px 12px; color: var(--text-muted);">
+      🔒 Read-Only Downloads Access
+    </span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- PLATFORM SELECTOR TABS -->
+<div class="platform-tab-strip">
+  <button class="platform-tab-btn active" id="tab-btn-android" onclick="switchTab('android')">
+    <svg class="icon icon-md" viewBox="0 0 24 24">
+      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+      <line x1="12" y1="18" x2="12.01" y2="18"/>
+    </svg>
+    <span>Android (.apk)</span>
+    <span class="tab-badge" id="badge-count-android">{{ android_count }}</span>
+  </button>
+
+  <button class="platform-tab-btn" id="tab-btn-windows" onclick="switchTab('windows')">
+    <svg class="icon icon-md" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+      <line x1="3" y1="9" x2="21" y2="9"/>
+      <line x1="9" y1="21" x2="9" y2="9"/>
+    </svg>
+    <span>Windows (.exe)</span>
+    <span class="tab-badge" id="badge-count-windows">{{ windows_count }}</span>
+  </button>
+
+  <button class="platform-tab-btn" id="tab-btn-linux" onclick="switchTab('linux')">
+    <svg class="icon icon-md" viewBox="0 0 24 24">
+      <polyline points="4 17 10 11 4 5"/>
+      <line x1="12" y1="19" x2="20" y2="19"/>
+    </svg>
+    <span>Linux (.deb / AppImage)</span>
+    <span class="tab-badge" id="badge-count-linux">{{ linux_count }}</span>
+  </button>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 1. ANDROID PANEL                                                          -->
+<!-- ========================================================================= -->
+<div class="platform-panel active" id="panel-android">
+  {% if is_superadmin %}
+  <div class="upload-box">
+    <div style="font-weight: 700; font-size: 15px; color: var(--lcd-text); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+      <svg class="icon icon-md" viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <span>Publish New Android Client Package</span>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 18px;">
+      Upload a signed Android package (.apk). You can optionally designate it as the latest master release.
+    </div>
+
+    <form id="form-upload-android" onsubmit="handleAppUpload(event, 'android')">
+      <input type="file" id="file-android" accept=".apk" style="display: none;" onchange="handleFileSelect('android')">
+
+      <div class="dropzone-area" id="dropzone-android" onclick="document.getElementById('file-android').click()" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" ondrop="handleDrop(event, 'android')">
+        <svg class="icon icon-lg" style="color: var(--lcd-accent); margin-bottom: 8px;" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <div style="font-weight: 700; font-size: 13px; color: var(--text-main);">Drag & Drop .apk Package Here, or Browse</div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Supported format: Android Application Package (*.apk)</div>
+      </div>
+
+      <div class="file-preview-strip" id="preview-strip-android">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg class="icon icon-sm" style="color: var(--lcd-text);" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          <span id="preview-name-android" style="color: var(--lcd-text); font-weight: 700;">-</span>
+          <span id="preview-size-android" style="color: var(--text-muted);">(-)</span>
+        </div>
+        <button type="button" class="tactile-btn tactile-btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="clearSelectedFile('android')">Clear</button>
+      </div>
+
+      <div class="upload-grid">
+        <div class="form-group">
+          <label class="form-label">Version Number *</label>
+          <input type="text" id="ver-android" class="form-input" placeholder="e.g. v1.4.2" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Release Notes / Changelog</label>
+          <input type="text" id="notes-android" class="form-input" placeholder="e.g. Added background telemetry and auto-key sync">
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <label class="checkbox-pill">
+          <input type="checkbox" id="latest-android" checked style="width: 16px; height: 16px; accent-color: var(--lcd-text);">
+          <span>Designate as Active Latest Release for Android</span>
+        </label>
+
+        <button type="submit" class="tactile-btn tactile-btn-primary" id="btn-submit-android" style="padding: 10px 22px;">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Upload &amp; Publish Android Release</span>
+        </button>
+      </div>
+
+      <div class="progress-wrap" id="progress-wrap-android">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill-android"></div>
+        </div>
+        <div style="font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted); margin-top: 4px; text-align: right;" id="progress-text-android">Uploading: 0%</div>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- ANDROID RELEASES TABLE -->
+  <div class="fleet-rack" style="padding: 0; overflow: hidden;">
+    <div class="rack-header" style="border-bottom: 1px solid var(--card-border); padding: 14px 20px;">
+      <div class="rack-title">
+        <svg class="icon icon-md" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/></svg>
+        <span>Android Package Repository</span>
+      </div>
+      <div style="font-size: 12px; font-family: 'JetBrains Mono'; color: var(--text-muted);">
+        Direct Link: <a href="/download/android/latest" target="_blank" style="color: var(--lcd-text); text-decoration: none;">/download/android/latest</a>
+      </div>
+    </div>
+
+    <div class="fleet-table-container" style="margin: 0; border: none; border-radius: 0;">
+      <table class="fleet-table">
+        <thead>
+          <tr>
+            <th style="width: 110px; text-align: center;">Version</th>
+            <th>Package Filename</th>
+            <th style="text-align: center;">Size</th>
+            <th>Release Notes</th>
+            <th>Uploaded By</th>
+            <th>Timestamp</th>
+            <th style="text-align: center;">Downloads</th>
+            <th style="text-align: center; width: 220px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-android">
+          {% for app in android_apps %}
+          <tr>
+            <td style="text-align: center;">
+              <span class="version-chip" style="font-weight: 800;">{{ app.version }}</span>
+              {% if app.is_latest %}
+              <div style="margin-top: 4px;">
+                <span class="sync-badge synced" style="font-size: 9px; padding: 1px 5px; display: inline-flex; align-items: center; gap: 3px;">
+                  <span class="led-diode online" style="width: 4px; height: 4px;"></span> LATEST
+                </span>
+              </div>
+              {% endif %}
+            </td>
+            <td>
+              <div style="font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">
+                {{ app.filename }}
+              </div>
+            </td>
+            <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-muted);">
+              {{ app.formatted_filesize }}
+            </td>
+            <td style="font-size: 12px; color: var(--text-muted); max-width: 200px;">
+              {{ app.release_notes|default:"-" }}
+            </td>
+            <td style="font-size: 12px; color: var(--text-muted);">
+              {{ app.uploaded_by|default:"Admin" }}
+            </td>
+            <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">
+              {{ app.uploaded_at|date:"Y-m-d H:i" }}
+            </td>
+            <td style="text-align: center;">
+              <span class="badge-tag" style="font-family: 'JetBrains Mono'; font-size: 11px;">{{ app.download_count }}</span>
+            </td>
+            <td style="text-align: center;">
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                <a href="/webui/apps/download/{{ app.id }}/" class="tactile-btn tactile-btn-primary" style="padding: 5px 10px; font-size: 11px;" title="Download Package">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Download</span>
+                </a>
+                {% if is_superadmin %}
+                  {% if not app.is_latest %}
+                  <button class="tactile-btn tactile-btn-secondary" style="padding: 5px 8px; font-size: 11px;" onclick="setAppLatest({{ app.id }})" title="Set as Latest Active Release">
+                    <span>Set Latest</span>
+                  </button>
+                  {% endif %}
+                  <button class="tactile-btn tactile-btn-secondary" style="padding: 5px 8px; font-size: 11px; color: var(--led-red);" onclick="deleteApp({{ app.id }}, '{{ app.version }}')" title="Delete Release">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 35px;">
+              No Android packages uploaded yet. Use the form above to publish the first .apk.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 2. WINDOWS PANEL                                                          -->
+<!-- ========================================================================= -->
+<div class="platform-panel" id="panel-windows">
+  {% if is_superadmin %}
+  <div class="upload-box">
+    <div style="font-weight: 700; font-size: 15px; color: var(--lcd-text); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+      <svg class="icon icon-md" viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <span>Publish New Windows Client Package</span>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 18px;">
+      Upload a Windows executable (.exe or .msi) client installer or portable binary.
+    </div>
+
+    <form id="form-upload-windows" onsubmit="handleAppUpload(event, 'windows')">
+      <input type="file" id="file-windows" accept=".exe,.msi" style="display: none;" onchange="handleFileSelect('windows')">
+
+      <div class="dropzone-area" id="dropzone-windows" onclick="document.getElementById('file-windows').click()" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" ondrop="handleDrop(event, 'windows')">
+        <svg class="icon icon-lg" style="color: var(--lcd-accent); margin-bottom: 8px;" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <div style="font-weight: 700; font-size: 13px; color: var(--text-main);">Drag & Drop .exe / .msi Package Here, or Browse</div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Supported format: Windows Portable / Installer (*.exe, *.msi)</div>
+      </div>
+
+      <div class="file-preview-strip" id="preview-strip-windows">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg class="icon icon-sm" style="color: var(--lcd-text);" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          <span id="preview-name-windows" style="color: var(--lcd-text); font-weight: 700;">-</span>
+          <span id="preview-size-windows" style="color: var(--text-muted);">(-)</span>
+        </div>
+        <button type="button" class="tactile-btn tactile-btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="clearSelectedFile('windows')">Clear</button>
+      </div>
+
+      <div class="upload-grid">
+        <div class="form-group">
+          <label class="form-label">Version Number *</label>
+          <input type="text" id="ver-windows" class="form-input" placeholder="e.g. v1.4.2" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Release Notes / Changelog</label>
+          <input type="text" id="notes-windows" class="form-input" placeholder="e.g. Windows desktop client build">
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <label class="checkbox-pill">
+          <input type="checkbox" id="latest-windows" checked style="width: 16px; height: 16px; accent-color: var(--lcd-text);">
+          <span>Designate as Active Latest Release for Windows</span>
+        </label>
+
+        <button type="submit" class="tactile-btn tactile-btn-primary" id="btn-submit-windows" style="padding: 10px 22px;">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Upload &amp; Publish Windows Release</span>
+        </button>
+      </div>
+
+      <div class="progress-wrap" id="progress-wrap-windows">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill-windows"></div>
+        </div>
+        <div style="font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted); margin-top: 4px; text-align: right;" id="progress-text-windows">Uploading: 0%</div>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- WINDOWS RELEASES TABLE -->
+  <div class="fleet-rack" style="padding: 0; overflow: hidden;">
+    <div class="rack-header" style="border-bottom: 1px solid var(--card-border); padding: 14px 20px;">
+      <div class="rack-title">
+        <svg class="icon icon-md" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+        <span>Windows Binary Repository</span>
+      </div>
+      <div style="font-size: 12px; font-family: 'JetBrains Mono'; color: var(--text-muted);">
+        Direct Link: <a href="/download/windows/latest" target="_blank" style="color: var(--lcd-text); text-decoration: none;">/download/windows/latest</a>
+      </div>
+    </div>
+
+    <div class="fleet-table-container" style="margin: 0; border: none; border-radius: 0;">
+      <table class="fleet-table">
+        <thead>
+          <tr>
+            <th style="width: 110px; text-align: center;">Version</th>
+            <th>Package Filename</th>
+            <th style="text-align: center;">Size</th>
+            <th>Release Notes</th>
+            <th>Uploaded By</th>
+            <th>Timestamp</th>
+            <th style="text-align: center;">Downloads</th>
+            <th style="text-align: center; width: 220px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-windows">
+          {% for app in windows_apps %}
+          <tr>
+            <td style="text-align: center;">
+              <span class="version-chip" style="font-weight: 800;">{{ app.version }}</span>
+              {% if app.is_latest %}
+              <div style="margin-top: 4px;">
+                <span class="sync-badge synced" style="font-size: 9px; padding: 1px 5px; display: inline-flex; align-items: center; gap: 3px;">
+                  <span class="led-diode online" style="width: 4px; height: 4px;"></span> LATEST
+                </span>
+              </div>
+              {% endif %}
+            </td>
+            <td>
+              <div style="font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">
+                {{ app.filename }}
+              </div>
+            </td>
+            <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-muted);">
+              {{ app.formatted_filesize }}
+            </td>
+            <td style="font-size: 12px; color: var(--text-muted); max-width: 200px;">
+              {{ app.release_notes|default:"-" }}
+            </td>
+            <td style="font-size: 12px; color: var(--text-muted);">
+              {{ app.uploaded_by|default:"Admin" }}
+            </td>
+            <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">
+              {{ app.uploaded_at|date:"Y-m-d H:i" }}
+            </td>
+            <td style="text-align: center;">
+              <span class="badge-tag" style="font-family: 'JetBrains Mono'; font-size: 11px;">{{ app.download_count }}</span>
+            </td>
+            <td style="text-align: center;">
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                <a href="/webui/apps/download/{{ app.id }}/" class="tactile-btn tactile-btn-primary" style="padding: 5px 10px; font-size: 11px;" title="Download Package">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Download</span>
+                </a>
+                {% if is_superadmin %}
+                  {% if not app.is_latest %}
+                  <button class="tactile-btn tactile-btn-secondary" style="padding: 5px 8px; font-size: 11px;" onclick="setAppLatest({{ app.id }})" title="Set as Latest Active Release">
+                    <span>Set Latest</span>
+                  </button>
+                  {% endif %}
+                  <button class="tactile-btn tactile-btn-secondary" style="padding: 5px 8px; font-size: 11px; color: var(--led-red);" onclick="deleteApp({{ app.id }}, '{{ app.version }}')" title="Delete Release">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 35px;">
+              No Windows packages uploaded yet. Use the form above to publish the first .exe.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 3. LINUX PANEL                                                            -->
+<!-- ========================================================================= -->
+<div class="platform-panel" id="panel-linux">
+  {% if is_superadmin %}
+  <div class="upload-box">
+    <div style="font-weight: 700; font-size: 15px; color: var(--lcd-text); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+      <svg class="icon icon-md" viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      <span>Publish New Linux Client Package</span>
+    </div>
+    <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 18px;">
+      Upload a Linux package (.deb, .AppImage, .tar.gz, .rpm, .run, or .bin).
+    </div>
+
+    <form id="form-upload-linux" onsubmit="handleAppUpload(event, 'linux')">
+      <input type="file" id="file-linux" accept=".deb,.appimage,.tar.gz,.rpm,.run,.bin,.zip" style="display: none;" onchange="handleFileSelect('linux')">
+
+      <div class="dropzone-area" id="dropzone-linux" onclick="document.getElementById('file-linux').click()" ondragover="handleDragOver(event, this)" ondragleave="handleDragLeave(event, this)" ondrop="handleDrop(event, 'linux')">
+        <svg class="icon icon-lg" style="color: var(--lcd-accent); margin-bottom: 8px;" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <div style="font-weight: 700; font-size: 13px; color: var(--text-main);">Drag & Drop Linux Package (.deb, .AppImage, etc.) Here, or Browse</div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Supported: Debian (*.deb), Portable (*.AppImage), Archive (*.tar.gz)</div>
+      </div>
+
+      <div class="file-preview-strip" id="preview-strip-linux">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg class="icon icon-sm" style="color: var(--lcd-text);" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          <span id="preview-name-linux" style="color: var(--lcd-text); font-weight: 700;">-</span>
+          <span id="preview-size-linux" style="color: var(--text-muted);">(-)</span>
+        </div>
+        <button type="button" class="tactile-btn tactile-btn-secondary" style="padding: 3px 8px; font-size: 11px;" onclick="clearSelectedFile('linux')">Clear</button>
+      </div>
+
+      <div class="upload-grid">
+        <div class="form-group">
+          <label class="form-label">Version Number *</label>
+          <input type="text" id="ver-linux" class="form-input" placeholder="e.g. v1.4.2" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Release Notes / Changelog</label>
+          <input type="text" id="notes-linux" class="form-input" placeholder="e.g. Linux x86_64 build">
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <label class="checkbox-pill">
+          <input type="checkbox" id="latest-linux" checked style="width: 16px; height: 16px; accent-color: var(--lcd-text);">
+          <span>Designate as Active Latest Release for Linux</span>
+        </label>
+
+        <button type="submit" class="tactile-btn tactile-btn-primary" id="btn-submit-linux" style="padding: 10px 22px;">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>Upload &amp; Publish Linux Release</span>
+        </button>
+      </div>
+
+      <div class="progress-wrap" id="progress-wrap-linux">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill-linux"></div>
+        </div>
+        <div style="font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted); margin-top: 4px; text-align: right;" id="progress-text-linux">Uploading: 0%</div>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- LINUX RELEASES TABLE -->
+  <div class="fleet-rack" style="padding: 0; overflow: hidden;">
+    <div class="rack-header" style="border-bottom: 1px solid var(--card-border); padding: 14px 20px;">
+      <div class="rack-title">
+        <svg class="icon icon-md" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/></svg>
+        <span>Linux Distribution Repository</span>
+      </div>
+      <div style="font-size: 12px; font-family: 'JetBrains Mono'; color: var(--text-muted);">
+        Direct Link: <a href="/download/linux/latest" target="_blank" style="color: var(--lcd-text); text-decoration: none;">/download/linux/latest</a>
+      </div>
+    </div>
+
+    <div class="fleet-table-container" style="margin: 0; border: none; border-radius: 0;">
+      <table class="fleet-table">
+        <thead>
+          <tr>
+            <th style="width: 110px; text-align: center;">Version</th>
+            <th>Package Filename</th>
+            <th style="text-align: center;">Size</th>
+            <th>Release Notes</th>
+            <th>Uploaded By</th>
+            <th>Timestamp</th>
+            <th style="text-align: center;">Downloads</th>
+            <th style="text-align: center; width: 220px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-linux">
+          {% for app in linux_apps %}
+          <tr>
+            <td style="text-align: center;">
+              <span class="version-chip" style="font-weight: 800;">{{ app.version }}</span>
+              {% if app.is_latest %}
+              <div style="margin-top: 4px;">
+                <span class="sync-badge synced" style="font-size: 9px; padding: 1px 5px; display: inline-flex; align-items: center; gap: 3px;">
+                  <span class="led-diode online" style="width: 4px; height: 4px;"></span> LATEST
+                </span>
+              </div>
+              {% endif %}
+            </td>
+            <td>
+              <div style="font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">
+                {{ app.filename }}
+              </div>
+            </td>
+            <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px; color: var(--text-muted);">
+              {{ app.formatted_filesize }}
+            </td>
+            <td style="font-size: 12px; color: var(--text-muted); max-width: 200px;">
+              {{ app.release_notes|default:"-" }}
+            </td>
+            <td style="font-size: 12px; color: var(--text-muted);">
+              {{ app.uploaded_by|default:"Admin" }}
+            </td>
+            <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">
+              {{ app.uploaded_at|date:"Y-m-d H:i" }}
+            </td>
+            <td style="text-align: center;">
+              <span class="badge-tag" style="font-family: 'JetBrains Mono'; font-size: 11px;">{{ app.download_count }}</span>
+            </td>
+            <td style="text-align: center;">
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                <a href="/webui/apps/download/{{ app.id }}/" class="tactile-btn tactile-btn-primary" style="padding: 5px 10px; font-size: 11px;" title="Download Package">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span>Download</span>
+                </a>
+                {% if is_superadmin %}
+                  {% if not app.is_latest %}
+                  <button class="tactile-btn tactile-btn-secondary" style="padding: 5px 8px; font-size: 11px;" onclick="setAppLatest({{ app.id }})" title="Set as Latest Active Release">
+                    <span>Set Latest</span>
+                  </button>
+                  {% endif %}
+                  <button class="tactile-btn tactile-btn-secondary" style="padding: 5px 8px; font-size: 11px; color: var(--led-red);" onclick="deleteApp({{ app.id }}, '{{ app.version }}')" title="Delete Release">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                  </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 35px;">
+              No Linux packages uploaded yet. Use the form above to publish the first .deb or .AppImage.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function switchTab(platform) {
+  const platforms = ['android', 'windows', 'linux'];
+  platforms.forEach(p => {
+    const btn = document.getElementById(`tab-btn-${p}`);
+    const panel = document.getElementById(`panel-${p}`);
+    if (btn) btn.classList.toggle('active', p === platform);
+    if (panel) panel.classList.toggle('active', p === platform);
+  });
+  window.location.hash = platform;
+}
+
+function handleDragOver(e, el) {
+  e.preventDefault();
+  el.classList.add('dragover');
+}
+
+function handleDragLeave(e, el) {
+  e.preventDefault();
+  el.classList.remove('dragover');
+}
+
+function handleDrop(e, platform) {
+  e.preventDefault();
+  const el = document.getElementById(`dropzone-${platform}`);
+  if (el) el.classList.remove('dragover');
+
+  if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    const fileInput = document.getElementById(`file-${platform}`);
+    fileInput.files = e.dataTransfer.files;
+    handleFileSelect(platform);
+  }
+}
+
+function handleFileSelect(platform) {
+  const fileInput = document.getElementById(`file-${platform}`);
+  const preview = document.getElementById(`preview-strip-${platform}`);
+  const nameSpan = document.getElementById(`preview-name-${platform}`);
+  const sizeSpan = document.getElementById(`preview-size-${platform}`);
+  const verInput = document.getElementById(`ver-${platform}`);
+
+  if (fileInput.files && fileInput.files[0]) {
+    const file = fileInput.files[0];
+    nameSpan.textContent = file.name;
+    sizeSpan.textContent = `(${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+    preview.style.display = 'flex';
+
+    // Auto-extract version if formatted e.g. rustdesk-1.4.2-x86_64.apk
+    if (verInput && !verInput.value) {
+      const match = file.name.match(/(\d+\.\d+(\.\d+)?)/);
+      if (match) {
+        verInput.value = `v${match[1]}`;
+      }
+    }
+  }
+}
+
+function clearSelectedFile(platform) {
+  const fileInput = document.getElementById(`file-${platform}`);
+  const preview = document.getElementById(`preview-strip-${platform}`);
+  if (fileInput) fileInput.value = '';
+  if (preview) preview.style.display = 'none';
+}
+
+function handleAppUpload(e, platform) {
+  e.preventDefault();
+
+  const fileInput = document.getElementById(`file-${platform}`);
+  if (!fileInput.files || !fileInput.files[0]) {
+    return showToast('Please select an application file to upload', true);
+  }
+
+  const file = fileInput.files[0];
+  const version = document.getElementById(`ver-${platform}`).value.trim();
+  const notes = document.getElementById(`notes-${platform}`).value.trim();
+  const isLatest = document.getElementById(`latest-${platform}`).checked;
+
+  const formData = new FormData();
+  formData.append('platform', platform);
+  formData.append('file', file);
+  formData.append('version', version);
+  formData.append('release_notes', notes);
+  formData.append('is_latest', isLatest ? 'true' : 'false');
+
+  const submitBtn = document.getElementById(`btn-submit-${platform}`);
+  const progressWrap = document.getElementById(`progress-wrap-${platform}`);
+  const progressFill = document.getElementById(`progress-fill-${platform}`);
+  const progressText = document.getElementById(`progress-text-${platform}`);
+
+  if (submitBtn) submitBtn.disabled = true;
+  if (progressWrap) progressWrap.style.display = 'block';
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/webui/apps/upload/', true);
+
+  xhr.upload.onprogress = function(event) {
+    if (event.lengthComputable) {
+      const pct = Math.round((event.loaded / event.total) * 100);
+      if (progressFill) progressFill.style.width = pct + '%';
+      if (progressText) progressText.textContent = `Uploading: ${pct}%`;
+    }
+  };
+
+  xhr.onload = function() {
+    if (submitBtn) submitBtn.disabled = false;
+    try {
+      const resp = JSON.parse(xhr.responseText);
+      if (xhr.status >= 200 && xhr.status < 300 && resp.status === 'ok') {
+        showToast(resp.message || 'App release published successfully!');
+        setTimeout(() => {
+          window.location.reload();
+        }, 800);
+      } else {
+        if (progressWrap) progressWrap.style.display = 'none';
+        showToast(resp.message || 'Upload failed', true);
+      }
+    } catch (err) {
+      if (progressWrap) progressWrap.style.display = 'none';
+      showToast('Server response error: ' + err.message, true);
+    }
+  };
+
+  xhr.onerror = function() {
+    if (submitBtn) submitBtn.disabled = false;
+    if (progressWrap) progressWrap.style.display = 'none';
+    showToast('Network error during file upload', true);
+  };
+
+  xhr.send(formData);
+}
+
+async function setAppLatest(appId) {
+  try {
+    const res = await fetch(`/webui/apps/set_latest/${appId}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      showToast(data.message);
+      setTimeout(() => window.location.reload(), 600);
+    } else {
+      showToast(data.message || 'Failed to designate latest release', true);
+    }
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+async function deleteApp(appId, version) {
+  if (!confirm(`Are you sure you want to permanently delete application release ${version}?`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/webui/apps/delete/${appId}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      showToast(data.message);
+      setTimeout(() => window.location.reload(), 600);
+    } else {
+      showToast(data.message || 'Delete failed', true);
+    }
+  } catch (err) {
+    showToast(err.message, true);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const hash = window.location.hash.replace('#', '').toLowerCase();
+  if (['android', 'windows', 'linux'].includes(hash)) {
+    switchTab(hash);
+  }
+});
+</script>
+{% endblock %}

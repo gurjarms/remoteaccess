@@ -1,0 +1,552 @@
+{% extends 'base_skeuo.html' %}
+
+{% block title %}Server Migration Logs & Configuration Audit - NinjaDesk Central{% endblock %}
+
+{% block extra_head %}
+<style>
+  .logs-chassis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .logs-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .stats-card {
+    background: var(--panel-surface);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: var(--card-shadow-outset);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .stats-icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .stats-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--lcd-text);
+  }
+
+  .stats-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  .logs-toolbar {
+    background: var(--panel-surface);
+    border: 1px solid var(--card-border);
+    border-radius: 12px 12px 0 0;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .search-wrapper {
+    position: relative;
+    min-width: 280px;
+    flex: 1;
+    max-width: 440px;
+  }
+
+  .search-wrapper input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border-radius: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    box-shadow: var(--card-shadow-inset);
+    transition: all 0.2s ease;
+  }
+
+  .search-wrapper input:focus {
+    outline: none;
+    border-color: var(--lcd-text);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+  }
+
+  .search-wrapper svg {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+
+  .sortable-th {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: color 0.15s ease;
+  }
+
+  .sortable-th:hover {
+    color: var(--lcd-text);
+  }
+
+  .sort-indicator {
+    margin-left: 6px;
+    font-size: 11px;
+    opacity: 0.5;
+  }
+
+  .sortable-th.sorted-asc .sort-indicator,
+  .sortable-th.sorted-desc .sort-indicator {
+    opacity: 1;
+    color: var(--lcd-text);
+  }
+
+  .copy-chip {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 7px;
+    border-radius: 5px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+
+  .copy-chip:hover {
+    color: var(--lcd-text);
+    border-color: var(--lcd-text);
+    background: rgba(0, 240, 255, 0.05);
+  }
+
+  .pagination-container {
+    background: var(--panel-surface);
+    border: 1px solid var(--card-border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .page-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+  }
+
+  .page-btn:hover:not(:disabled) {
+    border-color: var(--lcd-text);
+    color: var(--lcd-text);
+  }
+
+  .page-btn.active {
+    background: var(--lcd-text);
+    color: #04070c;
+    font-weight: 800;
+    border-color: var(--lcd-text);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+  }
+
+  .page-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logs-chassis-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">
+      <a href="/webui/migration/" style="color: var(--lcd-text); text-decoration: none;">&larr; Server & Migration Console</a>
+      <span>/</span>
+      <span>Migration Logs & Configuration Audit</span>
+    </div>
+    <div class="brand-title" style="font-size: 22px; display: flex; align-items: center; gap: 10px;">
+      <span>Server Migration Audit Trail</span>
+      <span class="badge-tag badge-superadmin" style="font-size: 11px;">CHRONOLOGICAL LOGS</span>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 10px; align-items: center;">
+    <a href="/webui/migration/" class="tactile-btn tactile-btn-secondary" style="padding: 9px 16px; font-size: 12px;">
+      <svg class="icon icon-sm" viewBox="0 0 24 24">
+        <path d="m15 18-6-6 6-6"/>
+      </svg>
+      <span>Back to Migration Console</span>
+    </a>
+    <button class="tactile-btn tactile-btn-primary" style="padding: 9px 16px; font-size: 12px;" onclick="loadLogs(1)">
+      <svg class="icon icon-sm" viewBox="0 0 24 24">
+        <polyline points="23 4 23 10 17 10"/>
+        <polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      <span>Refresh Logs</span>
+    </button>
+  </div>
+</div>
+
+<!-- TELEMETRY CARDS -->
+<div class="logs-stats-grid">
+  <div class="stats-card">
+    <div class="stats-icon-box" style="background: rgba(0, 240, 255, 0.1); color: var(--lcd-accent); border: 1px solid rgba(0, 240, 255, 0.25);">
+      <svg class="icon icon-md" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
+    </div>
+    <div>
+      <div class="stats-val" id="stat-total-count">-</div>
+      <div class="stats-label">Total Configurations Logged</div>
+    </div>
+  </div>
+
+  <div class="stats-card">
+    <div class="stats-icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25);">
+      <svg class="icon icon-md" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+    </div>
+    <div>
+      <div class="stats-val" id="stat-current-version" style="color: #10b981;">-</div>
+      <div class="stats-label">Active Master Version</div>
+    </div>
+  </div>
+
+  <div class="stats-card">
+    <div class="stats-icon-box" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25);">
+      <svg class="icon icon-md" viewBox="0 0 24 24">
+        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+        <line x1="6" y1="6" x2="6.01" y2="6"/>
+        <line x1="6" y1="18" x2="6.01" y2="18"/>
+      </svg>
+    </div>
+    <div>
+      <div class="stats-val" id="stat-active-host" style="font-size: 15px; word-break: break-all;">-</div>
+      <div class="stats-label">Current Relay Host / IP</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGS TABLE RACK -->
+<div class="fleet-rack" style="padding: 0; overflow: hidden;">
+  <!-- TOOLBAR -->
+  <div class="logs-toolbar">
+    <div class="search-wrapper">
+      <svg class="icon icon-sm" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="log-search-input" placeholder="Search by host, key, operator or version..." oninput="handleSearchDebounced()">
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <label style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Per Page:</label>
+      <select id="log-page-size" onchange="loadLogs(1)" style="padding: 6px 10px; border-radius: 6px; background: var(--card-bg); border: 1px solid var(--card-border); color: var(--text-main); font-family: 'JetBrains Mono', monospace; font-size: 12px;">
+        <option value="10">10</option>
+        <option value="15" selected>15</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="fleet-table-container" style="margin: 0; border: none; border-radius: 0;">
+    <table class="fleet-table">
+      <thead>
+        <tr>
+          <th class="sortable-th" style="width: 100px; text-align: center;" onclick="setSort('version')">
+            <span>Version</span>
+            <span class="sort-indicator" id="sort-icon-version">&#9650;&#9660;</span>
+          </th>
+          <th class="sortable-th" onclick="setSort('server_host')">
+            <span>Server Host / IP</span>
+            <span class="sort-indicator" id="sort-icon-server_host">&#9650;&#9660;</span>
+          </th>
+          <th>Server Public Key</th>
+          <th style="text-align: center;">HBBS Port</th>
+          <th style="text-align: center;">HBBR Port</th>
+          <th class="sortable-th" onclick="setSort('updated_by')">
+            <span>Operator</span>
+            <span class="sort-indicator" id="sort-icon-updated_by">&#9650;&#9660;</span>
+          </th>
+          <th class="sortable-th" onclick="setSort('updated_at')">
+            <span>Timestamp</span>
+            <span class="sort-indicator" id="sort-icon-updated_at">&#9650;&#9660;</span>
+          </th>
+          <th style="text-align: center; width: 170px;">Rollback / Console</th>
+        </tr>
+      </thead>
+      <tbody id="logs-tbody">
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 35px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px;">
+              <span class="led-diode online" style="width: 6px; height: 6px;"></span>
+              <span>Loading configuration logs...</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PAGINATION FOOTER -->
+  <div class="pagination-container">
+    <div>
+      Showing <span id="pag-range-start" style="font-weight: 700; color: var(--text-main);">0</span> to 
+      <span id="pag-range-end" style="font-weight: 700; color: var(--text-main);">0</span> of 
+      <span id="pag-total-items" style="font-weight: 700; color: var(--text-main);">0</span> records
+    </div>
+
+    <div style="display: flex; gap: 6px; align-items: center;" id="pag-buttons-container">
+      <!-- Buttons dynamically injected -->
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentPage = 1;
+let currentSortBy = 'id';
+let currentSortOrder = 'desc';
+let searchTimeout = null;
+
+function handleSearchDebounced() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    loadLogs(1);
+  }, 300);
+}
+
+function setSort(field) {
+  if (currentSortBy === field) {
+    currentSortOrder = (currentSortOrder === 'asc') ? 'desc' : 'asc';
+  } else {
+    currentSortBy = field;
+    currentSortOrder = 'asc';
+  }
+  updateSortIndicators();
+  loadLogs(1);
+}
+
+function updateSortIndicators() {
+  const fields = ['version', 'server_host', 'updated_by', 'updated_at'];
+  fields.forEach(f => {
+    const icon = document.getElementById(`sort-icon-${f}`);
+    const th = icon ? icon.closest('th') : null;
+    if (!icon || !th) return;
+    th.classList.remove('sorted-asc', 'sorted-desc');
+    if (f === currentSortBy) {
+      if (currentSortOrder === 'asc') {
+        icon.innerHTML = '&#9650;';
+        th.classList.add('sorted-asc');
+      } else {
+        icon.innerHTML = '&#9660;';
+        th.classList.add('sorted-desc');
+      }
+    } else {
+      icon.innerHTML = '&#9650;&#9660;';
+    }
+  });
+}
+
+function copyText(text, label = 'Copied') {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(`${label} to clipboard!`);
+  }).catch(() => {
+    showToast('Failed to copy to clipboard', true);
+  });
+}
+
+async function loadLogs(page = 1) {
+  currentPage = page;
+  const tbody = document.getElementById('logs-tbody');
+  const search = document.getElementById('log-search-input').value.trim();
+  const pageSize = document.getElementById('log-page-size').value;
+
+  try {
+    const url = `/webui/api/migration/logs/?page=${currentPage}&page_size=${pageSize}&search=${encodeURIComponent(search)}&sort_by=${currentSortBy}&sort_order=${currentSortOrder}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.status !== 'ok') {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--led-red); padding: 30px;">Error: ${data.message || 'Failed to load logs'}</td></tr>`;
+      return;
+    }
+
+    const { logs, pagination } = data;
+    document.getElementById('stat-total-count').textContent = pagination.total_items;
+
+    if (logs.length > 0) {
+      const latest = logs.find(l => l.is_latest) || logs[0];
+      document.getElementById('stat-current-version').textContent = `v${latest.version}`;
+      document.getElementById('stat-active-host').textContent = latest.server_host;
+    }
+
+    if (logs.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px;">No migration logs match your search criteria.</td></tr>`;
+      renderPagination(pagination);
+      return;
+    }
+
+    let rowsHtml = '';
+    logs.forEach(l => {
+      const isLatestBadge = l.is_latest ? `
+        <span class="sync-badge synced" style="font-size: 10px; padding: 2px 6px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+          <span class="led-diode online" style="width: 5px; height: 5px;"></span> CURRENT LATEST
+        </span>
+      ` : '';
+
+      const fullKey = l.server_key || '';
+      const truncKey = fullKey.length > 28 ? `${fullKey.substring(0, 28)}...` : fullKey;
+
+      rowsHtml += `
+        <tr>
+          <td style="text-align: center;">
+            <span class="version-chip" style="font-weight: 800;">v${l.version}</span>
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">${escapeHtml(l.server_host)}</span>
+              <button class="copy-chip" onclick="copyText('${escapeHtml(l.server_host)}', 'Host')" title="Copy Host">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
+            ${isLatestBadge}
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);" title="${escapeHtml(fullKey)}">
+                ${escapeHtml(truncKey)}
+              </span>
+              <button class="copy-chip" onclick="copyText('${escapeHtml(fullKey)}', 'Public Key')" title="Copy Public Key">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
+          </td>
+          <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">${escapeHtml(l.hbbs_port)}</td>
+          <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">${escapeHtml(l.hbbr_port)}</td>
+          <td style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
+            <span class="badge-tag" style="font-size: 10px; background: rgba(255,255,255,0.06);">${escapeHtml(l.updated_by)}</span>
+          </td>
+          <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">
+            ${escapeHtml(l.updated_at)}
+          </td>
+          <td style="text-align: center;">
+            <a href="/webui/migration/?load_host=${encodeURIComponent(l.server_host)}&load_key=${encodeURIComponent(l.server_key)}&load_hbbs=${encodeURIComponent(l.hbbs_port)}&load_hbbr=${encodeURIComponent(l.hbbr_port)}" 
+               class="tactile-btn tactile-btn-secondary" style="padding: 5px 12px; font-size: 11px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+              <span>Load to Console</span>
+            </a>
+          </td>
+        </tr>
+      `;
+    });
+
+    tbody.innerHTML = rowsHtml;
+    renderPagination(pagination);
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--led-red); padding: 30px;">Network error loading logs: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+function renderPagination(pag) {
+  const { total_items, total_pages, current_page, page_size } = pag;
+  const start = total_items === 0 ? 0 : (current_page - 1) * page_size + 1;
+  const end = Math.min(total_items, current_page * page_size);
+
+  document.getElementById('pag-range-start').textContent = start;
+  document.getElementById('pag-range-end').textContent = end;
+  document.getElementById('pag-total-items').textContent = total_items;
+
+  const btnContainer = document.getElementById('pag-buttons-container');
+  let btns = '';
+
+  btns += `<button class="page-btn" onclick="loadLogs(1)" ${current_page <= 1 ? 'disabled' : ''} title="First Page">&laquo;</button>`;
+  btns += `<button class="page-btn" onclick="loadLogs(${current_page - 1})" ${current_page <= 1 ? 'disabled' : ''} title="Previous Page">&lsaquo;</button>`;
+
+  // Render around current page
+  const maxButtons = 5;
+  let startPage = Math.max(1, current_page - 2);
+  let endPage = Math.min(total_pages, startPage + maxButtons - 1);
+  if (endPage - startPage < maxButtons - 1) {
+    startPage = Math.max(1, endPage - maxButtons + 1);
+  }
+
+  for (let p = startPage; p <= endPage; p++) {
+    btns += `<button class="page-btn ${p === current_page ? 'active' : ''}" onclick="loadLogs(${p})">${p}</button>`;
+  }
+
+  btns += `<button class="page-btn" onclick="loadLogs(${current_page + 1})" ${current_page >= total_pages ? 'disabled' : ''} title="Next Page">&rsaquo;</button>`;
+  btns += `<button class="page-btn" onclick="loadLogs(${total_pages})" ${current_page >= total_pages ? 'disabled' : ''} title="Last Page">&raquo;</button>`;
+
+  btnContainer.innerHTML = btns;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateSortIndicators();
+  loadLogs(1);
+});
+</script>
+{% endblock %}

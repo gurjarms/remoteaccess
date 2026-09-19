@@ -9,12 +9,12 @@ import math
 from django.db.models import Q
 from django.utils.dateparse import parse_date
 from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponse, FileResponse, Http404
 from django.conf import settings as _settings
 from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
 
-from api.models import RustDesDevice, RustDeskPeer, ConnLog, FileLog, ServerConfigVersion
+from api.models import RustDesDevice, RustDeskPeer, ConnLog, FileLog, ServerConfigVersion, ClientAppRelease
 from api.models_user import UserProfile, UserRole
 
 DEFAULT_PEER_ID = '1518645501'
@@ -1170,3 +1170,304 @@ def api_roles_save_matrix(request):
         return JsonResponse({'status': 'ok', 'message': 'Permission matrix updated successfully'})
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+# ==============================================================================
+# SERVER CONFIGURATION MIGRATION LOGS VIEW & APIs
+# ==============================================================================
+
+def migration_logs_view(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('/webui/login/')
+    ctx = get_server_context(request, active_nav='migration')
+    return render(request, 'migration_logs.html', ctx)
+
+
+def api_migration_logs(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized'}, status=401)
+
+    try:
+        page = max(1, int(request.GET.get('page', 1)))
+        page_size = min(100, max(5, int(request.GET.get('page_size', 15))))
+        search = request.GET.get('search', '').strip()
+        sort_by = request.GET.get('sort_by', 'id').strip()
+        sort_order = request.GET.get('sort_order', 'desc').strip().lower()
+
+        allowed_sort_fields = {
+            'id': 'id',
+            'version': 'version',
+            'server_host': 'server_host',
+            'hbbs_port': 'hbbs_port',
+            'hbbr_port': 'hbbr_port',
+            'updated_by': 'updated_by',
+            'updated_at': 'updated_at',
+        }
+        sort_field = allowed_sort_fields.get(sort_by, 'id')
+        prefix = '-' if sort_order == 'desc' else ''
+        order_expr = f"{prefix}{sort_field}"
+
+        queryset = ServerConfigVersion.objects.all()
+
+        if search:
+            queryset = queryset.filter(
+                Q(server_host__icontains=search) |
+                Q(server_key__icontains=search) |
+                Q(updated_by__icontains=search) |
+                Q(version__icontains=search)
+            )
+
+        # Total count
+        total_items = queryset.count()
+        total_pages = max(1, math.ceil(total_items / page_size))
+        if page > total_pages:
+            page = total_pages
+
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        latest_cfg = ServerConfigVersion.objects.order_by('-id').first()
+        latest_id = latest_cfg.id if latest_cfg else None
+
+        records = queryset.order_by(order_expr)[start:end]
+
+        items = []
+        for r in records:
+            items.append({
+                'id': r.id,
+                'version': r.version,
+                'server_host': r.server_host,
+                'server_key': r.server_key,
+                'hbbs_port': r.hbbs_port,
+                'hbbr_port': r.hbbr_port,
+                'updated_at': r.updated_at.strftime('%Y-%m-%d %H:%M:%S') if r.updated_at else '',
+                'updated_by': r.updated_by or 'System',
+                'is_latest': (r.id == latest_id),
+            })
+
+        return JsonResponse({
+            'status': 'ok',
+            'logs': items,
+            'pagination': {
+                'total_items': total_items,
+                'total_pages': total_pages,
+                'current_page': page,
+                'page_size': page_size,
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+# ==============================================================================
+# CLIENT APP RELEASES (ANDROID / WINDOWS / LINUX) VIEWS & APIs
+# ==============================================================================
+
+def app_releases_view(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('/webui/login/')
+
+    ctx = get_server_context(request, active_nav='apps')
+
+    android_apps = ClientAppRelease.objects.filter(platform='android').order_by('-is_latest', '-uploaded_at')
+    windows_apps = ClientAppRelease.objects.filter(platform='windows').order_by('-is_latest', '-uploaded_at')
+    linux_apps = ClientAppRelease.objects.filter(platform='linux').order_by('-is_latest', '-uploaded_at')
+
+    ctx.update({
+        'android_apps': android_apps,
+        'windows_apps': windows_apps,
+        'linux_apps': linux_apps,
+        'android_count': android_apps.count(),
+        'windows_count': windows_apps.count(),
+        'linux_count': linux_apps.count(),
+    })
+    return render(request, 'app_releases.html', ctx)
+
+
+@csrf_exempt
+def app_upload_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Authentication required'}, status=401)
+
+    if not (request.user.is_admin or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Only superadmins can publish application packages.'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method. Use POST.'}, status=405)
+
+    try:
+        platform = request.POST.get('platform', '').strip().lower()
+        if platform not in ('android', 'windows', 'linux'):
+            return JsonResponse({'status': 'error', 'message': f'Invalid platform: {platform}. Allowed: android, windows, linux'}, status=400)
+
+        uploaded_file = request.FILES.get('file')
+        if not uploaded_file:
+            return JsonResponse({'status': 'error', 'message': 'No file was uploaded.'}, status=400)
+
+        orig_name = uploaded_file.name
+        ext = os.path.splitext(orig_name)[1].lower()
+
+        # Platform specific extension validation
+        platform_allowed_exts = {
+            'android': ['.apk'],
+            'windows': ['.exe', '.msi'],
+            'linux': ['.deb', '.appimage', '.tar.gz', '.rpm', '.run', '.bin', '.zip']
+        }
+        allowed_exts = platform_allowed_exts.get(platform, [])
+        if not any(orig_name.lower().endswith(al) for al in allowed_exts):
+            allowed_str = ", ".join(allowed_exts)
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Invalid file format for {platform.title()}! Allowed extensions: {allowed_str}'
+            }, status=400)
+
+        version = request.POST.get('version', '').strip()
+        if not version:
+            version = 'v1.0.0'
+        elif not version.startswith('v') and version[0].isdigit():
+            version = f"v{version}"
+
+        release_notes = request.POST.get('release_notes', '').strip()
+        set_latest_val = request.POST.get('is_latest', 'false').strip().lower()
+        is_latest = set_latest_val in ('true', '1', 'on', 'yes')
+
+        # If this is set to latest, or if this is the first release for the platform, mark as latest
+        platform_has_any = ClientAppRelease.objects.filter(platform=platform).exists()
+        if not platform_has_any:
+            is_latest = True
+
+        if is_latest:
+            ClientAppRelease.objects.filter(platform=platform).update(is_latest=False)
+
+        username = request.user.username or 'Admin'
+        release = ClientAppRelease.objects.create(
+            platform=platform,
+            version=version,
+            file=uploaded_file,
+            filename=orig_name,
+            filesize=uploaded_file.size,
+            release_notes=release_notes,
+            is_latest=is_latest,
+            is_active=True,
+            uploaded_by=username
+        )
+
+        return JsonResponse({
+            'status': 'ok',
+            'message': f'{platform.title()} package {version} uploaded successfully!',
+            'app_id': release.id,
+            'filename': release.filename,
+            'filesize': release.formatted_filesize(),
+            'version': release.version,
+            'is_latest': release.is_latest
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+def app_delete_api(request, app_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Authentication required'}, status=401)
+
+    if not (request.user.is_admin or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Only superadmins can remove application packages.'}, status=403)
+
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+    try:
+        app = ClientAppRelease.objects.filter(id=app_id).first()
+        if not app:
+            return JsonResponse({'status': 'error', 'message': 'Release not found'}, status=404)
+
+        platform = app.platform
+        was_latest = app.is_latest
+
+        # Safely remove file on disk
+        try:
+            if app.file and os.path.isfile(app.file.path):
+                os.remove(app.file.path)
+        except Exception:
+            pass
+
+        app.delete()
+
+        # If the deleted release was the latest, promote the newest remaining release
+        if was_latest:
+            newest = ClientAppRelease.objects.filter(platform=platform).order_by('-uploaded_at').first()
+            if newest:
+                newest.is_latest = True
+                newest.save()
+
+        return JsonResponse({'status': 'ok', 'message': 'Application package removed successfully.'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+def app_set_latest_api(request, app_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Authentication required'}, status=401)
+
+    if not (request.user.is_admin or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Only superadmins can designate primary releases.'}, status=403)
+
+    try:
+        app = ClientAppRelease.objects.filter(id=app_id).first()
+        if not app:
+            return JsonResponse({'status': 'error', 'message': 'Release not found'}, status=404)
+
+        ClientAppRelease.objects.filter(platform=app.platform).update(is_latest=False)
+        app.is_latest = True
+        app.save()
+
+        return JsonResponse({
+            'status': 'ok',
+            'message': f'{app.get_platform_display()} package {app.version} is now designated as the active latest release.'
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+def app_download_view(request, app_id):
+    try:
+        app = ClientAppRelease.objects.filter(id=app_id).first()
+        if not app:
+            raise Http404("Application package not found")
+
+        # Increment download counter
+        from django.db.models import F
+        ClientAppRelease.objects.filter(id=app_id).update(download_count=F('download_count') + 1)
+
+        if app.file and os.path.isfile(app.file.path):
+            resp = FileResponse(open(app.file.path, 'rb'), as_attachment=True, filename=app.filename)
+            return resp
+        elif app.file:
+            return HttpResponseRedirect(app.file.url)
+        else:
+            raise Http404("File asset missing on server")
+    except Exception as e:
+        if isinstance(e, Http404):
+            raise
+        return HttpResponse(f"Error serving file: {str(e)}", status=500)
+
+
+def download_latest_app(request, platform):
+    platform = platform.lower()
+    app = ClientAppRelease.objects.filter(platform=platform, is_latest=True).first()
+    if not app:
+        app = ClientAppRelease.objects.filter(platform=platform).order_by('-uploaded_at').first()
+
+    if not app:
+        return HttpResponse(f"No release currently available for platform '{platform}'.", status=404)
+
+    from django.db.models import F
+    ClientAppRelease.objects.filter(id=app.id).update(download_count=F('download_count') + 1)
+
+    if app.file and os.path.isfile(app.file.path):
+        return FileResponse(open(app.file.path, 'rb'), as_attachment=True, filename=app.filename)
+    elif app.file:
+        return HttpResponseRedirect(app.file.url)
+    return HttpResponse("File asset not found on server.", status=404)
+

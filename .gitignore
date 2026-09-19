@@ -68,7 +68,11 @@ apk_patch/classes_patched.dex
 apk_patch/*.bin
 apk_patch/*.o
 apk_patch/*.bak
+apk_patch/*.apk
+apk_patch/*.apk.idsig
+ninjadesk-server/media/
 *.zip
 ninjadesk-server/static_root/
 ninjadesk-server/scratch/
 error.log
+

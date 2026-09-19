@@ -559,104 +559,41 @@
 </div>
 
 <!-- ============================================================================== -->
-<!-- 2.5 SERVER CONFIGURATION HISTORY TABLE                                        -->
+<!-- 2.5 SERVER MIGRATION LOGS & AUDIT TRAIL ACCESS                                -->
 <!-- ============================================================================== -->
-<div class="fleet-rack" style="margin-bottom: 24px;">
-  <div class="rack-header" style="cursor: pointer; user-select: none;" onclick="toggleConfigHistory()" title="Click to Expand or Collapse Server Configuration History">
-    <div>
-      <div class="rack-title">
-        <svg class="icon icon-md" viewBox="0 0 24 24">
-          <path d="M12 8v4l3 3" />
-          <circle cx="12" cy="12" r="9" />
-        </svg>
-        <span>Server Configuration Versions & History</span>
-      </div>
-      <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-        Recorded history of all applied server configurations. The latest configuration is automatically set in the
-        input fields above.
-      </div>
+<div class="fleet-rack" style="margin-bottom: 24px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: var(--panel-surface); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: var(--card-shadow-outset);">
+  <div style="display: flex; align-items: center; gap: 16px;">
+    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); display: flex; align-items: center; justify-content: center; color: var(--lcd-accent); box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.1);">
+      <svg class="icon icon-lg" viewBox="0 0 24 24">
+        <path d="M12 8v4l3 3" />
+        <circle cx="12" cy="12" r="9" />
+      </svg>
     </div>
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <div style="font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted);">
-        <span id="config-history-badge">{{ config_history|length }}</span> Configuration(s) Stored
+    <div>
+      <div style="font-weight: 700; font-size: 14px; color: var(--lcd-text); display: flex; align-items: center; gap: 10px;">
+        <span>Server Migration Logs & Configuration History</span>
+        <span class="badge-tag badge-outline" style="font-size: 10px;">Audit Trail</span>
       </div>
-      <button type="button" class="history-toggle-pill" id="btn-toggle-config-history" onclick="event.stopPropagation(); toggleConfigHistory();" title="Expand or Collapse Configuration History">
-        <span id="history-toggle-text">Expand</span>
-        <svg class="icon icon-sm" id="history-toggle-icon" style="transition: transform 0.25s ease; transform: rotate(0deg);" viewBox="0 0 24 24">
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">
+        Recorded chronology of all applied server configurations with search, multi-column sorting, filters, and configuration rollback.
+      </div>
     </div>
   </div>
 
-  <div class="fleet-table-container collapsible-container collapsed" id="config-history-container">
-    <table class="fleet-table" id="config-history-table">
-      <thead>
-        <tr>
-          <th style="width: 80px; text-align: center;">Version</th>
-          <th>Relay & ID Server Host / IP</th>
-          <th>Server Public Key</th>
-          <th style="text-align: center;">HBBS</th>
-          <th style="text-align: center;">HBBR</th>
-          <th>Updated By</th>
-          <th>Recorded At</th>
-          <th style="text-align: center; width: 140px;">Action</th>
-        </tr>
-      </thead>
-      <tbody id="config-history-body">
-        {% for c in config_history %}
-        <tr>
-          <td style="text-align: center;">
-            <span class="version-chip">v{{ c.version }}</span>
-          </td>
-          <td>
-            <div
-              style="font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">
-              {{ c.server_host }}
-            </div>
-            {% if forloop.first %}
-            <span class="sync-badge synced"
-              style="font-size: 10px; padding: 1px 6px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
-              <span class="led-diode online" style="width: 5px; height: 5px;"></span> CURRENT LATEST
-            </span>
-            {% endif %}
-          </td>
-          <td>
-            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);"
-              title="{{ c.server_key }}">
-              {{ c.server_key|truncatechars:28 }}
-            </span>
-          </td>
-          <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">{{ c.hbbs_port }}</td>
-          <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">{{ c.hbbr_port }}</td>
-          <td style="font-size: 12px; color: var(--text-muted);">{{ c.updated_by|default:"System" }}</td>
-          <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">{{ c.updated_at|date:"Y-m-d H:i:s" }}</td>
-          <td style="text-align: center;">
-            {% if is_superadmin %}
-            <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;"
-              onclick="loadConfigIntoEditor('{{ c.server_host }}', '{{ c.server_key }}', '{{ c.hbbs_port }}', '{{ c.hbbr_port }}')">
-              <svg class="icon icon-sm" viewBox="0 0 24 24">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-              <span>Load to Form</span>
-            </button>
-            {% else %}
-            <span style="font-size: 11px; color: var(--text-muted);">Locked</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 25px;">
-            No server configuration history recorded yet.
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <a href="/webui/migration/logs/" class="tactile-btn tactile-btn-secondary" style="padding: 10px 18px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+      <svg class="icon icon-sm" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+        <polyline points="10 9 9 9 8 9" />
+      </svg>
+      <span>View Server Migration Logs &rarr;</span>
+    </a>
   </div>
 </div>
+
 
 <!-- ============================================================================== -->
 <!-- 3. UNIFIED DEVICE FLEET & REAL-TIME SYNCHRONIZATION AUDIT TABLE               -->
@@ -1261,43 +1198,34 @@ showToast(e.message, true);
 }
 }
 
-// EXPAND / COLLAPSE CONFIG HISTORY
-function toggleConfigHistory(forceState = null) {
-  const container = document.getElementById('config-history-container');
-  const icon = document.getElementById('history-toggle-icon');
-  const text = document.getElementById('history-toggle-text');
-  if (!container) return;
-
-  const isCollapsed = container.classList.contains('collapsed');
-  const willCollapse = (forceState !== null) ? forceState : !isCollapsed;
-
-  if (willCollapse) {
-    container.classList.add('collapsed');
-    if (icon) icon.style.transform = 'rotate(0deg)'; // points down: ready to expand
-    if (text) text.textContent = 'Expand';
-    localStorage.setItem('ninja_config_history_collapsed', 'true');
-  } else {
-    container.classList.remove('collapsed');
-    if (icon) icon.style.transform = 'rotate(180deg)'; // points up: ready to collapse
-    if (text) text.textContent = 'Collapse';
-    localStorage.setItem('ninja_config_history_collapsed', 'false');
-  }
+function loadConfigIntoEditor(host, key, hbbs, hbbr) {
+  const hostInput = document.getElementById('target-host');
+  const keyInput = document.getElementById('target-key');
+  const hbbsInput = document.getElementById('target-hbbs-port');
+  const hbbrInput = document.getElementById('target-hbbr-port');
+  if (hostInput) hostInput.value = host;
+  if (keyInput) keyInput.value = key;
+  if (hbbsInput) hbbsInput.value = hbbs || '21116';
+  if (hbbrInput) hbbrInput.value = hbbr || '21117';
+  formDirty = true;
 }
 
-function initConfigHistoryCollapseState() {
-  const saved = localStorage.getItem('ninja_config_history_collapsed');
-  // Default to collapsed unless user explicitly previously expanded it ('false')
-  if (saved === 'false') {
-    toggleConfigHistory(false);
-  } else {
-    toggleConfigHistory(true);
+function checkUrlParamsForPreload() {
+  const params = new URLSearchParams(window.location.search);
+  const host = params.get('load_host');
+  const key = params.get('load_key');
+  const hbbs = params.get('load_hbbs');
+  const hbbr = params.get('load_hbbr');
+  if (host && key) {
+    loadConfigIntoEditor(host, key, hbbs, hbbr);
+    showToast(`Configuration for ${host} pre-loaded from Migration Logs!`);
   }
 }
 
 // INITIALIZE & START REAL-TIME 3s HEARTBEAT
 document.addEventListener('DOMContentLoaded', () => {
   setupFormDirtyTracking();
-  initConfigHistoryCollapseState();
+  checkUrlParamsForPreload();
   loadSyncStatus();
   setInterval(loadSyncStatus, 3000);
 });

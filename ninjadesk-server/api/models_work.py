@@ -115,6 +115,44 @@ class ServerConfigVersion(models.Model):
         return f"Config v{self.version} ({self.server_host})"
 
 
+class ClientAppRelease(models.Model):
+    PLATFORM_CHOICES = (
+        ('android', 'Android'),
+        ('windows', 'Windows'),
+        ('linux', 'Linux'),
+    )
+    platform = models.CharField(max_length=20, choices=PLATFORM_CHOICES, db_index=True)
+    version = models.CharField(max_length=50, default='v1.0.0')
+    file = models.FileField(upload_to='apps/%Y/%m/')
+    filename = models.CharField(max_length=255)
+    filesize = models.BigIntegerField(default=0)
+    release_notes = models.TextField(blank=True, default='')
+    is_active = models.BooleanField(default=True)
+    is_latest = models.BooleanField(default=False)
+    download_count = models.IntegerField(default=0)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.CharField(max_length=150, blank=True, default='')
+
+    class Meta:
+        ordering = ('-uploaded_at',)
+        verbose_name = _("客户端安装包")
+        verbose_name_plural = _("客户端安装包列表")
+
+    def __str__(self):
+        return f"{self.get_platform_display()} - {self.version} ({self.filename})"
+
+    def formatted_filesize(self):
+        if self.filesize < 1024:
+            return f"{self.filesize} B"
+        elif self.filesize < 1024 * 1024:
+            return f"{self.filesize / 1024:.1f} KB"
+        elif self.filesize < 1024 * 1024 * 1024:
+            return f"{self.filesize / (1024 * 1024):.1f} MB"
+        else:
+            return f"{self.filesize / (1024 * 1024 * 1024):.2f} GB"
+
+
+
 class RustDesDeviceAdmin(admin.ModelAdmin):
     list_display = ('rid', 'hostname', 'config_version', 'memory', 'uuid', 'version', 'create_time', 'update_time')
     search_fields = ('hostname', 'memory')

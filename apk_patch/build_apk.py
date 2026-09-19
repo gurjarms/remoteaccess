@@ -4,10 +4,41 @@ import subprocess
 import zipfile
 
 base_dir = r"d:\NMC\remoteAccess\apk_patch"
+root_dir = os.path.abspath(os.path.join(base_dir, ".."))
 gradlew_bat = r"d:\NMC\remoteAccess\rustdesk-1.4.9-src\flutter\android\gradlew.bat"
 zipalign_path = r"C:\Users\Mahendra\AppData\Local\Android\Sdk\build-tools\34.0.0\zipalign.exe"
 apksigner_path = r"C:\Users\Mahendra\AppData\Local\Android\Sdk\build-tools\34.0.0\apksigner.bat"
-keystore_path = r"C:\Users\Mahendra\.android\debug.keystore"
+
+def load_keystore_config():
+    env_files = [
+        os.path.join(base_dir, "config.env"),
+        os.path.join(root_dir, ".env")
+    ]
+    cfg = {}
+    for ef in env_files:
+        if os.path.exists(ef):
+            with open(ef, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        k, v = line.split('=', 1)
+                        cfg[k.strip()] = v.strip().strip("'\"")
+    return cfg
+
+ks_cfg = load_keystore_config()
+raw_ks_path = ks_cfg.get("KEYSTORE_PATH", "keystore.jks")
+if not os.path.isabs(raw_ks_path):
+    keystore_path = os.path.abspath(os.path.join(root_dir, raw_ks_path))
+    if not os.path.exists(keystore_path):
+        keystore_path = os.path.abspath(os.path.join(base_dir, raw_ks_path))
+else:
+    keystore_path = raw_ks_path
+
+keystore_pass = ks_cfg.get("KEYSTORE_PASSWORD", "YOUR_KEYSTORE_PASSWORD_HERE")
+key_alias = ks_cfg.get("KEY_ALIAS", "YOUR_KEY_ALIAS_HERE")
+key_pass = ks_cfg.get("KEY_PASSWORD", keystore_pass)
+if key_pass == "YOUR_KEY_PASSWORD_HERE":
+    key_pass = keystore_pass
 
 config_env = os.path.join(base_dir, "config.env")
 src_apk = os.path.join(base_dir, "temp_unsigned.apk")
@@ -164,14 +195,40 @@ if res.returncode != 0:
     print("zipalign error:", res.stderr)
     sys.exit(1)
 
-res = subprocess.run([
-    apksigner_path, "sign",
-    "--ks", keystore_path,
-    "--ks-pass", "pass:android",
-    "--key-pass", "pass:android",
-    "--out", out_signed_apk,
-    aligned_apk
-], capture_output=True, text=True)
+is_custom_keystore_configured = (
+    os.path.exists(keystore_path) and
+    keystore_pass not in ("YOUR_KEYSTORE_PASSWORD_HERE", "")
+)
+
+if is_custom_keystore_configured:
+    print(f"Signing with custom keystore: {keystore_path} (alias: {key_alias})...")
+    signer_cmd = [
+        apksigner_path, "sign",
+        "--ks", keystore_path,
+        "--ks-pass", f"pass:{keystore_pass}",
+        "--out", out_signed_apk
+    ]
+    if key_alias and key_alias != "YOUR_KEY_ALIAS_HERE":
+        signer_cmd.extend(["--ks-key-alias", key_alias])
+    if key_pass and key_pass != "YOUR_KEY_PASSWORD_HERE":
+        signer_cmd.extend(["--key-pass", f"pass:{key_pass}"])
+    signer_cmd.append(aligned_apk)
+else:
+    fallback_debug_ks = r"C:\Users\Mahendra\.android\debug.keystore"
+    if not os.path.exists(keystore_path):
+        print(f"[Notice] Custom keystore not found at {keystore_path}. Signing with default debug keystore...")
+    else:
+        print(f"[Notice] Custom keystore credentials pending in .env ({keystore_path}). Signing with default debug keystore...")
+    signer_cmd = [
+        apksigner_path, "sign",
+        "--ks", fallback_debug_ks,
+        "--ks-pass", "pass:android",
+        "--key-pass", "pass:android",
+        "--out", out_signed_apk,
+        aligned_apk
+    ]
+
+res = subprocess.run(signer_cmd, capture_output=True, text=True)
 
 if res.returncode != 0:
     print("apksigner error:", res.stderr)

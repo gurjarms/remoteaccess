@@ -23,6 +23,8 @@ urlpatterns = [
     url(r'^devices/?$', lambda request: HttpResponseRedirect('/webui/devices/')),
     url(r'^api/', include('api.urls')),
     url(r'^webui/', include('webui.urls')),
+    url(r'^download/(?P<platform>android|windows|linux)/latest/?$', webui_views.download_latest_app, name='download_latest_root'),
+    url(r'^media/(?P<path>.*)$', static.serve, {'document_root': settings.MEDIA_ROOT}, name='media'),
     url(r'^static/(?P<path>.*)$', static.serve, {'document_root': os.path.join(settings.BASE_DIR, 'static')}, name='static'),
     url(r'^canvaskit@0.33.0/(?P<path>.*)$', static.serve, {'document_root': os.path.join(settings.BASE_DIR, 'static', 'web_client', 'canvaskit@0.33.0')}, name='web_client'),
 ]
