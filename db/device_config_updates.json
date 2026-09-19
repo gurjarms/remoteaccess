@@ -17,11 +17,11 @@
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 262,
-    "acknowledged_at": "2026-09-19T11:55:50.391223",
-    "api_server": "http://nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io:8000",
-    "updated_at": "2026-09-19T11:55:47.528662",
-    "migrated_away": true
+    "version": 263,
+    "acknowledged_at": "2026-09-19T12:29:03.072487",
+    "api_server": "http://127.0.0.1:8000",
+    "updated_at": "2026-09-19T12:28:58.514643",
+    "migrated_away": false
   },
   "619222512": {
     "pending": true,
