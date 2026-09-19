@@ -1,0 +1,442 @@
+{% extends "base_skeuo.html" %}
+
+{% block title %}All Devices Console | NinjaDesk{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* SEARCH & FILTER SWITCHBOARD */
+  .switchboard-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow-inset);
+    padding: 14px 18px;
+    border-radius: 14px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .search-slot {
+    flex: 1;
+    min-width: 240px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-slot .search-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-label);
+    pointer-events: none;
+  }
+
+  .search-slot input {
+    padding-left: 36px;
+  }
+
+  .filter-cluster {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-muted);
+    transition: all 0.15s ease;
+  }
+
+  .filter-pill.active {
+    background: var(--btn-grad);
+    color: #fff;
+    border-color: var(--accent-blue);
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+  }
+
+  /* HARDWARE DEVICE CARDS GRID */
+  .devices-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+  }
+
+  .device-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    box-shadow: var(--card-shadow-outset);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .device-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .device-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .device-heading-group {
+    flex: 1;
+  }
+
+  .device-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-rename-quick {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    padding: 4px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-rename-quick:hover {
+    color: var(--lcd-text);
+    background: rgba(2, 132, 199, 0.15);
+  }
+
+  .device-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+  }
+
+  /* HARDWARE TELEMETRY STRIP */
+  .telemetry-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow-inset);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+
+  .telemetry-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .telemetry-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-label);
+  }
+
+  .telemetry-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ACTIONS ROW */
+  .card-actions-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 8px;
+    margin-top: auto;
+  }
+
+  /* EMPTY STATE */
+  .empty-state-box {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background: var(--panel-inset);
+    border: 1px dashed var(--card-border);
+    border-radius: 16px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- SWITCHBOARD FILTER BAR -->
+<div class="switchboard-bar">
+  <div class="search-slot">
+    <svg class="icon icon-sm search-icon" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <input type="text" id="device-search" class="form-input" placeholder="Search device name, ID, platform or IP..."
+      onkeyup="filterDeviceCards()">
+  </div>
+  <div class="filter-cluster">
+    <span class="filter-pill active" onclick="setFilter('all', this)">ALL (<span id="count-all">0</span>)</span>
+    <span class="filter-pill" onclick="setFilter('online', this)">
+      <span class="led-diode online" style="width: 8px; height: 8px;"></span> ONLINE (<span id="count-online">0</span>)
+    </span>
+    <span class="filter-pill" onclick="setFilter('offline', this)">
+      <span class="led-diode offline" style="width: 8px; height: 8px;"></span> OFFLINE (<span
+        id="count-offline">0</span>)
+    </span>
+  </div>
+</div>
+
+<!-- HARDWARE DEVICES GRID -->
+<div class="devices-grid" id="devices-grid-container">
+  <div class="empty-state-box">
+    <div style="margin-bottom: 12px; color: var(--accent-blue);">
+      <svg class="icon" style="width: 40px; height: 40px;" viewBox="0 0 24 24">
+        <path d="M4.93 19.07A10 10 0 0 1 19.07 4.93M7.76 16.24a6 6 0 0 1 8.48-8.48M10.59 13.41a2 2 0 0 1 2.82-2.82" />
+        <circle cx="12" cy="12" r="1" />
+      </svg>
+    </div>
+    <div style="font-weight: 700; font-size: 16px;">Scanning Device Nodes...</div>
+    <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Connecting to NinjaDesk Device Registry
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  let rawDevices = [];
+  let currentFilter = 'all';
+  const CAN_RENAME = {% if can_rename_device %}true{% else %} false{% endif %};
+  const CAN_CHANGE_PASSWORD = {% if can_change_password %}true{% else %} false{% endif %};
+  const CAN_REMOTE_CONNECT = {% if can_remote_connect %}true{% else %} false{% endif %};
+
+  async function loadDevices() {
+    try {
+      const res = await fetch('/api/devices/', {
+        headers: { 'X-Ninja-Api-Key': '{{ api_key }}' }
+      });
+      const data = await res.json();
+      rawDevices = data.devices || [];
+      renderDevices();
+    } catch (e) {
+      document.getElementById('devices-grid-container').innerHTML = `
+        <div class="empty-state-box">
+          <div style="margin-bottom: 12px; color: #f43f5e;">
+            <svg class="icon" style="width: 40px; height: 40px;" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div style="font-weight: 700; color: #f43f5e;">Failed to Load Devices</div>
+          <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">${e.message}</div>
+        </div>
+      `;
+    }
+  }
+
+  function setFilter(filter, el) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    renderDevices();
+  }
+
+  function filterDeviceCards() {
+    renderDevices();
+  }
+
+  function renderDevices() {
+    const query = (document.getElementById('device-search').value || '').toLowerCase();
+    const container = document.getElementById('devices-grid-container');
+
+    const onlineCount = rawDevices.filter(d => d.online).length;
+    const offlineCount = rawDevices.length - onlineCount;
+
+    document.getElementById('count-all').textContent = rawDevices.length;
+    document.getElementById('count-online').textContent = onlineCount;
+    document.getElementById('count-offline').textContent = offlineCount;
+
+    const filtered = rawDevices.filter(d => {
+      if (currentFilter === 'online' && !d.online) return false;
+      if (currentFilter === 'offline' && d.online) return false;
+
+      if (query) {
+        const text = `${d.id} ${d.name} ${d.hostname} ${d.platform} ${d.ip_address} ${d.os_version}`.toLowerCase();
+        return text.includes(query);
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state-box">
+          <div style="margin-bottom: 12px; color: var(--text-label);">
+            <svg class="icon" style="width: 40px; height: 40px;" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div style="font-weight: 700;">No Matching Devices Found</div>
+          <div style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Try modifying your search filter</div>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(d => {
+      const safeInfo = JSON.stringify(d).replace(/"/g, '&quot;');
+      const safeName = (d.name || d.hostname || `Device ${d.id}`).replace(/'/g, "\'");
+      const safeHost = (d.hostname || d.id).replace(/'/g, "\'");
+
+      return `
+        <div class="device-card">
+          <!-- CARD HEADER -->
+          <div class="device-card-header">
+            <div class="device-heading-group">
+              <div class="device-title">
+                <span>${d.name || d.hostname || 'Device ' + d.id}</span>
+                ${CAN_RENAME ? `
+                <button class="btn-rename-quick" onclick="triggerRename('${d.id}', '${safeName}')" title="Rename Alias">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                ` : ''}
+                <button class="btn-delete-quick" onclick="triggerDeleteDevice('${d.id}', '${safeName}')" title="Delete Device Node">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                </button>
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                ${d.hostname || 'Android / Windows Node'}
+              </div>
+              ${d.password_updated_recent ? `
+              <div style="margin-top: 6px;">
+                <span class="sync-badge synced" style="font-size: 10px; padding: 3px 8px; display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; color: #10b981; font-weight: 700;" title="Password updated on ${d.password_updated_at || 'Recently'}">
+                  <span class="led-diode online" style="width: 6px; height: 6px; box-shadow: 0 0 6px #10b981;"></span>
+                  <span>PWD UPDATED: ${d.password_updated_at || 'Recently'}</span>
+                </span>
+              </div>
+              ` : ''}
+            </div>
+
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <div class="device-status-badge">
+                  <span class="led-diode ${d.online ? 'online' : 'offline'}"></span>
+                  <span>${d.online ? 'ONLINE' : 'OFFLINE'}</span>
+                </div>
+                ${d.reboot_pending ? ` 
+                <button class="btn-corner-reboot pending" disabled title="Device reboot in progress. Will re-enable once device boots back up and reconnects online.">
+                  REBOOTING...&nbsp;<svg class="icon icon-sm spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                </button>
+                ` : !d.online ? `
+                <button class="btn-corner-reboot" disabled style="opacity: 0.5; cursor: not-allowed;" title="Device is offline. Remote reboot cannot be triggered until device is online.">
+                  RESTART&nbsp;<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                </button>
+                ` : `
+                <button class="btn-corner-reboot" onclick="triggerRebootDevice('${d.id}', '${safeName}')" title="Remote Reboot Device (${safeName})">
+                  RESTART &nbsp;<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                </button>
+                `} 
+              </div>
+              <div>
+                ${!d.online ? `
+                  <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; background: rgba(148, 163, 184, 0.1);">
+                    <span class="led-diode offline" style="width: 4px; height: 4px;"></span> DEVICE OFFLINE
+                  </span>
+                ` : d.rustdesk_service_running ? `
+                  <span style="font-size: 10px; font-weight: 700; color: #10b981; font-family: 'JetBrains Mono', monospace; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3);" title="RustDesk core service running actively">
+                    <span class="led-diode online" style="width: 4px; height: 4px;"></span> DEVICE ONLINE
+                  </span>
+                ` : `
+                  <span style="font-size: 10px; font-weight: 700; color: #f59e0b; font-family: 'JetBrains Mono', monospace; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 4px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4);" title="Device is online but RustDesk core service is stalled">
+                    <span class="led-diode" style="background:#f59e0b; box-shadow:0 0 6px #f59e0b; width: 4px; height: 4px;"></span> RD STALLED
+                  </span>
+                `}
+              </div>
+            </div>
+          </div>
+
+          <!-- INSET LCD SCREEN WITH ID & COPY -->
+          <div class="lcd-screen">
+            <div>
+              <span style="font-size: 10px; color: var(--text-label); display: block;">DEVICE ID</span>
+              <span style="font-size: 17px; font-weight: 700; letter-spacing: 1px;">${d.id}</span>
+            </div>
+            <button class="tactile-btn tactile-btn-secondary" style="padding: 5px 10px; font-size: 11px;" onclick="copyToClipboard('${d.id}', 'Device ID')" title="Copy ID">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+
+          <!-- TELEMETRY STRIP -->
+          <div class="telemetry-strip">
+            <div class="telemetry-item">
+              <span class="telemetry-label">Platform</span>
+              <span class="telemetry-val">${(d.platform || 'Android').toUpperCase()}</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">IP Address</span>
+              <span class="telemetry-val">${d.ip_address || '127.0.0.1'}</span>
+            </div>
+            <div class="telemetry-item" style="grid-column: 1 / -1;">
+              <span class="telemetry-label">Last Heartbeat</span>
+              <span class="telemetry-val">${d.last_seen ? new Date(d.last_seen).toLocaleTimeString() : 'Recent'}</span>
+            </div>
+          </div>
+
+          <!-- ACTION BUTTONS -->
+          <div class="card-actions-grid" style="grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)); gap: 6px;">
+            ${CAN_REMOTE_CONNECT ? `
+            <button class="tactile-btn tactile-btn-primary" onclick="triggerRemoteAccess('${d.id}', '${safeName}', '${safeHost}')">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/></svg>
+              <span>Connect</span>
+            </button>
+            ` : ''}
+            ${CAN_CHANGE_PASSWORD ? `
+            <button class="tactile-btn tactile-btn-secondary" onclick="triggerPassword('${d.id}', '${safeName}')" title="Manage Device Password (View / Change)">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 2l-2 2m-1.5 1.5L14 9m0 0l-3 3-2-2-4 4v3h3l4-4-2-2 3-3m0 0l3.5-3.5"/><circle cx="16.5" cy="7.5" r="2.5"/></svg>
+              <span>Password</span>
+            </button>
+            ` : ''}
+            <button class="tactile-btn tactile-btn-secondary" onclick="triggerSpecs(${safeInfo})" title="View Telemetry Specs">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <span>Specs</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadDevices();
+    setInterval(loadDevices, 12000);
+  });
+</script>
+{% endblock %}
