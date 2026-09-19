@@ -45,6 +45,8 @@ public class ConfigManager {
     public static String ORIGIN_API_SCHEME = "http";
     public static String MQTT_HOST = "192.168.1.22";
     public static String MQTT_PORT = "1883";
+    public static String EMERGENCY_BEACON_URL = "https://ninjadesk-beacon.pages.dev/config.json";
+    public static int EMERGENCY_FAILOVER_MINUTES = 30;
 
     public static String getMqttHost() {
         if (MQTT_HOST != null && !MQTT_HOST.trim().isEmpty()) return MQTT_HOST.trim();
@@ -1258,5 +1260,79 @@ public class ConfigManager {
             }
         } catch (Throwable ignored) {}
         return null;
+    }
+
+    /**
+     * Fetch emergency configuration from external Cloudflare Beacon URL (GET read-only JSON).
+     * Returns raw JSON string, or null if unreachable / timed out / invalid response.
+     */
+    public static String fetchBeaconConfig(String beaconUrl) {
+        if (beaconUrl == null || beaconUrl.trim().isEmpty()) return null;
+        try {
+            HttpURLConnection conn = (HttpURLConnection) new URL(beaconUrl.trim()).openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(10000);
+            conn.setUseCaches(false);
+            conn.setRequestProperty("User-Agent", "NinjaDesk-BeaconRecovery/1.0");
+            conn.setRequestProperty("Accept", "application/json");
+
+            int code = conn.getResponseCode();
+            if (code == 200) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line).append('\n');
+                }
+                reader.close();
+                return sb.toString().trim();
+            } else {
+                Log.w(TAG, "fetchBeaconConfig HTTP " + code + " from " + beaconUrl);
+            }
+        } catch (Throwable t) {
+            Log.d(TAG, "fetchBeaconConfig notice: " + t.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Parse and apply server configuration downloaded from Cloudflare Pages beacon JSON.
+     * Returns true if server configuration was successfully changed, false otherwise.
+     */
+    public static boolean applyBeaconServerConfig(Context context, String jsonStr) {
+        if (jsonStr == null || jsonStr.trim().isEmpty()) return false;
+        try {
+            String newHost = extractJsonField(jsonStr, "server_host");
+            String newKey = extractJsonField(jsonStr, "server_key");
+            String newApiServer = extractJsonField(jsonStr, "api_server");
+            String newHbbsPort = extractJsonField(jsonStr, "hbbs_port");
+            String newHbbrPort = extractJsonField(jsonStr, "hbbr_port");
+            String verStr = extractJsonField(jsonStr, "version");
+
+            if (newHost == null || newHost.trim().isEmpty()) {
+                Log.w(TAG, "applyBeaconServerConfig: 'server_host' missing in beacon JSON");
+                return false;
+            }
+
+            int targetVer = getConfigVersion(context) + 1;
+            if (verStr != null && !verStr.trim().isEmpty()) {
+                try {
+                    targetVer = Integer.parseInt(verStr.trim());
+                } catch (Throwable ignored) {}
+            }
+
+            String cleanHost = sanitizeHost(newHost);
+            boolean isDifferent = !cleanHost.equalsIgnoreCase(SERVER_HOST)
+                || (newKey != null && !newKey.trim().isEmpty() && !newKey.trim().equals(SERVER_KEY));
+
+            Log.i(TAG, "Emergency beacon config parsed: host=" + cleanHost + ", isDifferent=" + isDifferent);
+
+            applyServerConfig(context, cleanHost, newKey, newHbbsPort, newHbbrPort, newApiServer, targetVer, isDifferent);
+            return true;
+        } catch (Throwable t) {
+            Log.e(TAG, "applyBeaconServerConfig error: ", t);
+            return false;
+        }
     }
 }

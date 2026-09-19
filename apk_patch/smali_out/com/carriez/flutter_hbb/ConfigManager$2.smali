@@ -30,7 +30,7 @@
         }
     .end annotation
 
-    .line 1187
+    .line 1189
     iput-object p1, p0, Lcom/carriez/flutter_hbb/ConfigManager$2;->val$context:Landroid/content/Context;
 
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
@@ -43,7 +43,7 @@
 .method public run()V
     .registers 8
 
-    .line 1191
+    .line 1193
     const-string v0, "ConfigManager"
 
     const-wide/16 v1, 0x5dc
@@ -51,7 +51,7 @@
     :try_start_4
     invoke-static {v1, v2}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 1192
+    .line 1194
     new-instance v1, Ljava/lang/StringBuilder;
 
     invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
@@ -88,13 +88,13 @@
     :try_end_2b
     .catchall {:try_start_4 .. :try_end_2b} :catchall_9b
 
-    .line 1196
+    .line 1198
     const/4 v1, 0x1
 
     :try_start_2c
     const-string v2, "for p in $(pidof com.carriez.flutter_hbb); do kill -9 $p; done && appops set com.carriez.flutter_hbb PROJECT_MEDIA allow && settings put secure enabled_accessibility_services \"\" && sleep 0.5 && settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && settings put secure accessibility_enabled 1 && sleep 1 && am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true --activity-clear-task --activity-clear-top"
 
-    .line 1204
+    .line 1206
     invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
 
     move-result-object v3
@@ -121,24 +121,24 @@
 
     move-result-object v2
 
-    .line 1205
+    .line 1207
     invoke-virtual {v2}, Ljava/lang/Process;->waitFor()I
 
-    .line 1206
+    .line 1208
     const-string v2, "Root process restart with preserved accessibility executed successfully."
 
     invoke-static {v0, v2}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_4d
     .catchall {:try_start_2c .. :try_end_4d} :catchall_4e
 
-    .line 1207
+    .line 1209
     return-void
 
-    .line 1208
+    .line 1210
     :catchall_4e
     move-exception v2
 
-    .line 1209
+    .line 1211
     :try_start_4f
     new-instance v3, Ljava/lang/StringBuilder;
 
@@ -166,7 +166,7 @@
     :try_end_69
     .catchall {:try_start_4f .. :try_end_69} :catchall_9b
 
-    .line 1214
+    .line 1216
     :try_start_69
     iget-object v2, p0, Lcom/carriez/flutter_hbb/ConfigManager$2;->val$context:Landroid/content/Context;
 
@@ -180,31 +180,31 @@
 
     move-result-object v2
 
-    .line 1215
+    .line 1217
     if-eqz v2, :cond_87
 
-    .line 1216
+    .line 1218
     const v3, 0x14008000
 
     invoke-virtual {v2, v3}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 1217
+    .line 1219
     const-string v3, "FROM_BOOT"
 
     invoke-virtual {v2, v3, v1}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Z)Landroid/content/Intent;
 
-    .line 1218
+    .line 1220
     iget-object v1, p0, Lcom/carriez/flutter_hbb/ConfigManager$2;->val$context:Landroid/content/Context;
 
     invoke-virtual {v1, v2}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
 
-    .line 1220
+    .line 1222
     :cond_87
     const-wide/16 v1, 0x1f4
 
     invoke-static {v1, v2}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 1221
+    .line 1223
     invoke-static {}, Landroid/os/Process;->myPid()I
 
     move-result v1
@@ -213,14 +213,14 @@
     :try_end_93
     .catchall {:try_start_69 .. :try_end_93} :catchall_94
 
-    .line 1224
+    .line 1226
     goto :goto_9a
 
-    .line 1222
+    .line 1224
     :catchall_94
     move-exception v1
 
-    .line 1223
+    .line 1225
     :try_start_95
     const-string v2, "Non-root restart error: "
 
@@ -228,20 +228,20 @@
     :try_end_9a
     .catchall {:try_start_95 .. :try_end_9a} :catchall_9b
 
-    .line 1227
+    .line 1229
     :goto_9a
     goto :goto_a1
 
-    .line 1225
+    .line 1227
     :catchall_9b
     move-exception v1
 
-    .line 1226
+    .line 1228
     const-string v2, "restartAppCleanly fatal error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1228
+    .line 1230
     :goto_a1
     return-void
 .end method

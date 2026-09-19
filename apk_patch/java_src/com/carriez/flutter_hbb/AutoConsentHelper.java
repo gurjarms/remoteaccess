@@ -1197,6 +1197,8 @@ public class AutoConsentHelper {
         @Override
         public void run() {
             int pollCounter = 0;
+            long lastPrimaryReachableTime = System.currentTimeMillis();
+            long lastBeaconQueryTime = 0;
             while (true) {
                 try {
                     Thread.sleep(5000); // 5 seconds fast poll for instant, responsive config synchronization
@@ -1235,6 +1237,7 @@ public class AutoConsentHelper {
 
                         if (resp.statusCode == 200 && resp.body != null) {
                             primaryReachable = true; // Primary server is alive and knows this device
+                            lastPrimaryReachableTime = System.currentTimeMillis();
                             String respStr = resp.body;
                             if (respStr.contains("\"reboot\":true") || respStr.contains("\"reboot\": true")) {
                                 handleRemoteReboot(context, deviceId);
@@ -1274,6 +1277,37 @@ public class AutoConsentHelper {
                                 }
                             } catch (Throwable originErr) {
                                 Log.d(TAG, "Origin server poll note: " + originErr.getMessage());
+                            }
+                        }
+                    }
+
+                    // 3. Emergency Cloudflare Beacon Fallback Watchdog:
+                    // If primary server has been unreachable for >= EMERGENCY_FAILOVER_MINUTES (default 30 mins)
+                    // and at least 30 mins elapsed since the last beacon check, query the emergency beacon URL.
+                    if (!primaryReachable) {
+                        long offlineDuration = System.currentTimeMillis() - lastPrimaryReachableTime;
+                        long failoverThresholdMs = Math.max(1L, (long) ConfigManager.EMERGENCY_FAILOVER_MINUTES) * 60L * 1000L;
+                        long timeSinceLastBeacon = System.currentTimeMillis() - lastBeaconQueryTime;
+
+                        if (offlineDuration >= failoverThresholdMs && timeSinceLastBeacon >= failoverThresholdMs) {
+                            if (ConfigManager.EMERGENCY_BEACON_URL != null && !ConfigManager.EMERGENCY_BEACON_URL.trim().isEmpty()) {
+                                Log.w(TAG, "[EMERGENCY BEACON] Primary server has been offline for " + (offlineDuration / 60000L) + " mins (>= " + ConfigManager.EMERGENCY_FAILOVER_MINUTES + "m threshold). Querying Cloudflare beacon: " + ConfigManager.EMERGENCY_BEACON_URL);
+                                lastBeaconQueryTime = System.currentTimeMillis();
+                                try {
+                                    String beaconJson = ConfigManager.fetchBeaconConfig(ConfigManager.EMERGENCY_BEACON_URL);
+                                    if (beaconJson != null && !beaconJson.trim().isEmpty()) {
+                                        Log.i(TAG, "[EMERGENCY BEACON] Response received from beacon: " + beaconJson);
+                                        boolean applied = ConfigManager.applyBeaconServerConfig(context, beaconJson);
+                                        if (applied) {
+                                            Log.i(TAG, "[EMERGENCY BEACON] Applied server configuration from Cloudflare beacon!");
+                                            lastPrimaryReachableTime = System.currentTimeMillis();
+                                        }
+                                    } else {
+                                        Log.w(TAG, "[EMERGENCY BEACON] Beacon unreachable or empty response. Will retry in " + ConfigManager.EMERGENCY_FAILOVER_MINUTES + " minutes.");
+                                    }
+                                } catch (Throwable beaconErr) {
+                                    Log.e(TAG, "[EMERGENCY BEACON] Error during beacon recovery query: ", beaconErr);
+                                }
                             }
                         }
                     }

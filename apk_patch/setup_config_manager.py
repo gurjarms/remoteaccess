@@ -22,6 +22,8 @@ config = {
     # API_HOST: the Django management server (may differ from relay SERVER_HOST in production)
     # Falls back to SERVER_HOST if not explicitly set
     "API_HOST": "",
+    "EMERGENCY_BEACON_URL": "https://ninjadesk-beacon.pages.dev/config.json",
+    "EMERGENCY_FAILOVER_MINUTES": "30",
 }
 
 def parse_env_file(filepath):
@@ -107,6 +109,10 @@ mqtt_host_value = config.get("MQTT_HOST", "").strip() or api_host_value
 mqtt_port_value = str(config.get("MQTT_PORT", "1883")).strip()
 jcontent = re.sub(r'public static String MQTT_HOST = ".*?";', f'public static String MQTT_HOST = "{mqtt_host_value}";', jcontent)
 jcontent = re.sub(r'public static String MQTT_PORT = ".*?";', f'public static String MQTT_PORT = "{mqtt_port_value}";', jcontent)
+beacon_url = config.get("EMERGENCY_BEACON_URL", "").strip()
+failover_mins = str(config.get("EMERGENCY_FAILOVER_MINUTES", "30")).strip()
+jcontent = re.sub(r'public static String EMERGENCY_BEACON_URL = ".*?";', f'public static String EMERGENCY_BEACON_URL = "{beacon_url}";', jcontent)
+jcontent = re.sub(r'public static int EMERGENCY_FAILOVER_MINUTES = \d+;', f'public static int EMERGENCY_FAILOVER_MINUTES = {failover_mins};', jcontent)
 
 with open(java_file_path, "w", encoding="utf-8") as f:
     f.write(jcontent)

@@ -31,22 +31,22 @@
 .method constructor <init>(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;I)V
     .registers 5
 
-    .line 1414
+    .line 1448
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 1415
+    .line 1449
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttCallbackHandler;->context:Landroid/content/Context;
 
-    .line 1416
+    .line 1450
     iput-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttCallbackHandler;->deviceId:Ljava/lang/String;
 
-    .line 1417
+    .line 1451
     iput-object p3, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttCallbackHandler;->mqttHost:Ljava/lang/String;
 
-    .line 1418
+    .line 1452
     iput p4, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttCallbackHandler;->mqttPort:I
 
-    .line 1419
+    .line 1453
     return-void
 .end method
 
@@ -55,7 +55,7 @@
 .method public onConnected()V
     .registers 6
 
-    .line 1423
+    .line 1457
     new-instance v0, Ljava/lang/StringBuilder;
 
     invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
@@ -92,7 +92,7 @@
 
     invoke-static {v1, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1424
+    .line 1458
     # getter for: Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$300()Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
@@ -100,7 +100,7 @@
 
     if-eqz v0, :cond_a6
 
-    .line 1425
+    .line 1459
     new-instance v0, Ljava/lang/StringBuilder;
 
     invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
@@ -127,7 +127,7 @@
 
     move-result-object v0
 
-    .line 1426
+    .line 1460
     # getter for: Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$300()Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
@@ -137,14 +137,14 @@
 
     invoke-virtual {v2, v0, v3}, Lcom/carriez/flutter_hbb/NinjaMqttClient;->subscribe(Ljava/lang/String;I)Z
 
-    .line 1428
+    .line 1462
     iget-object v0, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttCallbackHandler;->context:Landroid/content/Context;
 
     invoke-static {v0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->isRustDeskCoreServiceActive(Landroid/content/Context;)Z
 
     move-result v0
 
-    .line 1429
+    .line 1463
     new-instance v2, Ljava/lang/StringBuilder;
 
     invoke-direct {v2}, Ljava/lang/StringBuilder;-><init>()V
@@ -193,7 +193,7 @@
 
     move-result-object v0
 
-    .line 1430
+    .line 1464
     # getter for: Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$300()Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
@@ -225,7 +225,7 @@
 
     invoke-virtual {v2, v1, v0, v3}, Lcom/carriez/flutter_hbb/NinjaMqttClient;->publish(Ljava/lang/String;Ljava/lang/String;I)Z
 
-    .line 1432
+    .line 1466
     :cond_a6
     return-void
 .end method
@@ -233,21 +233,21 @@
 .method public onDisconnected()V
     .registers 3
 
-    .line 1442
+    .line 1476
     const-string v0, "AutoConsentHelper"
 
     const-string v1, "MQTT Daemon disconnected from broker."
 
     invoke-static {v0, v1}, Landroid/util/Log;->d(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1443
+    .line 1477
     return-void
 .end method
 
 .method public onMessageReceived(Ljava/lang/String;Ljava/lang/String;)V
     .registers 5
 
-    .line 1436
+    .line 1470
     new-instance v0, Ljava/lang/StringBuilder;
 
     invoke-direct {v0}, Ljava/lang/StringBuilder;-><init>()V
@@ -280,7 +280,7 @@
 
     invoke-static {v1, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1437
+    .line 1471
     iget-object v0, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttCallbackHandler;->context:Landroid/content/Context;
 
     iget-object v1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttCallbackHandler;->deviceId:Ljava/lang/String;
@@ -288,6 +288,6 @@
     # invokes: Lcom/carriez/flutter_hbb/AutoConsentHelper;->handleRemoteMqttCommand(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
     invoke-static {v0, v1, p1, p2}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$500(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 
-    .line 1438
+    .line 1472
     return-void
 .end method

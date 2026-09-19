@@ -87,10 +87,10 @@
 
     sput-object v2, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
-    .line 1405
+    .line 1439
     sput-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
-    .line 1406
+    .line 1440
     sput-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttStarted:Z
 
     return-void
@@ -1116,14 +1116,14 @@
 .method private static handleRemoteMqttCommand(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
     .registers 7
 
-    .line 1501
+    .line 1535
     const-string p2, "AutoConsentHelper"
 
     if-nez p3, :cond_5
 
     return-void
 
-    .line 1502
+    .line 1536
     :cond_5
     :try_start_5
     const-string v0, "\"reboot\""
@@ -1142,13 +1142,13 @@
 
     if-eqz p3, :cond_61
 
-    .line 1503
+    .line 1537
     :cond_15
     const-string p3, "Executing Instant Remote Reboot via MQTT command!"
 
     invoke-static {p2, p3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1505
+    .line 1539
     sget-object p3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
     if-eqz p3, :cond_5e
@@ -1161,7 +1161,7 @@
 
     if-eqz p3, :cond_5e
 
-    .line 1506
+    .line 1540
     new-instance p3, Ljava/lang/StringBuilder;
 
     invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
@@ -1186,7 +1186,7 @@
 
     move-result-object p3
 
-    .line 1507
+    .line 1541
     sget-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
     new-instance v1, Ljava/lang/StringBuilder;
@@ -1217,26 +1217,26 @@
 
     invoke-virtual {v0, v1, p3, v2}, Lcom/carriez/flutter_hbb/NinjaMqttClient;->publish(Ljava/lang/String;Ljava/lang/String;I)Z
 
-    .line 1510
+    .line 1544
     :cond_5e
     invoke-static {p0, p1}, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->handleRemoteReboot(Landroid/content/Context;Ljava/lang/String;)V
     :try_end_61
     .catchall {:try_start_5 .. :try_end_61} :catchall_62
 
-    .line 1514
+    .line 1548
     :cond_61
     goto :goto_68
 
-    .line 1512
+    .line 1546
     :catchall_62
     move-exception p0
 
-    .line 1513
+    .line 1547
     const-string p1, "handleRemoteMqttCommand error: "
 
     invoke-static {p2, p1, p0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1515
+    .line 1549
     :goto_68
     return-void
 .end method
@@ -1534,7 +1534,7 @@
 .method public static onFlutterTextUpdated(Ljava/lang/Object;)V
     .registers 1
 
-    .line 1527
+    .line 1561
     return-void
 .end method
 
@@ -3092,29 +3092,29 @@
 .method public static startConfigSyncPoller(Landroid/content/Context;)V
     .registers 3
 
-    .line 1518
+    .line 1552
     if-nez p0, :cond_3
 
     return-void
 
-    .line 1519
+    .line 1553
     :cond_3
     invoke-static {p0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->startMqttDaemon(Landroid/content/Context;)V
 
-    .line 1520
+    .line 1554
     sget-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
     if-eqz v0, :cond_b
 
     return-void
 
-    .line 1521
+    .line 1555
     :cond_b
     const/4 v0, 0x1
 
     sput-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
-    .line 1522
+    .line 1556
     new-instance v0, Ljava/lang/Thread;
 
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;
@@ -3125,7 +3125,7 @@
 
     invoke-virtual {v0}, Ljava/lang/Thread;->start()V
 
-    .line 1523
+    .line 1557
     return-void
 .end method
 
@@ -3154,7 +3154,7 @@
 
     monitor-enter v0
 
-    .line 1494
+    .line 1528
     :try_start_3
     sget-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttStarted:Z
 
@@ -3164,13 +3164,13 @@
 
     goto :goto_1e
 
-    .line 1495
+    .line 1529
     :cond_a
     const/4 v1, 0x1
 
     sput-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttStarted:Z
 
-    .line 1496
+    .line 1530
     new-instance v1, Ljava/lang/Thread;
 
     new-instance v2, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttDaemonTask;
@@ -3185,19 +3185,19 @@
     :try_end_1c
     .catchall {:try_start_3 .. :try_end_1c} :catchall_20
 
-    .line 1497
+    .line 1531
     monitor-exit v0
 
     return-void
 
-    .line 1494
+    .line 1528
     :cond_1e
     :goto_1e
     monitor-exit v0
 
     return-void
 
-    .line 1493
+    .line 1527
     :catchall_20
     move-exception p0
 

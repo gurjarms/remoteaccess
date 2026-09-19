@@ -34,7 +34,7 @@
         }
     .end annotation
 
-    .line 599
+    .line 601
     iput-object p1, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$fHwId:Ljava/lang/String;
 
     iput-object p2, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$fUuid:Ljava/lang/String;
@@ -51,7 +51,7 @@
 .method public run()V
     .registers 4
 
-    .line 603
+    .line 605
     :try_start_0
     iget-object v0, p0, Lcom/carriez/flutter_hbb/ConfigManager$1;->val$fHwId:Ljava/lang/String;
 
@@ -65,13 +65,13 @@
 
     goto :goto_b
 
-    .line 604
+    .line 606
     :catchall_a
     move-exception v0
 
     :goto_b
     nop
 
-    .line 605
+    .line 607
     return-void
 .end method
