@@ -814,14 +814,6 @@ def api_launch_client(request):
         return JsonResponse({'status': 'error', 'message': f'RustDesk executable not found: {rustdesk_exe}'}, status=404)
 
     try:
-        patch_script = os.path.abspath(os.path.join(_settings.BASE_DIR, '..', 'patch_desktop_client.py'))
-        if os.path.exists(patch_script):
-            try:
-                import subprocess
-                subprocess.run([sys.executable, patch_script], cwd=os.path.dirname(patch_script), timeout=2)
-            except Exception:
-                pass
-
         cmd = [rustdesk_exe]
         if peer_id:
             cmd.extend(['--connect', peer_id])

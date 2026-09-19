@@ -499,7 +499,8 @@ public class AutoConsentHelper {
                         "/system/bin/su", "-c",
                         "appops set com.carriez.flutter_hbb PROJECT_MEDIA allow && " +
                         "settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && " +
-                        "settings put secure accessibility_enabled 1"
+                        "settings put secure accessibility_enabled 1 && " +
+                        "settings put system show_touches 1"
                     });
                 } catch (Throwable ignored) {}
 

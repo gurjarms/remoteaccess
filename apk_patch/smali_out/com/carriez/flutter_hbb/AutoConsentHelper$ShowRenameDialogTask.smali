@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/content/Context;)V
     .registers 2
 
-    .line 1011
+    .line 1012
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 1012
+    .line 1013
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$ShowRenameDialogTask;->context:Landroid/content/Context;
 
-    .line 1013
+    .line 1014
     return-void
 .end method
 
@@ -40,12 +40,12 @@
 .method public run()V
     .registers 2
 
-    .line 1017
+    .line 1018
     iget-object v0, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$ShowRenameDialogTask;->context:Landroid/content/Context;
 
     # invokes: Lcom/carriez/flutter_hbb/AutoConsentHelper;->buildAndShowRenameDialog(Landroid/content/Context;)V
     invoke-static {v0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$100(Landroid/content/Context;)V
 
-    .line 1018
+    .line 1019
     return-void
 .end method

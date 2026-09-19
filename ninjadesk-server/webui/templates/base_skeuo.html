@@ -1046,9 +1046,7 @@
           </svg>
           <span>OPERATORS</span>
           {% if pending_approval_count > 0 %}
-          <span class="nav-badge-pending"
-            title="{{ pending_approval_count }} registration(s) pending Superadmin approval">{{ pending_approval_count
-            }}</span>
+          <span class="nav-badge-pending" title="{{ pending_approval_count }} registration(s) pending Superadmin approval">{{ pending_approval_count }}</span>
           {% endif %}
         </a>
         {% endif %}
@@ -1553,11 +1551,38 @@
     }
 
     function copyToClipboard(text, label = 'Copied') {
-      navigator.clipboard.writeText(text).then(() => {
-        showToast(`${label}: ${text}`);
-      }).catch(err => {
-        showToast('Clipboard error', true);
-      });
+      if (!text) return;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(`${label}: ${text}`);
+        }).catch(() => fallbackCopyText(text, label));
+      } else {
+        fallbackCopyText(text, label);
+      }
+    }
+
+    function fallbackCopyText(text, label) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      textArea.setAttribute('readonly', '');
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showToast(`${label}: ${text}`);
+        } else {
+          showToast('Failed to copy to clipboard', true);
+        }
+      } catch (err) {
+        showToast('Failed to copy to clipboard', true);
+      } finally {
+        document.body.removeChild(textArea);
+      }
     }
 
     // ============================================================================
@@ -1788,22 +1813,15 @@
       openModal('access-modal');
     }
 
-    async function launchNativeClient() {
+    function launchNativeClient() {
       const id = currentAccessDeviceId;
-      showToast(`Launching Native RustDesk for ID: ${id}...`);
-      try {
-        const res = await fetch(`/webui/api/launch_client/?id=${encodeURIComponent(id)}`);
-        const data = await res.json();
-        if (data.status === 'ok') {
-          showToast(`RustDesk opened for Device: ${id}`);
-          closeModal('access-modal');
-          return;
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      // Fallback directly to registered URL scheme
+      if (!id) return;
+      showToast(`Opening Native RustDesk App for Device: ${id}...`);
+      // Direct browser-level protocol launcher: opens local RustDesk desktop application directly with zero Python dependency
       window.location.href = `rustdesk://${id}`;
+      setTimeout(() => {
+        closeModal('access-modal');
+      }, 1200);
     }
 
     // ============================================================================

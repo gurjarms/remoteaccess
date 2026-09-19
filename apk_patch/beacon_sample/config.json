@@ -1,12 +1,12 @@
 {
-  "server_host": "remote.yourcompany.com",
+  "server_host": "198.168.1.22",
   "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
-  "api_server": "https://remote.yourcompany.com",
-  "hbbs_port": "21116",
+  "api_server": "https://198.168.1.22",
+  "hbbs_port": "21116",  
   "hbbr_port": "21117",
   "api_port": "443",
-  "api_scheme": "https",
-  "version": 1,
+  "api_scheme": "http",
+  "version": 1, 
   "updated_at": "2026-09-19T17:00:00Z",
   "comment": "NinjaDesk Emergency Cloudflare Beacon Configuration. When your primary server is unreachable for 30 minutes, all client devices automatically read this file to migrate."
 }

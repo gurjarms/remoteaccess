@@ -82,15 +82,15 @@
     .line 60
     sput-wide v2, Lcom/carriez/flutter_hbb/AutoConsentHelper;->lastPasswordDialogTime:J
 
-    .line 559
+    .line 560
     const-string v2, ""
 
     sput-object v2, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
-    .line 1439
+    .line 1440
     sput-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
-    .line 1440
+    .line 1441
     sput-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttStarted:Z
 
     return-void
@@ -171,7 +171,7 @@
 .method private static buildAndShowDialog(Landroid/content/Context;)V
     .registers 17
 
-    .line 788
+    .line 789
     const-string v0, "\ud83d\udc41 Show"
 
     const-string v1, "AutoConsentHelper"
@@ -180,7 +180,7 @@
 
     return-void
 
-    .line 789
+    .line 790
     :cond_7
     :try_start_7
     sget-object v2, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
@@ -202,7 +202,7 @@
     :cond_16
     move-object/from16 v2, p0
 
-    .line 791
+    .line 792
     :goto_18
     new-instance v3, Landroid/app/AlertDialog$Builder;
 
@@ -210,22 +210,22 @@
 
     invoke-direct {v3, v2, v4}, Landroid/app/AlertDialog$Builder;-><init>(Landroid/content/Context;I)V
 
-    .line 792
+    .line 793
     const-string v4, "Set Password"
 
     invoke-virtual {v3, v4}, Landroid/app/AlertDialog$Builder;->setTitle(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
 
-    .line 794
+    .line 795
     new-instance v4, Landroid/widget/LinearLayout;
 
     invoke-direct {v4, v2}, Landroid/widget/LinearLayout;-><init>(Landroid/content/Context;)V
 
-    .line 795
+    .line 796
     const/4 v5, 0x1
 
     invoke-virtual {v4, v5}, Landroid/widget/LinearLayout;->setOrientation(I)V
 
-    .line 796
+    .line 797
     const/16 v5, 0x14
 
     const/16 v6, 0xa
@@ -234,40 +234,40 @@
 
     invoke-virtual {v4, v7, v5, v7, v6}, Landroid/widget/LinearLayout;->setPadding(IIII)V
 
-    .line 798
+    .line 799
     new-instance v5, Landroid/widget/TextView;
 
     invoke-direct {v5, v2}, Landroid/widget/TextView;-><init>(Landroid/content/Context;)V
 
-    .line 799
+    .line 800
     const-string v6, "Set permanent password for unattended remote access:"
 
     invoke-virtual {v5, v6}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
-    .line 800
+    .line 801
     const/high16 v6, 0x41600000    # 14.0f
 
     invoke-virtual {v5, v6}, Landroid/widget/TextView;->setTextSize(F)V
 
-    .line 801
+    .line 802
     const v7, -0xcccccd
 
     invoke-virtual {v5, v7}, Landroid/widget/TextView;->setTextColor(I)V
 
-    .line 802
+    .line 803
     invoke-virtual {v4, v5}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 805
+    .line 806
     new-instance v5, Landroid/widget/LinearLayout;
 
     invoke-direct {v5, v2}, Landroid/widget/LinearLayout;-><init>(Landroid/content/Context;)V
 
-    .line 806
+    .line 807
     const/4 v7, 0x0
 
     invoke-virtual {v5, v7}, Landroid/widget/LinearLayout;->setOrientation(I)V
 
-    .line 807
+    .line 808
     new-instance v8, Landroid/widget/LinearLayout$LayoutParams;
 
     const/4 v9, -0x1
@@ -278,19 +278,19 @@
 
     invoke-virtual {v5, v8}, Landroid/widget/LinearLayout;->setLayoutParams(Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 810
+    .line 811
     const/16 v8, 0x10
 
     const/16 v11, 0x8
 
     invoke-virtual {v5, v7, v8, v7, v11}, Landroid/widget/LinearLayout;->setPadding(IIII)V
 
-    .line 812
+    .line 813
     new-instance v8, Landroid/widget/EditText;
 
     invoke-direct {v8, v2}, Landroid/widget/EditText;-><init>(Landroid/content/Context;)V
 
-    .line 813
+    .line 814
     new-instance v12, Landroid/widget/LinearLayout$LayoutParams;
 
     const/high16 v13, 0x3f800000    # 1.0f
@@ -299,12 +299,12 @@
 
     invoke-virtual {v8, v12}, Landroid/widget/EditText;->setLayoutParams(Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 816
+    .line 817
     const-string v12, "Password"
 
     invoke-virtual {v8, v12}, Landroid/widget/EditText;->setHint(Ljava/lang/CharSequence;)V
 
-    .line 817
+    .line 818
     sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->PERMANENT_PASSWORD:Ljava/lang/String;
 
     if-eqz v12, :cond_8c
@@ -317,7 +317,7 @@
 
     if-nez v12, :cond_8c
 
-    .line 818
+    .line 819
     sget-object v12, Lcom/carriez/flutter_hbb/ConfigManager;->PERMANENT_PASSWORD:Ljava/lang/String;
 
     goto :goto_8e
@@ -325,144 +325,144 @@
     :cond_8c
     const-string v12, "Ninja@2026"
 
-    .line 819
+    .line 820
     :goto_8e
     invoke-virtual {v8, v12}, Landroid/widget/EditText;->setText(Ljava/lang/CharSequence;)V
 
-    .line 820
+    .line 821
     invoke-static {}, Landroid/text/method/PasswordTransformationMethod;->getInstance()Landroid/text/method/PasswordTransformationMethod;
 
     move-result-object v14
 
     invoke-virtual {v8, v14}, Landroid/widget/EditText;->setTransformationMethod(Landroid/text/method/TransformationMethod;)V
 
-    .line 821
+    .line 822
     const/high16 v14, 0x41800000    # 16.0f
 
     invoke-virtual {v8, v14}, Landroid/widget/EditText;->setTextSize(F)V
 
-    .line 822
+    .line 823
     invoke-virtual {v5, v8}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 824
+    .line 825
     new-instance v15, Landroid/widget/Button;
 
     invoke-direct {v15, v2}, Landroid/widget/Button;-><init>(Landroid/content/Context;)V
 
-    .line 825
+    .line 826
     invoke-virtual {v15, v0}, Landroid/widget/Button;->setText(Ljava/lang/CharSequence;)V
 
-    .line 826
+    .line 827
     invoke-virtual {v15, v6}, Landroid/widget/Button;->setTextSize(F)V
 
-    .line 827
+    .line 828
     new-instance v6, Landroid/widget/LinearLayout$LayoutParams;
 
     invoke-direct {v6, v10, v10}, Landroid/widget/LinearLayout$LayoutParams;-><init>(II)V
 
     invoke-virtual {v15, v6}, Landroid/widget/Button;->setLayoutParams(Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 830
+    .line 831
     new-instance v6, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;
 
     invoke-direct {v6, v8, v15}, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;-><init>(Landroid/widget/EditText;Landroid/widget/Button;)V
 
     invoke-virtual {v15, v6}, Landroid/widget/Button;->setOnClickListener(Landroid/view/View$OnClickListener;)V
 
-    .line 831
+    .line 832
     invoke-virtual {v5, v15}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 832
+    .line 833
     invoke-virtual {v4, v5}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 835
+    .line 836
     new-instance v5, Landroid/widget/LinearLayout;
 
     invoke-direct {v5, v2}, Landroid/widget/LinearLayout;-><init>(Landroid/content/Context;)V
 
-    .line 836
+    .line 837
     invoke-virtual {v5, v7}, Landroid/widget/LinearLayout;->setOrientation(I)V
 
-    .line 837
+    .line 838
     new-instance v6, Landroid/widget/LinearLayout$LayoutParams;
 
     invoke-direct {v6, v9, v10}, Landroid/widget/LinearLayout$LayoutParams;-><init>(II)V
 
     invoke-virtual {v5, v6}, Landroid/widget/LinearLayout;->setLayoutParams(Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 840
+    .line 841
     invoke-virtual {v5, v7, v11, v7, v11}, Landroid/widget/LinearLayout;->setPadding(IIII)V
 
-    .line 842
+    .line 843
     new-instance v6, Landroid/widget/EditText;
 
     invoke-direct {v6, v2}, Landroid/widget/EditText;-><init>(Landroid/content/Context;)V
 
-    .line 843
+    .line 844
     new-instance v9, Landroid/widget/LinearLayout$LayoutParams;
 
     invoke-direct {v9, v7, v10, v13}, Landroid/widget/LinearLayout$LayoutParams;-><init>(IIF)V
 
     invoke-virtual {v6, v9}, Landroid/widget/EditText;->setLayoutParams(Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 846
+    .line 847
     const-string v7, "Confirmation"
 
     invoke-virtual {v6, v7}, Landroid/widget/EditText;->setHint(Ljava/lang/CharSequence;)V
 
-    .line 847
+    .line 848
     invoke-virtual {v6, v12}, Landroid/widget/EditText;->setText(Ljava/lang/CharSequence;)V
 
-    .line 848
+    .line 849
     invoke-static {}, Landroid/text/method/PasswordTransformationMethod;->getInstance()Landroid/text/method/PasswordTransformationMethod;
 
     move-result-object v7
 
     invoke-virtual {v6, v7}, Landroid/widget/EditText;->setTransformationMethod(Landroid/text/method/TransformationMethod;)V
 
-    .line 849
+    .line 850
     invoke-virtual {v6, v14}, Landroid/widget/EditText;->setTextSize(F)V
 
-    .line 850
+    .line 851
     invoke-virtual {v5, v6}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 852
+    .line 853
     new-instance v7, Landroid/widget/Button;
 
     invoke-direct {v7, v2}, Landroid/widget/Button;-><init>(Landroid/content/Context;)V
 
-    .line 853
+    .line 854
     invoke-virtual {v7, v0}, Landroid/widget/Button;->setText(Ljava/lang/CharSequence;)V
 
-    .line 854
+    .line 855
     const/high16 v0, 0x41600000    # 14.0f
 
     invoke-virtual {v7, v0}, Landroid/widget/Button;->setTextSize(F)V
 
-    .line 855
+    .line 856
     new-instance v0, Landroid/widget/LinearLayout$LayoutParams;
 
     invoke-direct {v0, v10, v10}, Landroid/widget/LinearLayout$LayoutParams;-><init>(II)V
 
     invoke-virtual {v7, v0}, Landroid/widget/Button;->setLayoutParams(Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 858
+    .line 859
     new-instance v0, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;
 
     invoke-direct {v0, v6, v7}, Lcom/carriez/flutter_hbb/AutoConsentHelper$EyeToggleListener;-><init>(Landroid/widget/EditText;Landroid/widget/Button;)V
 
     invoke-virtual {v7, v0}, Landroid/widget/Button;->setOnClickListener(Landroid/view/View$OnClickListener;)V
 
-    .line 859
+    .line 860
     invoke-virtual {v5, v7}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 860
+    .line 861
     invoke-virtual {v4, v5}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 862
+    .line 863
     invoke-virtual {v3, v4}, Landroid/app/AlertDialog$Builder;->setView(Landroid/view/View;)Landroid/app/AlertDialog$Builder;
 
-    .line 863
+    .line 864
     const-string v0, "OK"
 
     new-instance v4, Lcom/carriez/flutter_hbb/AutoConsentHelper$SavePasswordListener;
@@ -471,7 +471,7 @@
 
     invoke-virtual {v3, v0, v4}, Landroid/app/AlertDialog$Builder;->setPositiveButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
-    .line 864
+    .line 865
     const-string v0, "Cancel"
 
     new-instance v2, Lcom/carriez/flutter_hbb/AutoConsentHelper$3;
@@ -480,34 +480,34 @@
 
     invoke-virtual {v3, v0, v2}, Landroid/app/AlertDialog$Builder;->setNegativeButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
-    .line 871
+    .line 872
     invoke-virtual {v3}, Landroid/app/AlertDialog$Builder;->create()Landroid/app/AlertDialog;
 
     move-result-object v0
 
-    .line 872
+    .line 873
     invoke-virtual {v0}, Landroid/app/AlertDialog;->show()V
 
-    .line 873
+    .line 874
     const-string v0, "Set Password dialog with Eye button displayed successfully!"
 
     invoke-static {v1, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_13c
     .catchall {:try_start_7 .. :try_end_13c} :catchall_13d
 
-    .line 876
+    .line 877
     goto :goto_143
 
-    .line 874
+    .line 875
     :catchall_13d
     move-exception v0
 
-    .line 875
+    .line 876
     const-string v2, "buildAndShowDialog error: "
 
     invoke-static {v1, v2, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 877
+    .line 878
     :goto_143
     return-void
 .end method
@@ -515,7 +515,7 @@
 .method private static buildAndShowRenameDialog(Landroid/content/Context;)V
     .registers 7
 
-    .line 1061
+    .line 1062
     :try_start_0
     new-instance v0, Landroid/app/AlertDialog$Builder;
 
@@ -523,22 +523,22 @@
 
     invoke-direct {v0, p0, v1}, Landroid/app/AlertDialog$Builder;-><init>(Landroid/content/Context;I)V
 
-    .line 1062
+    .line 1063
     const-string v1, "\u270f\ufe0f Rename Device"
 
     invoke-virtual {v0, v1}, Landroid/app/AlertDialog$Builder;->setTitle(Ljava/lang/CharSequence;)Landroid/app/AlertDialog$Builder;
 
-    .line 1064
+    .line 1065
     new-instance v1, Landroid/widget/LinearLayout;
 
     invoke-direct {v1, p0}, Landroid/widget/LinearLayout;-><init>(Landroid/content/Context;)V
 
-    .line 1065
+    .line 1066
     const/4 v2, 0x1
 
     invoke-virtual {v1, v2}, Landroid/widget/LinearLayout;->setOrientation(I)V
 
-    .line 1066
+    .line 1067
     const/16 v2, 0x14
 
     const/16 v3, 0xa
@@ -547,35 +547,35 @@
 
     invoke-virtual {v1, v4, v2, v4, v3}, Landroid/widget/LinearLayout;->setPadding(IIII)V
 
-    .line 1068
+    .line 1069
     new-instance v2, Landroid/widget/TextView;
 
     invoke-direct {v2, p0}, Landroid/widget/TextView;-><init>(Landroid/content/Context;)V
 
-    .line 1069
+    .line 1070
     const-string v3, "Enter friendly name for this TV Box:"
 
     invoke-virtual {v2, v3}, Landroid/widget/TextView;->setText(Ljava/lang/CharSequence;)V
 
-    .line 1070
+    .line 1071
     const/high16 v3, 0x41600000    # 14.0f
 
     invoke-virtual {v2, v3}, Landroid/widget/TextView;->setTextSize(F)V
 
-    .line 1071
+    .line 1072
     const v3, -0xcccccd
 
     invoke-virtual {v2, v3}, Landroid/widget/TextView;->setTextColor(I)V
 
-    .line 1072
+    .line 1073
     invoke-virtual {v1, v2}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 1074
+    .line 1075
     new-instance v2, Landroid/widget/EditText;
 
     invoke-direct {v2, p0}, Landroid/widget/EditText;-><init>(Landroid/content/Context;)V
 
-    .line 1075
+    .line 1076
     new-instance v3, Landroid/widget/LinearLayout$LayoutParams;
 
     const/4 v4, -0x1
@@ -586,12 +586,12 @@
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setLayoutParams(Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 1078
+    .line 1079
     const-string v3, "e.g. Living Room TV Box"
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setHint(Ljava/lang/CharSequence;)V
 
-    .line 1079
+    .line 1080
     sget-object v3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
     invoke-virtual {v3}, Ljava/lang/String;->isEmpty()Z
@@ -600,12 +600,12 @@
 
     if-nez v3, :cond_61
 
-    .line 1080
+    .line 1081
     sget-object v3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setText(Ljava/lang/CharSequence;)V
 
-    .line 1081
+    .line 1082
     sget-object v3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
     invoke-virtual {v3}, Ljava/lang/String;->length()I
@@ -614,19 +614,19 @@
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setSelection(I)V
 
-    .line 1083
+    .line 1084
     :cond_61
     const/high16 v3, 0x41800000    # 16.0f
 
     invoke-virtual {v2, v3}, Landroid/widget/EditText;->setTextSize(F)V
 
-    .line 1084
+    .line 1085
     invoke-virtual {v1, v2}, Landroid/widget/LinearLayout;->addView(Landroid/view/View;)V
 
-    .line 1086
+    .line 1087
     invoke-virtual {v0, v1}, Landroid/app/AlertDialog$Builder;->setView(Landroid/view/View;)Landroid/app/AlertDialog$Builder;
 
-    .line 1087
+    .line 1088
     const-string v1, "Save"
 
     new-instance v3, Lcom/carriez/flutter_hbb/AutoConsentHelper$SaveNameClickListener;
@@ -635,38 +635,38 @@
 
     invoke-virtual {v0, v1, v3}, Landroid/app/AlertDialog$Builder;->setPositiveButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
-    .line 1088
+    .line 1089
     const-string p0, "Cancel"
 
     const/4 v1, 0x0
 
     invoke-virtual {v0, p0, v1}, Landroid/app/AlertDialog$Builder;->setNegativeButton(Ljava/lang/CharSequence;Landroid/content/DialogInterface$OnClickListener;)Landroid/app/AlertDialog$Builder;
 
-    .line 1090
+    .line 1091
     invoke-virtual {v0}, Landroid/app/AlertDialog$Builder;->create()Landroid/app/AlertDialog;
 
     move-result-object p0
 
-    .line 1091
+    .line 1092
     invoke-virtual {p0}, Landroid/app/AlertDialog;->show()V
     :try_end_83
     .catchall {:try_start_0 .. :try_end_83} :catchall_84
 
-    .line 1094
+    .line 1095
     goto :goto_8c
 
-    .line 1092
+    .line 1093
     :catchall_84
     move-exception p0
 
-    .line 1093
+    .line 1094
     const-string v0, "AutoConsentHelper"
 
     const-string v1, "buildAndShowRenameDialog error: "
 
     invoke-static {v0, v1, p0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1095
+    .line 1096
     :goto_8c
     return-void
 .end method
@@ -674,32 +674,32 @@
 .method public static checkAndAutoStartService(Landroid/app/Activity;)V
     .registers 5
 
-    .line 630
+    .line 631
     if-nez p0, :cond_3
 
     return-void
 
-    .line 631
+    .line 632
     :cond_3
     sput-object p0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
-    .line 633
+    .line 634
     invoke-static {p0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->registerCommandReceiver(Landroid/content/Context;)V
 
-    .line 634
+    .line 635
     invoke-static {p0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->setupRenameOverlay(Landroid/app/Activity;)V
 
-    .line 636
+    .line 637
     sget-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->hasAutoStarted:Z
 
     if-eqz v0, :cond_2f
 
-    .line 637
+    .line 638
     invoke-virtual {p0}, Landroid/app/Activity;->getIntent()Landroid/content/Intent;
 
     move-result-object v0
 
-    .line 638
+    .line 639
     const/4 v1, 0x0
 
     if-eqz v0, :cond_21
@@ -712,10 +712,10 @@
 
     if-eqz v2, :cond_21
 
-    .line 639
+    .line 640
     invoke-static {p0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->buildAndShowDialog(Landroid/content/Context;)V
 
-    .line 641
+    .line 642
     :cond_21
     if-eqz v0, :cond_2e
 
@@ -727,20 +727,20 @@
 
     if-eqz v0, :cond_2e
 
-    .line 642
+    .line 643
     invoke-static {p0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->buildAndShowRenameDialog(Landroid/content/Context;)V
 
-    .line 644
+    .line 645
     :cond_2e
     return-void
 
-    .line 646
+    .line 647
     :cond_2f
     const/4 v0, 0x1
 
     sput-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->hasAutoStarted:Z
 
-    .line 648
+    .line 649
     new-instance v0, Landroid/os/Handler;
 
     invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
@@ -757,7 +757,7 @@
 
     invoke-virtual {v0, v1, v2, v3}, Landroid/os/Handler;->postDelayed(Ljava/lang/Runnable;J)Z
 
-    .line 649
+    .line 650
     return-void
 .end method
 
@@ -1116,14 +1116,14 @@
 .method private static handleRemoteMqttCommand(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
     .registers 7
 
-    .line 1535
+    .line 1536
     const-string p2, "AutoConsentHelper"
 
     if-nez p3, :cond_5
 
     return-void
 
-    .line 1536
+    .line 1537
     :cond_5
     :try_start_5
     const-string v0, "\"reboot\""
@@ -1142,13 +1142,13 @@
 
     if-eqz p3, :cond_61
 
-    .line 1537
+    .line 1538
     :cond_15
     const-string p3, "Executing Instant Remote Reboot via MQTT command!"
 
     invoke-static {p2, p3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1539
+    .line 1540
     sget-object p3, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
     if-eqz p3, :cond_5e
@@ -1161,7 +1161,7 @@
 
     if-eqz p3, :cond_5e
 
-    .line 1540
+    .line 1541
     new-instance p3, Ljava/lang/StringBuilder;
 
     invoke-direct {p3}, Ljava/lang/StringBuilder;-><init>()V
@@ -1186,7 +1186,7 @@
 
     move-result-object p3
 
-    .line 1541
+    .line 1542
     sget-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttClient:Lcom/carriez/flutter_hbb/NinjaMqttClient;
 
     new-instance v1, Ljava/lang/StringBuilder;
@@ -1217,26 +1217,26 @@
 
     invoke-virtual {v0, v1, p3, v2}, Lcom/carriez/flutter_hbb/NinjaMqttClient;->publish(Ljava/lang/String;Ljava/lang/String;I)Z
 
-    .line 1544
+    .line 1545
     :cond_5e
     invoke-static {p0, p1}, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;->handleRemoteReboot(Landroid/content/Context;Ljava/lang/String;)V
     :try_end_61
     .catchall {:try_start_5 .. :try_end_61} :catchall_62
 
-    .line 1548
+    .line 1549
     :cond_61
     goto :goto_68
 
-    .line 1546
+    .line 1547
     :catchall_62
     move-exception p0
 
-    .line 1547
+    .line 1548
     const-string p1, "handleRemoteMqttCommand error: "
 
     invoke-static {p2, p1, p0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1549
+    .line 1550
     :goto_68
     return-void
 .end method
@@ -1534,14 +1534,14 @@
 .method public static onFlutterTextUpdated(Ljava/lang/Object;)V
     .registers 1
 
-    .line 1561
+    .line 1562
     return-void
 .end method
 
 .method public static registerCommandReceiver(Landroid/content/Context;)V
     .registers 5
 
-    .line 1174
+    .line 1175
     const-string v0, "AutoConsentHelper"
 
     sget-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->receiverRegistered:Z
@@ -1552,74 +1552,74 @@
 
     goto :goto_3e
 
-    .line 1176
+    .line 1177
     :cond_9
     :try_start_9
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$CommandReceiver;
 
     invoke-direct {v1}, Lcom/carriez/flutter_hbb/AutoConsentHelper$CommandReceiver;-><init>()V
 
-    .line 1177
+    .line 1178
     new-instance v2, Landroid/content/IntentFilter;
 
     invoke-direct {v2}, Landroid/content/IntentFilter;-><init>()V
 
-    .line 1178
+    .line 1179
     const-string v3, "com.carriez.flutter_hbb.SHOW_PASSWORD_DIALOG"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1179
+    .line 1180
     const-string v3, "com.carriez.flutter_hbb.RENAME_DEVICE"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1180
+    .line 1181
     const-string v3, "com.carriez.flutter_hbb.RETURN_HOME"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1181
+    .line 1182
     const-string v3, "com.carriez.flutter_hbb.REBOOT_DEVICE"
 
     invoke-virtual {v2, v3}, Landroid/content/IntentFilter;->addAction(Ljava/lang/String;)V
 
-    .line 1182
+    .line 1183
     invoke-virtual {p0}, Landroid/content/Context;->getApplicationContext()Landroid/content/Context;
 
     move-result-object p0
 
     invoke-virtual {p0, v1, v2}, Landroid/content/Context;->registerReceiver(Landroid/content/BroadcastReceiver;Landroid/content/IntentFilter;)Landroid/content/Intent;
 
-    .line 1183
+    .line 1184
     const/4 p0, 0x1
 
     sput-boolean p0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->receiverRegistered:Z
 
-    .line 1184
+    .line 1185
     const-string p0, "Command BroadcastReceiver registered successfully!"
 
     invoke-static {v0, p0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_36
     .catchall {:try_start_9 .. :try_end_36} :catchall_37
 
-    .line 1187
+    .line 1188
     goto :goto_3d
 
-    .line 1185
+    .line 1186
     :catchall_37
     move-exception p0
 
-    .line 1186
+    .line 1187
     const-string v1, "registerCommandReceiver error: "
 
     invoke-static {v0, v1, p0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1188
+    .line 1189
     :goto_3d
     return-void
 
-    .line 1174
+    .line 1175
     :cond_3e
     :goto_3e
     return-void
@@ -1664,7 +1664,7 @@
 .method public static savePermanentPassword(Landroid/content/Context;Ljava/lang/String;)V
     .registers 19
 
-    .line 906
+    .line 907
     move-object/from16 v1, p1
 
     const-string v2, "verification-method = \'use-permanent-password\'"
@@ -1678,10 +1678,10 @@
     :try_end_a
     .catchall {:try_start_8 .. :try_end_a} :catchall_213
 
-    .line 907
+    .line 908
     nop
 
-    .line 909
+    .line 910
     :try_start_b
     new-instance v0, Ljava/io/File;
 
@@ -1699,7 +1699,7 @@
     :try_end_1a
     .catchall {:try_start_b .. :try_end_1a} :catchall_1b
 
-    .line 910
+    .line 911
     goto :goto_1d
 
     :catchall_1b
@@ -1707,7 +1707,7 @@
 
     const/4 v0, 0x0
 
-    .line 911
+    .line 912
     :goto_1d
     if-eqz v0, :cond_25
 
@@ -1718,7 +1718,7 @@
 
     if-nez v5, :cond_2c
 
-    .line 912
+    .line 913
     :cond_25
     new-instance v0, Ljava/io/File;
 
@@ -1726,7 +1726,7 @@
 
     invoke-direct {v0, v5}, Ljava/io/File;-><init>(Ljava/lang/String;)V
 
-    .line 914
+    .line 915
     :cond_2c
     new-instance v5, Ljava/io/File;
 
@@ -1734,48 +1734,48 @@
 
     invoke-direct {v5, v0, v6}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 915
+    .line 916
     new-instance v6, Ljava/io/File;
 
     const-string v7, "RustDesk2.toml"
 
     invoke-direct {v6, v0, v7}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 917
+    .line 918
     invoke-virtual {v5}, Ljava/io/File;->exists()Z
 
     move-result v7
 
     if-eqz v7, :cond_14f
 
-    .line 918
+    .line 919
     invoke-static {v5}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
     move-result-object v7
 
-    .line 919
+    .line 920
     invoke-virtual {v7, v4}, Ljava/lang/String;->split(Ljava/lang/String;)[Ljava/lang/String;
 
     move-result-object v8
 
-    .line 920
+    .line 921
     new-instance v9, Ljava/lang/StringBuilder;
 
     invoke-direct {v9}, Ljava/lang/StringBuilder;-><init>()V
 
-    .line 922
+    .line 923
     invoke-static {v7}, Lcom/carriez/flutter_hbb/ConfigManager;->extractPublicKey(Ljava/lang/String;)[B
 
     move-result-object v10
 
-    .line 923
+    .line 924
     const-string v11, "salt"
 
     invoke-static {v7, v11}, Lcom/carriez/flutter_hbb/ConfigManager;->extractTomlValue(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
 
     move-result-object v7
 
-    .line 924
+    .line 925
     if-eqz v7, :cond_63
 
     invoke-virtual {v7}, Ljava/lang/String;->trim()Ljava/lang/String;
@@ -1788,30 +1788,30 @@
 
     if-eqz v11, :cond_65
 
-    .line 925
+    .line 926
     :cond_63
     const-string v7, "xcv4kvqg2n6mix9bsx8frphhsdy5p4vk"
 
-    .line 927
+    .line 928
     :cond_65
     invoke-static {v1, v7, v10}, Lcom/carriez/flutter_hbb/ConfigManager;->computeEncryptedPermanentPassword(Ljava/lang/String;Ljava/lang/String;[B)Ljava/lang/String;
 
     move-result-object v7
 
-    .line 929
+    .line 930
     new-instance v10, Ljava/util/ArrayList;
 
     invoke-direct {v10}, Ljava/util/ArrayList;-><init>()V
 
-    .line 930
+    .line 931
     new-instance v11, Ljava/util/ArrayList;
 
     invoke-direct {v11}, Ljava/util/ArrayList;-><init>()V
 
-    .line 931
+    .line 932
     nop
 
-    .line 933
+    .line 934
     array-length v12, v8
 
     const/4 v13, 0x0
@@ -1823,14 +1823,14 @@
 
     aget-object v15, v8, v13
 
-    .line 934
+    .line 935
     move-object/from16 p0, v8
 
     invoke-virtual {v15}, Ljava/lang/String;->trim()Ljava/lang/String;
 
     move-result-object v8
 
-    .line 935
+    .line 936
     if-nez v14, :cond_a0
 
     move/from16 v16, v12
@@ -1859,23 +1859,23 @@
 
     if-nez v12, :cond_a2
 
-    .line 936
+    .line 937
     const/4 v12, 0x1
 
     const/4 v14, 0x1
 
     goto :goto_a2
 
-    .line 935
+    .line 936
     :cond_a0
     move/from16 v16, v12
 
-    .line 938
+    .line 939
     :cond_a2
     :goto_a2
     if-eqz v14, :cond_ae
 
-    .line 939
+    .line 940
     invoke-virtual {v15}, Ljava/lang/String;->isEmpty()Z
 
     move-result v8
@@ -1886,7 +1886,7 @@
 
     goto :goto_c7
 
-    .line 941
+    .line 942
     :cond_ae
     const-string v12, "password ="
 
@@ -1910,10 +1910,10 @@
 
     if-nez v8, :cond_c7
 
-    .line 942
+    .line 943
     invoke-interface {v10, v15}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
-    .line 933
+    .line 934
     :cond_c7
     :goto_c7
     add-int/lit8 v13, v13, 0x1
@@ -1924,7 +1924,7 @@
 
     goto :goto_77
 
-    .line 947
+    .line 948
     :cond_ce
     if-eqz v7, :cond_d1
 
@@ -1933,7 +1933,7 @@
     :cond_d1
     move-object v7, v1
 
-    .line 949
+    .line 950
     :goto_d2
     new-instance v8, Ljava/lang/StringBuilder;
 
@@ -1961,7 +1961,7 @@
 
     invoke-interface {v10, v7}, Ljava/util/List;->add(Ljava/lang/Object;)Z
 
-    .line 951
+    .line 952
     invoke-interface {v10}, Ljava/util/List;->iterator()Ljava/util/Iterator;
 
     move-result-object v7
@@ -1979,17 +1979,17 @@
 
     check-cast v8, Ljava/lang/String;
 
-    .line 952
+    .line 953
     invoke-virtual {v9, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v8
 
     invoke-virtual {v8, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 953
+    .line 954
     goto :goto_f2
 
-    .line 954
+    .line 955
     :cond_106
     invoke-interface {v11}, Ljava/util/List;->isEmpty()Z
 
@@ -1997,10 +1997,10 @@
 
     if-nez v7, :cond_127
 
-    .line 955
+    .line 956
     invoke-virtual {v9, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 956
+    .line 957
     invoke-interface {v11}, Ljava/util/List;->iterator()Ljava/util/Iterator;
 
     move-result-object v7
@@ -2018,17 +2018,17 @@
 
     check-cast v8, Ljava/lang/String;
 
-    .line 957
+    .line 958
     invoke-virtual {v9, v8}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
     move-result-object v8
 
     invoke-virtual {v8, v4}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
 
-    .line 958
+    .line 959
     goto :goto_113
 
-    .line 961
+    .line 962
     :cond_127
     invoke-virtual {v9}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
 
@@ -2036,7 +2036,7 @@
 
     invoke-static {v5, v4}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 962
+    .line 963
     new-instance v4, Ljava/io/File;
 
     const-string v5, "/sdcard/Documents/.ninjadesk_identity.toml"
@@ -2049,7 +2049,7 @@
 
     invoke-static {v4, v5}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 963
+    .line 964
     new-instance v4, Ljava/io/File;
 
     const-string v5, "/sdcard/.ninjadesk_identity.toml"
@@ -2062,12 +2062,12 @@
 
     invoke-static {v4, v5}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 964
+    .line 965
     const-string v4, "Permanent password encrypted and updated in RustDesk.toml (root scope, version 01)"
 
     invoke-static {v3, v4}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 967
+    .line 968
     :cond_14f
     invoke-virtual {v6}, Ljava/io/File;->exists()Z
 
@@ -2093,50 +2093,50 @@
 
     if-eqz v4, :cond_1b2
 
-    .line 968
+    .line 969
     :try_start_165
     invoke-static {v6}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
     move-result-object v4
 
-    .line 969
+    .line 970
     invoke-virtual {v4, v2}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
     move-result v14
 
     if-nez v14, :cond_175
 
-    .line 970
+    .line 971
     const-string v14, "verification-method = \'use-temporary-password\'"
 
     invoke-virtual {v4, v14, v2}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v4
 
-    .line 972
+    .line 973
     :cond_175
     invoke-virtual {v4, v12, v13}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v2
 
-    .line 973
+    .line 974
     invoke-virtual {v2, v11, v13}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v2
 
-    .line 974
+    .line 975
     invoke-virtual {v2, v10, v9}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v2
 
-    .line 975
+    .line 976
     invoke-virtual {v2, v13}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
     move-result v4
 
     if-nez v4, :cond_198
 
-    .line 976
+    .line 977
     new-instance v4, Ljava/lang/StringBuilder;
 
     invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
@@ -2153,7 +2153,7 @@
 
     move-result-object v2
 
-    .line 978
+    .line 979
     :cond_198
     invoke-virtual {v2, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
@@ -2161,7 +2161,7 @@
 
     if-nez v4, :cond_1af
 
-    .line 979
+    .line 980
     new-instance v4, Ljava/lang/StringBuilder;
 
     invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
@@ -2178,11 +2178,11 @@
 
     move-result-object v2
 
-    .line 981
+    .line 982
     :cond_1af
     invoke-static {v6, v2}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 984
+    .line 985
     :cond_1b2
     new-instance v2, Ljava/io/File;
 
@@ -2190,41 +2190,41 @@
 
     invoke-direct {v2, v0, v4}, Ljava/io/File;-><init>(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 985
+    .line 986
     invoke-virtual {v2}, Ljava/io/File;->exists()Z
 
     move-result v0
 
     if-eqz v0, :cond_200
 
-    .line 986
+    .line 987
     invoke-static {v2}, Lcom/carriez/flutter_hbb/ConfigManager;->readFile(Ljava/io/File;)Ljava/lang/String;
 
     move-result-object v0
 
-    .line 987
+    .line 988
     invoke-virtual {v0, v12, v13}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v0
 
-    .line 988
+    .line 989
     invoke-virtual {v0, v11, v13}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v0
 
-    .line 989
+    .line 990
     invoke-virtual {v0, v10, v9}, Ljava/lang/String;->replace(Ljava/lang/CharSequence;Ljava/lang/CharSequence;)Ljava/lang/String;
 
     move-result-object v0
 
-    .line 990
+    .line 991
     invoke-virtual {v0, v13}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
     move-result v4
 
     if-nez v4, :cond_1e6
 
-    .line 991
+    .line 992
     new-instance v4, Ljava/lang/StringBuilder;
 
     invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
@@ -2241,7 +2241,7 @@
 
     move-result-object v0
 
-    .line 993
+    .line 994
     :cond_1e6
     invoke-virtual {v0, v8}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
 
@@ -2249,7 +2249,7 @@
 
     if-nez v4, :cond_1fd
 
-    .line 994
+    .line 995
     new-instance v4, Ljava/lang/StringBuilder;
 
     invoke-direct {v4}, Ljava/lang/StringBuilder;-><init>()V
@@ -2266,17 +2266,17 @@
 
     move-result-object v0
 
-    .line 996
+    .line 997
     :cond_1fd
     invoke-static {v2, v0}, Lcom/carriez/flutter_hbb/ConfigManager;->writeToFile(Ljava/io/File;Ljava/lang/String;)V
 
-    .line 1000
+    .line 1001
     :cond_200
     const-string v0, "Permanent password successfully updated and persisted on disk."
 
     invoke-static {v3, v0}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    .line 1001
+    .line 1002
     new-instance v0, Ljava/lang/Thread;
 
     new-instance v2, Lcom/carriez/flutter_hbb/AutoConsentHelper$ReportPasswordTask;
@@ -2289,19 +2289,19 @@
     :try_end_212
     .catchall {:try_start_165 .. :try_end_212} :catchall_213
 
-    .line 1005
+    .line 1006
     goto :goto_219
 
-    .line 1003
+    .line 1004
     :catchall_213
     move-exception v0
 
-    .line 1004
+    .line 1005
     const-string v1, "savePermanentPassword error: "
 
     invoke-static {v3, v1, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 1006
+    .line 1007
     :goto_219
     return-void
 .end method
@@ -2657,7 +2657,7 @@
 .method public static setupRenameOverlay(Landroid/app/Activity;)V
     .registers 2
 
-    .line 625
+    .line 626
     if-eqz p0, :cond_12
 
     invoke-virtual {p0}, Landroid/app/Activity;->isFinishing()Z
@@ -2668,7 +2668,7 @@
 
     goto :goto_12
 
-    .line 626
+    .line 627
     :cond_9
     new-instance v0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SetupRenameTask;
 
@@ -2676,10 +2676,10 @@
 
     invoke-virtual {p0, v0}, Landroid/app/Activity;->runOnUiThread(Ljava/lang/Runnable;)V
 
-    .line 627
+    .line 628
     return-void
 
-    .line 625
+    .line 626
     :cond_12
     :goto_12
     return-void
@@ -2752,12 +2752,12 @@
 .method public static showPasswordDialogWithEye(Landroid/content/Context;)V
     .registers 5
 
-    .line 777
+    .line 778
     if-nez p0, :cond_3
 
     return-void
 
-    .line 779
+    .line 780
     :cond_3
     :try_start_3
     new-instance v0, Landroid/content/Intent;
@@ -2770,26 +2770,26 @@
 
     invoke-direct {v0, p0, v1}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
 
-    .line 780
+    .line 781
     const/high16 v1, 0x34000000
 
     invoke-virtual {v0, v1}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 781
+    .line 782
     invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
     :try_end_16
     .catchall {:try_start_3 .. :try_end_16} :catchall_17
 
     goto :goto_18
 
-    .line 782
+    .line 783
     :catchall_17
     move-exception v0
 
     :goto_18
     nop
 
-    .line 783
+    .line 784
     new-instance v0, Landroid/os/Handler;
 
     invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
@@ -2806,7 +2806,7 @@
 
     invoke-virtual {v0, v1, v2, v3}, Landroid/os/Handler;->postDelayed(Ljava/lang/Runnable;J)Z
 
-    .line 784
+    .line 785
     return-void
 .end method
 
@@ -2996,21 +2996,21 @@
 .method public static showRenameDialog(Landroid/content/Context;)V
     .registers 4
 
-    .line 1022
+    .line 1023
     if-nez p0, :cond_3
 
     return-void
 
-    .line 1023
+    .line 1024
     :cond_3
     nop
 
-    .line 1024
+    .line 1025
     instance-of v0, p0, Landroid/app/Activity;
 
     if-nez v0, :cond_32
 
-    .line 1025
+    .line 1026
     sget-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
     if-eqz v0, :cond_17
@@ -3023,12 +3023,12 @@
 
     if-nez v0, :cond_17
 
-    .line 1026
+    .line 1027
     sget-object p0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
     goto :goto_32
 
-    .line 1029
+    .line 1030
     :cond_17
     :try_start_17
     new-instance v0, Landroid/content/Intent;
@@ -3041,36 +3041,36 @@
 
     invoke-direct {v0, p0, v1}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
 
-    .line 1030
+    .line 1031
     const/high16 v1, 0x34000000
 
     invoke-virtual {v0, v1}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
 
-    .line 1031
+    .line 1032
     const-string v1, "SHOW_RENAME_DIALOG"
 
     const/4 v2, 0x1
 
     invoke-virtual {v0, v1, v2}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Z)Landroid/content/Intent;
 
-    .line 1032
+    .line 1033
     invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
     :try_end_30
     .catchall {:try_start_17 .. :try_end_30} :catchall_31
 
-    .line 1033
+    .line 1034
     return-void
 
-    .line 1034
+    .line 1035
     :catchall_31
     move-exception v0
 
-    .line 1037
+    .line 1038
     :cond_32
     :goto_32
     nop
 
-    .line 1038
+    .line 1039
     new-instance v0, Landroid/os/Handler;
 
     invoke-static {}, Landroid/os/Looper;->getMainLooper()Landroid/os/Looper;
@@ -3085,36 +3085,36 @@
 
     invoke-virtual {v0, v1}, Landroid/os/Handler;->post(Ljava/lang/Runnable;)Z
 
-    .line 1039
+    .line 1040
     return-void
 .end method
 
 .method public static startConfigSyncPoller(Landroid/content/Context;)V
     .registers 3
 
-    .line 1552
+    .line 1553
     if-nez p0, :cond_3
 
     return-void
 
-    .line 1553
+    .line 1554
     :cond_3
     invoke-static {p0}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->startMqttDaemon(Landroid/content/Context;)V
 
-    .line 1554
+    .line 1555
     sget-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
     if-eqz v0, :cond_b
 
     return-void
 
-    .line 1555
+    .line 1556
     :cond_b
     const/4 v0, 0x1
 
     sput-boolean v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->configSyncStarted:Z
 
-    .line 1556
+    .line 1557
     new-instance v0, Ljava/lang/Thread;
 
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConfigSyncTask;
@@ -3125,14 +3125,14 @@
 
     invoke-virtual {v0}, Ljava/lang/Thread;->start()V
 
-    .line 1557
+    .line 1558
     return-void
 .end method
 
 .method private static startConsentPoller()V
     .registers 2
 
-    .line 710
+    .line 711
     new-instance v0, Ljava/lang/Thread;
 
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$ConsentPollTask;
@@ -3143,7 +3143,7 @@
 
     invoke-virtual {v0}, Ljava/lang/Thread;->start()V
 
-    .line 711
+    .line 712
     return-void
 .end method
 
@@ -3154,7 +3154,7 @@
 
     monitor-enter v0
 
-    .line 1528
+    .line 1529
     :try_start_3
     sget-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttStarted:Z
 
@@ -3164,13 +3164,13 @@
 
     goto :goto_1e
 
-    .line 1529
+    .line 1530
     :cond_a
     const/4 v1, 0x1
 
     sput-boolean v1, Lcom/carriez/flutter_hbb/AutoConsentHelper;->mqttStarted:Z
 
-    .line 1530
+    .line 1531
     new-instance v1, Ljava/lang/Thread;
 
     new-instance v2, Lcom/carriez/flutter_hbb/AutoConsentHelper$MqttDaemonTask;
@@ -3185,19 +3185,19 @@
     :try_end_1c
     .catchall {:try_start_3 .. :try_end_1c} :catchall_20
 
-    .line 1531
+    .line 1532
     monitor-exit v0
 
     return-void
 
-    .line 1528
+    .line 1529
     :cond_1e
     :goto_1e
     monitor-exit v0
 
     return-void
 
-    .line 1527
+    .line 1528
     :catchall_20
     move-exception p0
 

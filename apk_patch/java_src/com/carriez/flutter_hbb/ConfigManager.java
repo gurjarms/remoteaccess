@@ -45,8 +45,8 @@ public class ConfigManager {
     public static String ORIGIN_API_SCHEME = "http";
     public static String MQTT_HOST = "192.168.1.22";
     public static String MQTT_PORT = "1883";
-    public static String EMERGENCY_BEACON_URL = "https://ninjadesk-beacon.pages.dev/config.json";
-    public static int EMERGENCY_FAILOVER_MINUTES = 30;
+    public static String EMERGENCY_BEACON_URL = "http://192.168.1.22:3000";
+    public static int EMERGENCY_FAILOVER_MINUTES = 2;
 
     public static String getMqttHost() {
         if (MQTT_HOST != null && !MQTT_HOST.trim().isEmpty()) return MQTT_HOST.trim();
@@ -384,11 +384,18 @@ public class ConfigManager {
                 Log.i(TAG, "InputService not running or accessibility not configured. Refreshing via root su command...");
                 Process p = Runtime.getRuntime().exec(new String[]{
                     "/system/bin/su", "-c",
-                    "settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && settings put secure accessibility_enabled 1"
+                    "settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && settings put secure accessibility_enabled 1 && settings put system show_touches 1 && settings put system pointer_location 0"
                 });
                 p.waitFor();
-                Log.i(TAG, "Accessibility enabled via root su command successfully!");
+                Log.i(TAG, "Accessibility and touch indicator enabled via root su command successfully!");
             }
+            // Always ensure visual touch feedback is turned on for MediaProjection capture
+            try {
+                Runtime.getRuntime().exec(new String[]{
+                    "/system/bin/su", "-c",
+                    "settings put system show_touches 1 && settings put system pointer_location 0"
+                });
+            } catch (Throwable ignored) {}
         } catch (Throwable t) {
             Log.e(TAG, "ensureAccessibilityViaRoot error: ", t);
         }
@@ -1201,6 +1208,7 @@ public class ConfigManager {
                                      "sleep 0.5 && " +
                                      "settings put secure enabled_accessibility_services com.carriez.flutter_hbb/com.carriez.flutter_hbb.InputService && " +
                                      "settings put secure accessibility_enabled 1 && " +
+                                     "settings put system show_touches 1 && " +
                                      "sleep 1 && " +
                                      "am start -n com.carriez.flutter_hbb/.MainActivity --ez FROM_BOOT true --activity-clear-task --activity-clear-top";
                         Process p = Runtime.getRuntime().exec(new String[]{"/system/bin/su", "-c", cmd});

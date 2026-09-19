@@ -405,9 +405,11 @@
         <span>Pending & Outdated</span>
       </div>
       <div style="display: flex; align-items: baseline; gap: 8px;">
-        <span class="metric-val" id="stat-pending-count" style="color: #f59e0b; font-size: 24px;">{{ pending_devices_count }}</span>
+        <span class="metric-val" id="stat-pending-count" style="color: #f59e0b; font-size: 24px;">{{
+          pending_devices_count }}</span>
         <span style="font-size: 12px; color: var(--text-muted);">pending •</span>
-        <span class="metric-val" id="stat-outdated-count" style="color: #ef4444; font-size: 24px;">{{ outdated_devices_count }}</span>
+        <span class="metric-val" id="stat-outdated-count" style="color: #ef4444; font-size: 24px;">{{
+          outdated_devices_count }}</span>
         <span style="font-size: 12px; color: var(--text-muted);">outdated</span>
       </div>
       <div class="metric-sub">
@@ -430,7 +432,8 @@
         {{ domain }}:{{ hbbs_port }}
       </div>
       <div class="metric-sub">
-        Updated: <span id="stat-updated-at" style="color: var(--text-main); font-weight: 600;">{{ config_updated_at }}</span>
+        Updated: <span id="stat-updated-at" style="color: var(--text-main); font-weight: 600;">{{ config_updated_at
+          }}</span>
       </div>
     </div>
   </div>
@@ -494,9 +497,17 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
         <label class="form-label" style="margin-bottom: 0;">Relay & ID Server Host / IP</label>
         <span class="badge-tag badge-superadmin" style="font-size: 10px; padding: 2px 7px;">
-          LATEST ACTIVE: <span id="label-active-host" style="font-family:'JetBrains Mono',monospace;">{{ domain }}</span>
+          LATEST ACTIVE: <span id="label-active-host" style="font-family:'JetBrains Mono',monospace;">{{ domain
+            }}</span>
         </span>
       </div>
+      <input type="text" id="target-host" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
+        value="{{ domain }}" placeholder="e.g. 192.168.1.22 or remote.domain.com" autocomplete="off" autocorrect="off"
+        autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Relay & ID Server Host / IP</label>
       <input type="text" id="target-host" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
         value="{{ domain }}" placeholder="e.g. 192.168.1.22 or remote.domain.com" autocomplete="off" autocorrect="off"
         autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
@@ -512,13 +523,15 @@
     <div class="form-group">
       <label class="form-label">HBBS Port (Signaling & ID)</label>
       <input type="text" id="target-hbbs-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
-        value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
+        value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not
+        is_superadmin %}readonly{% endif %}>
     </div>
 
     <div class="form-group">
       <label class="form-label">HBBR Port (Data Relay)</label>
       <input type="text" id="target-hbbr-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
-        value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
+        value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not
+        is_superadmin %}readonly{% endif %}>
     </div>
   </div>
 
@@ -529,7 +542,8 @@
         <line x1="12" y1="16" x2="12" y2="12" />
         <line x1="12" y1="8" x2="12.01" y2="8" />
       </svg>
-      <span>Broadcasting will increment the server version to <strong>v<span id="next-version-indicator">{{ server_version|add:1 }}</span></strong>.</span>
+      <span>Broadcasting will increment the server version to <strong>v<span id="next-version-indicator">{{
+            server_version|add:1 }}</span></strong>.</span>
     </div>
 
     {% if is_superadmin %}
@@ -561,27 +575,32 @@
 <!-- ============================================================================== -->
 <!-- 2.5 SERVER MIGRATION LOGS & AUDIT TRAIL ACCESS                                -->
 <!-- ============================================================================== -->
-<div class="fleet-rack" style="margin-bottom: 24px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: var(--panel-surface); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: var(--card-shadow-outset);">
+<div class="fleet-rack"
+  style="margin-bottom: 24px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: var(--panel-surface); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: var(--card-shadow-outset);">
   <div style="display: flex; align-items: center; gap: 16px;">
-    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); display: flex; align-items: center; justify-content: center; color: var(--lcd-accent); box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.1);">
+    <div
+      style="width: 44px; height: 44px; border-radius: 10px; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25); display: flex; align-items: center; justify-content: center; color: var(--lcd-accent); box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.1);">
       <svg class="icon icon-lg" viewBox="0 0 24 24">
         <path d="M12 8v4l3 3" />
         <circle cx="12" cy="12" r="9" />
       </svg>
     </div>
     <div>
-      <div style="font-weight: 700; font-size: 14px; color: var(--lcd-text); display: flex; align-items: center; gap: 10px;">
+      <div
+        style="font-weight: 700; font-size: 14px; color: var(--lcd-text); display: flex; align-items: center; gap: 10px;">
         <span>Server Migration Logs & Configuration History</span>
         <span class="badge-tag badge-outline" style="font-size: 10px;">Audit Trail</span>
       </div>
       <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">
-        Recorded chronology of all applied server configurations with search, multi-column sorting, filters, and configuration rollback.
+        Recorded chronology of all applied server configurations with search, multi-column sorting, filters, and
+        configuration rollback.
       </div>
     </div>
   </div>
 
   <div style="display: flex; align-items: center; gap: 12px;">
-    <a href="/webui/migration/logs/" class="tactile-btn tactile-btn-secondary" style="padding: 10px 18px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+    <a href="/webui/migration/logs/" class="tactile-btn tactile-btn-secondary"
+      style="padding: 10px 18px; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
       <svg class="icon icon-sm" viewBox="0 0 24 24">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
@@ -686,157 +705,157 @@
 
 {% block extra_scripts %}
 <script>
-const IS_SUPERADMIN = {% if is_superadmin %}true{% else %}false{% endif %};
-const API_KEY = '{{ api_key }}';
-let activeServerVersion = parseInt("{{ server_version|default:'0' }}", 10) || 0;
-let activeServerHost = "{{ domain }}";
-let activeServerKey = "{{ public_key }}";
-let activeHbbs = "{{ hbbs_port }}";
-let activeHbbr = "{{ hbbr_port }}";
+  const IS_SUPERADMIN = {% if is_superadmin %}true{% else %} false{% endif %};
+  const API_KEY = '{{ api_key }}';
+  let activeServerVersion = parseInt("{{ server_version|default:'0' }}", 10) || 0;
+  let activeServerHost = "{{ domain }}";
+  let activeServerKey = "{{ public_key }}";
+  let activeHbbs = "{{ hbbs_port }}";
+  let activeHbbr = "{{ hbbr_port }}";
 
-let fleetDevices = [];
-let formDirty = false;
-let initialFormPopulated = false;
+  let fleetDevices = [];
+  let formDirty = false;
+  let initialFormPopulated = false;
 
-function setupFormDirtyTracking() {
-['target-host', 'target-key', 'target-hbbs-port', 'target-hbbr-port'].forEach(id => {
-const el = document.getElementById(id);
-if (el) {
-el.addEventListener('input', () => { formDirty = true; });
-}
-});
-}
+  function setupFormDirtyTracking() {
+    ['target-host', 'target-key', 'target-hbbs-port', 'target-hbbr-port'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', () => { formDirty = true; });
+      }
+    });
+  }
 
-// 1. CLIPBOARD COPY
-async function copyClientString() {
-const el = document.getElementById('val-client-string');
-if (!el) return;
-const text = el.textContent.trim();
-try {
-await navigator.clipboard.writeText(text);
-const btnText = document.getElementById('copy-btn-text');
-btnText.textContent = 'Copied!';
-setTimeout(() => btnText.textContent = 'Copy String', 2000);
-} catch (e) {
-showToast('Copied to clipboard');
-}
-}
+  // 1. CLIPBOARD COPY
+  async function copyClientString() {
+    const el = document.getElementById('val-client-string');
+    if (!el) return;
+    const text = el.textContent.trim();
+    try {
+      await navigator.clipboard.writeText(text);
+      const btnText = document.getElementById('copy-btn-text');
+      btnText.textContent = 'Copied!';
+      setTimeout(() => btnText.textContent = 'Copy String', 2000);
+    } catch (e) {
+      showToast('Copied to clipboard');
+    }
+  }
 
-// 2. RESET FORM TO CURRENT ACTIVE VALUES
-function resetFormToActive() {
-formDirty = false;
-document.getElementById('target-host').value = activeServerHost;
-document.getElementById('target-key').value = activeServerKey;
-document.getElementById('target-hbbs-port').value = activeHbbs;
-document.getElementById('target-hbbr-port').value = activeHbbr;
-const labelHost = document.getElementById('label-active-host');
-if (labelHost) labelHost.textContent = activeServerHost;
-showToast('Form reset to latest active server configuration: ' + activeServerHost);
-}
+  // 2. RESET FORM TO CURRENT ACTIVE VALUES
+  function resetFormToActive() {
+    formDirty = false;
+    document.getElementById('target-host').value = activeServerHost;
+    document.getElementById('target-key').value = activeServerKey;
+    document.getElementById('target-hbbs-port').value = activeHbbs;
+    document.getElementById('target-hbbr-port').value = activeHbbr;
+    const labelHost = document.getElementById('label-active-host');
+    if (labelHost) labelHost.textContent = activeServerHost;
+    showToast('Form reset to latest active server configuration: ' + activeServerHost);
+  }
 
-function loadConfigIntoEditor(host, key, hbbs, hbbr) {
-formDirty = true;
-const hostInput = document.getElementById('target-host');
-const keyInput = document.getElementById('target-key');
-const hbbsInput = document.getElementById('target-hbbs-port');
-const hbbrInput = document.getElementById('target-hbbr-port');
-if (hostInput) hostInput.value = host;
-if (keyInput) keyInput.value = key;
-if (hbbsInput) hbbsInput.value = hbbs;
-if (hbbrInput) hbbrInput.value = hbbr;
-showToast('Loaded configuration for ' + host + ' into form.');
-hostInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-hostInput.focus();
-}
+  function loadConfigIntoEditor(host, key, hbbs, hbbr) {
+    formDirty = true;
+    const hostInput = document.getElementById('target-host');
+    const keyInput = document.getElementById('target-key');
+    const hbbsInput = document.getElementById('target-hbbs-port');
+    const hbbrInput = document.getElementById('target-hbbr-port');
+    if (hostInput) hostInput.value = host;
+    if (keyInput) keyInput.value = key;
+    if (hbbsInput) hbbsInput.value = hbbs;
+    if (hbbrInput) hbbrInput.value = hbbr;
+    showToast('Loaded configuration for ' + host + ' into form.');
+    hostInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    hostInput.focus();
+  }
 
-// 3. LOAD SYNCHRONIZATION STATUS & RENDER TABLE
-async function loadSyncStatus() {
-try {
-const res = await fetch('/api/device/sync_status/', {
-headers: { 'X-Ninja-Api-Key': API_KEY }
-});
-const data = await res.json();
-activeServerVersion = data.server_version;
-activeServerHost = data.server_host || activeServerHost;
-activeServerKey = data.server_key || activeServerKey;
-activeHbbs = data.hbbs_port || activeHbbs;
-activeHbbr = data.hbbr_port || activeHbbr;
-fleetDevices = data.devices || [];
+  // 3. LOAD SYNCHRONIZATION STATUS & RENDER TABLE
+  async function loadSyncStatus() {
+    try {
+      const res = await fetch('/api/device/sync_status/', {
+        headers: { 'X-Ninja-Api-Key': API_KEY }
+      });
+      const data = await res.json();
+      activeServerVersion = data.server_version;
+      activeServerHost = data.server_host || activeServerHost;
+      activeServerKey = data.server_key || activeServerKey;
+      activeHbbs = data.hbbs_port || activeHbbs;
+      activeHbbr = data.hbbr_port || activeHbbr;
+      fleetDevices = data.devices || [];
 
-// Always populate the input fields with the latest active server configuration
-// when user is not actively typing a new custom migration target
-if (!formDirty || !initialFormPopulated) {
-const hostInput = document.getElementById('target-host');
-const keyInput = document.getElementById('target-key');
-const hbbsInput = document.getElementById('target-hbbs-port');
-const hbbrInput = document.getElementById('target-hbbr-port');
-if (hostInput && data.server_host) hostInput.value = data.server_host;
-if (keyInput && data.server_key) keyInput.value = data.server_key;
-if (hbbsInput && data.hbbs_port) hbbsInput.value = data.hbbs_port;
-if (hbbrInput && data.hbbr_port) hbbrInput.value = data.hbbr_port;
-initialFormPopulated = true;
-}
-const labelHost = document.getElementById('label-active-host');
-if (labelHost && data.server_host) labelHost.textContent = data.server_host;
+      // Always populate the input fields with the latest active server configuration
+      // when user is not actively typing a new custom migration target
+      if (!formDirty || !initialFormPopulated) {
+        const hostInput = document.getElementById('target-host');
+        const keyInput = document.getElementById('target-key');
+        const hbbsInput = document.getElementById('target-hbbs-port');
+        const hbbrInput = document.getElementById('target-hbbr-port');
+        if (hostInput && data.server_host) hostInput.value = data.server_host;
+        if (keyInput && data.server_key) keyInput.value = data.server_key;
+        if (hbbsInput && data.hbbs_port) hbbsInput.value = data.hbbs_port;
+        if (hbbrInput && data.hbbr_port) hbbrInput.value = data.hbbr_port;
+        initialFormPopulated = true;
+      }
+      const labelHost = document.getElementById('label-active-host');
+      if (labelHost && data.server_host) labelHost.textContent = data.server_host;
 
-if (data.config_history && data.config_history.length > 0) {
-renderConfigHistoryTable(data.config_history);
-}
+      if (data.config_history && data.config_history.length > 0) {
+        renderConfigHistoryTable(data.config_history);
+      }
 
-// Update Header Metrics
-const verEl = document.getElementById('stat-server-version');
-if (verEl) verEl.textContent = `v${data.server_version}`;
-const nextVerEl = document.getElementById('next-version-indicator');
-if (nextVerEl) nextVerEl.textContent = data.server_version + 1;
-document.querySelectorAll('.curr-ver-text').forEach(el => el.textContent = data.server_version);
+      // Update Header Metrics
+      const verEl = document.getElementById('stat-server-version');
+      if (verEl) verEl.textContent = `v${data.server_version}`;
+      const nextVerEl = document.getElementById('next-version-indicator');
+      if (nextVerEl) nextVerEl.textContent = data.server_version + 1;
+      document.querySelectorAll('.curr-ver-text').forEach(el => el.textContent = data.server_version);
 
-const timesEl = document.getElementById('stat-times-changed');
-if (timesEl) timesEl.textContent = data.times_changed;
-const ratioEl = document.getElementById('stat-sync-ratio');
-if (ratioEl) ratioEl.textContent = `${data.synced_devices} / ${data.total_devices}`;
-const pctEl = document.getElementById('stat-sync-pct');
-if (pctEl) pctEl.textContent = `${data.sync_percentage}%`;
-const fillEl = document.getElementById('stat-progress-fill');
-if (fillEl) fillEl.style.width = `${data.sync_percentage}%`;
+      const timesEl = document.getElementById('stat-times-changed');
+      if (timesEl) timesEl.textContent = data.times_changed;
+      const ratioEl = document.getElementById('stat-sync-ratio');
+      if (ratioEl) ratioEl.textContent = `${data.synced_devices} / ${data.total_devices}`;
+      const pctEl = document.getElementById('stat-sync-pct');
+      if (pctEl) pctEl.textContent = `${data.sync_percentage}%`;
+      const fillEl = document.getElementById('stat-progress-fill');
+      if (fillEl) fillEl.style.width = `${data.sync_percentage}%`;
 
-const pendEl = document.getElementById('stat-pending-count');
-if (pendEl) pendEl.textContent = data.pending_devices || 0;
-const outEl = document.getElementById('stat-outdated-count');
-if (outEl) outEl.textContent = data.outdated_devices;
+      const pendEl = document.getElementById('stat-pending-count');
+      if (pendEl) pendEl.textContent = data.pending_devices || 0;
+      const outEl = document.getElementById('stat-outdated-count');
+      if (outEl) outEl.textContent = data.outdated_devices;
 
-const hostEl = document.getElementById('stat-server-host');
-if (hostEl) hostEl.textContent = `${data.server_host}:${data.hbbs_port}`;
-const clientStrEl = document.getElementById('val-client-string');
-if (clientStrEl) clientStrEl.textContent = `host=${data.server_host}:${data.hbbs_port},key=${data.server_key}`;
+      const hostEl = document.getElementById('stat-server-host');
+      if (hostEl) hostEl.textContent = `${data.server_host}:${data.hbbs_port}`;
+      const clientStrEl = document.getElementById('val-client-string');
+      if (clientStrEl) clientStrEl.textContent = `host=${data.server_host}:${data.hbbs_port},key=${data.server_key}`;
 
-const updEl = document.getElementById('stat-updated-at');
-if (updEl && data.updated_at) updEl.textContent = data.updated_at;
+      const updEl = document.getElementById('stat-updated-at');
+      if (updEl && data.updated_at) updEl.textContent = data.updated_at;
 
-renderFleetTable();
-} catch (e) {
-console.error('loadSyncStatus error:', e);
-}
-}
+      renderFleetTable();
+    } catch (e) {
+      console.error('loadSyncStatus error:', e);
+    }
+  }
 
-function renderConfigHistoryTable(history) {
-const tbody = document.getElementById('config-history-body');
-if (!tbody || !history) return;
-const countEl = document.getElementById('config-history-badge');
-if (countEl) countEl.textContent = history.length;
+  function renderConfigHistoryTable(history) {
+    const tbody = document.getElementById('config-history-body');
+    if (!tbody || !history) return;
+    const countEl = document.getElementById('config-history-badge');
+    if (countEl) countEl.textContent = history.length;
 
-tbody.innerHTML = history.map((c, idx) => {
-const isLatest = (idx === 0);
-const badge = isLatest
-? `<span class="sync-badge synced"
+    tbody.innerHTML = history.map((c, idx) => {
+      const isLatest = (idx === 0);
+      const badge = isLatest
+        ? `<span class="sync-badge synced"
   style="font-size: 10px; padding: 1px 6px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;"><span
     class="led-diode online" style="width: 5px; height: 5px;"></span> CURRENT LATEST</span>`
-: '';
-const keyShort = (c.server_key && c.server_key.length > 28) ? c.server_key.substring(0, 28) + '...' : (c.server_key ||
-'-');
-const safeKey = (c.server_key || '').replace(/'/g, "\\'");
-const safeHost = (c.server_host || '').replace(/'/g, "\\'");
+        : '';
+      const keyShort = (c.server_key && c.server_key.length > 28) ? c.server_key.substring(0, 28) + '...' : (c.server_key ||
+        '-');
+      const safeKey = (c.server_key || '').replace(/'/g, "\\'");
+      const safeHost = (c.server_host || '').replace(/'/g, "\\'");
 
-return `<tr>
+      return `<tr>
   <td style="text-align: center;"><span class="version-chip">v${c.version}</span></td>
   <td>
     <div style="font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">
@@ -861,72 +880,72 @@ return `<tr>
     </button>` : `<span style="font-size: 11px; color: var(--text-muted);">Locked</span>`}
   </td>
 </tr>`;
-}).join('');
-}
+    }).join('');
+  }
 
-// 4. RENDER FLEET TABLE (PRESERVING CHECKBOX SELECTIONS)
-function renderFleetTable() {
-const tbody = document.getElementById('fleet-table-body');
-if (!tbody) return;
+  // 4. RENDER FLEET TABLE (PRESERVING CHECKBOX SELECTIONS)
+  function renderFleetTable() {
+    const tbody = document.getElementById('fleet-table-body');
+    if (!tbody) return;
 
-// Retain selected set
-const previouslyChecked = new Set(
-Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value)
-);
+    // Retain selected set
+    const previouslyChecked = new Set(
+      Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value)
+    );
 
-const query = (document.getElementById('fleet-filter-input')?.value || '').toLowerCase().trim();
+    const query = (document.getElementById('fleet-filter-input')?.value || '').toLowerCase().trim();
 
-const seenIds = new Set();
-const filtered = fleetDevices.filter(d => {
-if (!d || !d.id || seenIds.has(d.id)) return false;
-seenIds.add(d.id);
-if (!query) return true;
-const name = (d.name || '').toLowerCase();
-const host = (d.hostname || '').toLowerCase();
-const id = (d.id || '').toLowerCase();
-const ip = (d.ip_address || '').toLowerCase();
-return name.includes(query) || host.includes(query) || id.includes(query) || ip.includes(query);
-});
+    const seenIds = new Set();
+    const filtered = fleetDevices.filter(d => {
+      if (!d || !d.id || seenIds.has(d.id)) return false;
+      seenIds.add(d.id);
+      if (!query) return true;
+      const name = (d.name || '').toLowerCase();
+      const host = (d.hostname || '').toLowerCase();
+      const id = (d.id || '').toLowerCase();
+      const ip = (d.ip_address || '').toLowerCase();
+      return name.includes(query) || host.includes(query) || id.includes(query) || ip.includes(query);
+    });
 
-if (filtered.length === 0) {
-tbody.innerHTML = `<tr>
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr>
   <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No registered devices match your
     search filter.</td>
 </tr>`;
-updateSelectionCounts();
-return;
-}
+      updateSelectionCounts();
+      return;
+    }
 
-tbody.innerHTML = filtered.map(d => {
-const isChecked = previouslyChecked.has(d.id);
+    tbody.innerHTML = filtered.map(d => {
+      const isChecked = previouslyChecked.has(d.id);
 
-let badgeHtml = '';
-if (d.status === 'synced' || d.is_synced) {
-badgeHtml = `<span class="sync-badge synced"><span class="led-diode online" style="width:6px;height:6px;"></span>
+      let badgeHtml = '';
+      if (d.status === 'synced' || d.is_synced) {
+        badgeHtml = `<span class="sync-badge synced"><span class="led-diode online" style="width:6px;height:6px;"></span>
   Up-to-Date (v${d.config_version})</span>`;
-} else if (d.status === 'pending' || d.is_pending) {
-badgeHtml = `<span class="sync-badge pending"><span class="led-diode warning" style="width:6px;height:6px;"></span>
+      } else if (d.status === 'pending' || d.is_pending) {
+        badgeHtml = `<span class="sync-badge pending"><span class="led-diode warning" style="width:6px;height:6px;"></span>
   Pending Sync (v${d.config_version} → v${d.target_version})</span>`;
-} else {
-badgeHtml = `<span class="sync-badge outdated"><span class="led-diode"
+      } else {
+        badgeHtml = `<span class="sync-badge outdated"><span class="led-diode"
     style="width:6px;height:6px;background:#ef4444;box-shadow:0 0 6px #ef4444;"></span> Outdated
   (v${d.config_version})</span>`;
-}
+      }
 
-let ackDisplay = '--';
-if (d.acknowledged_at) {
-ackDisplay = `<span style="color:#10b981;font-weight:600;">Confirmed: ${d.acknowledged_at.replace('T', ' ').substring(0,
-  19)}</span>`;
-} else if (d.config_updated_at) {
-ackDisplay = `Synced: ${d.config_updated_at}`;
-} else if (d.last_seen) {
-ackDisplay = `Seen: ${d.last_seen}`;
-}
+      let ackDisplay = '--';
+      if (d.acknowledged_at) {
+        ackDisplay = `<span style="color:#10b981;font-weight:600;">Confirmed: ${d.acknowledged_at.replace('T', ' ').substring(0,
+          19)}</span>`;
+      } else if (d.config_updated_at) {
+        ackDisplay = `Synced: ${d.config_updated_at}`;
+      } else if (d.last_seen) {
+        ackDisplay = `Seen: ${d.last_seen}`;
+      }
 
-let actionHtml = '';
-if (IS_SUPERADMIN) {
-const safeName = (d.name || d.hostname || d.id).replace(/'/g, "\\'");
-actionHtml = `
+      let actionHtml = '';
+      if (IS_SUPERADMIN) {
+        const safeName = (d.name || d.hostname || d.id).replace(/'/g, "\\'");
+        actionHtml = `
 <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
   <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px; white-space: nowrap;"
     onclick="pushConfigToSingleDevice('${d.id}')">
@@ -942,15 +961,15 @@ actionHtml = `
     </svg>
   </button>
 </div>`;
-} else {
-actionHtml = `<span style="color:var(--text-muted);font-size:11px;">Restricted</span>`;
-}
+      } else {
+        actionHtml = `<span style="color:var(--text-muted);font-size:11px;">Restricted</span>`;
+      }
 
-return `
+      return `
 <tr>
   <td style="text-align: center;">
     <input type="checkbox" class="row-checkbox device-row-cb" value="${d.id}" data-status="${d.status}" ${isChecked
-      ? 'checked' : '' } ${!IS_SUPERADMIN ? 'disabled' : '' } onchange="updateSelectionCounts()">
+          ? 'checked' : ''} ${!IS_SUPERADMIN ? 'disabled' : ''} onchange="updateSelectionCounts()">
   </td>
   <td>
     <div style="font-weight: 700; color: var(--text-main);">${d.name || d.hostname}</div>
@@ -968,266 +987,266 @@ return `
   <td style="text-align: right;">${actionHtml}</td>
 </tr>
 `;
-}).join('');
+    }).join('');
 
-updateSelectionCounts();
-}
-
-function filterFleetTable() {
-renderFleetTable();
-}
-
-function updateSelectionCounts() {
-const checkedBoxes = document.querySelectorAll('.device-row-cb:checked');
-const count = checkedBoxes.length;
-const badge = document.getElementById('selected-badge');
-if (badge) {
-badge.textContent = `${count} Selected`;
-badge.style.color = count > 0 ? 'var(--lcd-text)' : 'var(--text-muted)';
-}
-const btnCount = document.getElementById('selected-btn-count');
-if (btnCount) btnCount.textContent = count;
-
-const allBoxes = document.querySelectorAll('.device-row-cb');
-const checkAll = document.getElementById('check-all');
-if (checkAll && allBoxes.length > 0) {
-checkAll.checked = (count === allBoxes.length);
-}
-}
-
-function toggleCheckAll(checked) {
-if (!IS_SUPERADMIN) return;
-document.querySelectorAll('.device-row-cb').forEach(cb => cb.checked = checked);
-updateSelectionCounts();
-}
-
-function selectDevicesByType(type) {
-if (!IS_SUPERADMIN) return;
-document.querySelectorAll('.device-row-cb').forEach(cb => {
-if (type === 'all') {
-cb.checked = true;
-} else if (type === 'none') {
-cb.checked = false;
-} else if (type === 'outdated') {
-const st = cb.getAttribute('data-status');
-cb.checked = (st === 'outdated' || st === 'pending');
-}
-});
-updateSelectionCounts();
-}
-
-function sanitizeHostInput(raw) {
-if (!raw) return '';
-let s = raw.trim();
-if (s.startsWith('http://')) s = s.substring(7);
-if (s.startsWith('https://')) s = s.substring(8);
-s = s.split('/')[0];
-if (s.includes(':')) s = s.split(':')[0];
-return s.trim();
-}
-
-// 5. BROADCAST NEW SERVER CONFIGURATION (INCREMENTS VERSION)
-async function broadcastNewConfig(broadcastAll) {
-if (!IS_SUPERADMIN) {
-return showToast('Superadmin authorization required to broadcast configuration', true);
-}
-
-let host = sanitizeHostInput(document.getElementById('target-host').value);
-const key = document.getElementById('target-key').value.trim();
-const hbbs_port = document.getElementById('target-hbbs-port').value.trim();
-const hbbr_port = document.getElementById('target-hbbr-port').value.trim();
-
-if (!host || !key) {
-return showToast('Server Host and Public Key are required', true);
-}
-document.getElementById('target-host').value = host;
-
-let selectedIds = [];
-if (!broadcastAll) {
-selectedIds = Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value);
-if (selectedIds.length === 0) {
-return showToast('Please select at least one device, or click "Save & Broadcast to ALL Devices"', true);
-}
-}
-
-const targetDesc = broadcastAll ? 'ALL registered devices' : `${selectedIds.length} selected device(s)`;
-const nextVer = activeServerVersion + 1;
-
-if (!confirm(`Save new server configuration and UPGRADE to v${nextVer} for ${targetDesc}?\n\nTarget Server:
-${host}:${hbbs_port}`)) {
-return;
-}
-
-try {
-const res = await fetch('/api/device/config/', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'X-Ninja-Api-Key': API_KEY
-},
-body: JSON.stringify({
-all_devices: broadcastAll,
-device_ids: selectedIds,
-server_host: host,
-server_key: key,
-hbbs_port: hbbs_port,
-hbbr_port: hbbr_port,
-increment_version: true
-})
-});
-
-const data = await res.json();
-if (data.status === 'ok') {
-showToast(`Server config upgraded to v${data.version}! Queued for ${data.targeted_devices} device(s).`);
-formDirty = false;
-selectDevicesByType('none');
-await loadSyncStatus();
-const hostInput = document.getElementById('target-host');
-if (hostInput && data.server_host) hostInput.value = data.server_host;
-} else {
-showToast(data.error || 'Broadcast failed', true);
-}
-} catch (e) {
-showToast(e.message, true);
-}
-}
-
-// 6. PUSH CURRENT CONFIGURATION TO A SINGLE DEVICE (DOES NOT INCREMENT VERSION)
-async function pushConfigToSingleDevice(deviceId) {
-if (!IS_SUPERADMIN) {
-return showToast('Superadmin authorization required', true);
-}
-
-try {
-const res = await fetch('/api/device/config/', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'X-Ninja-Api-Key': API_KEY
-},
-body: JSON.stringify({
-id: deviceId,
-increment_version: false,
-push_current: true
-})
-});
-
-const data = await res.json();
-if (data.status === 'ok') {
-showToast(`Current config (v${data.version}) queued for device ${deviceId}!`);
-loadSyncStatus();
-} else {
-showToast(data.error || 'Push failed', true);
-}
-} catch (e) {
-showToast(e.message, true);
-}
-}
-
-// 7. PUSH CURRENT CONFIGURATION TO SELECTED DEVICES (DOES NOT INCREMENT VERSION)
-async function pushCurrentConfigToSelected() {
-if (!IS_SUPERADMIN) {
-return showToast('Superadmin authorization required', true);
-}
-
-const selectedIds = Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value);
-if (selectedIds.length === 0) {
-return showToast('Select at least one device to push', true);
-}
-
-try {
-const res = await fetch('/api/device/config/', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'X-Ninja-Api-Key': API_KEY
-},
-body: JSON.stringify({
-device_ids: selectedIds,
-increment_version: false,
-push_current: true
-})
-});
-
-const data = await res.json();
-if (data.status === 'ok') {
-showToast(`Current config (v${data.version}) pushed to ${selectedIds.length} device(s)!`);
-loadSyncStatus();
-} else {
-showToast(data.error || 'Push failed', true);
-}
-} catch (e) {
-showToast(e.message, true);
-}
-}
-
-// 8. PUSH CURRENT CONFIGURATION TO ALL OUTDATED (DOES NOT INCREMENT VERSION)
-async function pushCurrentConfigToAllOutdated() {
-if (!IS_SUPERADMIN) {
-return showToast('Superadmin authorization required', true);
-}
-
-const outdatedIds = fleetDevices.filter(d => !d.is_synced).map(d => d.id);
-if (outdatedIds.length === 0) {
-return showToast('All devices are already up-to-date with current version!');
-}
-
-try {
-const res = await fetch('/api/device/config/', {
-method: 'POST',
-headers: {
-'Content-Type': 'application/json',
-'X-Ninja-Api-Key': API_KEY
-},
-body: JSON.stringify({
-device_ids: outdatedIds,
-increment_version: false,
-push_current: true
-})
-});
-
-const data = await res.json();
-if (data.status === 'ok') {
-showToast(`Current config (v${data.version}) pushed to ${outdatedIds.length} outdated device(s)!`);
-loadSyncStatus();
-} else {
-showToast(data.error || 'Push failed', true);
-}
-} catch (e) {
-showToast(e.message, true);
-}
-}
-
-function loadConfigIntoEditor(host, key, hbbs, hbbr) {
-  const hostInput = document.getElementById('target-host');
-  const keyInput = document.getElementById('target-key');
-  const hbbsInput = document.getElementById('target-hbbs-port');
-  const hbbrInput = document.getElementById('target-hbbr-port');
-  if (hostInput) hostInput.value = host;
-  if (keyInput) keyInput.value = key;
-  if (hbbsInput) hbbsInput.value = hbbs || '21116';
-  if (hbbrInput) hbbrInput.value = hbbr || '21117';
-  formDirty = true;
-}
-
-function checkUrlParamsForPreload() {
-  const params = new URLSearchParams(window.location.search);
-  const host = params.get('load_host');
-  const key = params.get('load_key');
-  const hbbs = params.get('load_hbbs');
-  const hbbr = params.get('load_hbbr');
-  if (host && key) {
-    loadConfigIntoEditor(host, key, hbbs, hbbr);
-    showToast(`Configuration for ${host} pre-loaded from Migration Logs!`);
+    updateSelectionCounts();
   }
-}
 
-// INITIALIZE & START REAL-TIME 3s HEARTBEAT
-document.addEventListener('DOMContentLoaded', () => {
-  setupFormDirtyTracking();
-  checkUrlParamsForPreload();
-  loadSyncStatus();
-  setInterval(loadSyncStatus, 3000);
-});
+  function filterFleetTable() {
+    renderFleetTable();
+  }
+
+  function updateSelectionCounts() {
+    const checkedBoxes = document.querySelectorAll('.device-row-cb:checked');
+    const count = checkedBoxes.length;
+    const badge = document.getElementById('selected-badge');
+    if (badge) {
+      badge.textContent = `${count} Selected`;
+      badge.style.color = count > 0 ? 'var(--lcd-text)' : 'var(--text-muted)';
+    }
+    const btnCount = document.getElementById('selected-btn-count');
+    if (btnCount) btnCount.textContent = count;
+
+    const allBoxes = document.querySelectorAll('.device-row-cb');
+    const checkAll = document.getElementById('check-all');
+    if (checkAll && allBoxes.length > 0) {
+      checkAll.checked = (count === allBoxes.length);
+    }
+  }
+
+  function toggleCheckAll(checked) {
+    if (!IS_SUPERADMIN) return;
+    document.querySelectorAll('.device-row-cb').forEach(cb => cb.checked = checked);
+    updateSelectionCounts();
+  }
+
+  function selectDevicesByType(type) {
+    if (!IS_SUPERADMIN) return;
+    document.querySelectorAll('.device-row-cb').forEach(cb => {
+      if (type === 'all') {
+        cb.checked = true;
+      } else if (type === 'none') {
+        cb.checked = false;
+      } else if (type === 'outdated') {
+        const st = cb.getAttribute('data-status');
+        cb.checked = (st === 'outdated' || st === 'pending');
+      }
+    });
+    updateSelectionCounts();
+  }
+
+  function sanitizeHostInput(raw) {
+    if (!raw) return '';
+    let s = raw.trim();
+    if (s.startsWith('http://')) s = s.substring(7);
+    if (s.startsWith('https://')) s = s.substring(8);
+    s = s.split('/')[0];
+    if (s.includes(':')) s = s.split(':')[0];
+    return s.trim();
+  }
+
+  // 5. BROADCAST NEW SERVER CONFIGURATION (INCREMENTS VERSION)
+  async function broadcastNewConfig(broadcastAll) {
+    if (!IS_SUPERADMIN) {
+      return showToast('Superadmin authorization required to broadcast configuration', true);
+    }
+
+    let host = sanitizeHostInput(document.getElementById('target-host').value);
+    const key = document.getElementById('target-key').value.trim();
+    const hbbs_port = document.getElementById('target-hbbs-port').value.trim();
+    const hbbr_port = document.getElementById('target-hbbr-port').value.trim();
+
+    if (!host || !key) {
+      return showToast('Server Host and Public Key are required', true);
+    }
+    document.getElementById('target-host').value = host;
+
+    let selectedIds = [];
+    if (!broadcastAll) {
+      selectedIds = Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value);
+      if (selectedIds.length === 0) {
+        return showToast('Please select at least one device, or click "Save & Broadcast to ALL Devices"', true);
+      }
+    }
+
+    const targetDesc = broadcastAll ? 'ALL registered devices' : `${selectedIds.length} selected device(s)`;
+    const nextVer = activeServerVersion + 1;
+
+    if (!confirm(`Save new server configuration and UPGRADE to v${nextVer} for ${targetDesc}?\n\nTarget Server:
+${host}:${hbbs_port}`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/device/config/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Ninja-Api-Key': API_KEY
+        },
+        body: JSON.stringify({
+          all_devices: broadcastAll,
+          device_ids: selectedIds,
+          server_host: host,
+          server_key: key,
+          hbbs_port: hbbs_port,
+          hbbr_port: hbbr_port,
+          increment_version: true
+        })
+      });
+
+      const data = await res.json();
+      if (data.status === 'ok') {
+        showToast(`Server config upgraded to v${data.version}! Queued for ${data.targeted_devices} device(s).`);
+        formDirty = false;
+        selectDevicesByType('none');
+        await loadSyncStatus();
+        const hostInput = document.getElementById('target-host');
+        if (hostInput && data.server_host) hostInput.value = data.server_host;
+      } else {
+        showToast(data.error || 'Broadcast failed', true);
+      }
+    } catch (e) {
+      showToast(e.message, true);
+    }
+  }
+
+  // 6. PUSH CURRENT CONFIGURATION TO A SINGLE DEVICE (DOES NOT INCREMENT VERSION)
+  async function pushConfigToSingleDevice(deviceId) {
+    if (!IS_SUPERADMIN) {
+      return showToast('Superadmin authorization required', true);
+    }
+
+    try {
+      const res = await fetch('/api/device/config/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Ninja-Api-Key': API_KEY
+        },
+        body: JSON.stringify({
+          id: deviceId,
+          increment_version: false,
+          push_current: true
+        })
+      });
+
+      const data = await res.json();
+      if (data.status === 'ok') {
+        showToast(`Current config (v${data.version}) queued for device ${deviceId}!`);
+        loadSyncStatus();
+      } else {
+        showToast(data.error || 'Push failed', true);
+      }
+    } catch (e) {
+      showToast(e.message, true);
+    }
+  }
+
+  // 7. PUSH CURRENT CONFIGURATION TO SELECTED DEVICES (DOES NOT INCREMENT VERSION)
+  async function pushCurrentConfigToSelected() {
+    if (!IS_SUPERADMIN) {
+      return showToast('Superadmin authorization required', true);
+    }
+
+    const selectedIds = Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value);
+    if (selectedIds.length === 0) {
+      return showToast('Select at least one device to push', true);
+    }
+
+    try {
+      const res = await fetch('/api/device/config/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Ninja-Api-Key': API_KEY
+        },
+        body: JSON.stringify({
+          device_ids: selectedIds,
+          increment_version: false,
+          push_current: true
+        })
+      });
+
+      const data = await res.json();
+      if (data.status === 'ok') {
+        showToast(`Current config (v${data.version}) pushed to ${selectedIds.length} device(s)!`);
+        loadSyncStatus();
+      } else {
+        showToast(data.error || 'Push failed', true);
+      }
+    } catch (e) {
+      showToast(e.message, true);
+    }
+  }
+
+  // 8. PUSH CURRENT CONFIGURATION TO ALL OUTDATED (DOES NOT INCREMENT VERSION)
+  async function pushCurrentConfigToAllOutdated() {
+    if (!IS_SUPERADMIN) {
+      return showToast('Superadmin authorization required', true);
+    }
+
+    const outdatedIds = fleetDevices.filter(d => !d.is_synced).map(d => d.id);
+    if (outdatedIds.length === 0) {
+      return showToast('All devices are already up-to-date with current version!');
+    }
+
+    try {
+      const res = await fetch('/api/device/config/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Ninja-Api-Key': API_KEY
+        },
+        body: JSON.stringify({
+          device_ids: outdatedIds,
+          increment_version: false,
+          push_current: true
+        })
+      });
+
+      const data = await res.json();
+      if (data.status === 'ok') {
+        showToast(`Current config (v${data.version}) pushed to ${outdatedIds.length} outdated device(s)!`);
+        loadSyncStatus();
+      } else {
+        showToast(data.error || 'Push failed', true);
+      }
+    } catch (e) {
+      showToast(e.message, true);
+    }
+  }
+
+  function loadConfigIntoEditor(host, key, hbbs, hbbr) {
+    const hostInput = document.getElementById('target-host');
+    const keyInput = document.getElementById('target-key');
+    const hbbsInput = document.getElementById('target-hbbs-port');
+    const hbbrInput = document.getElementById('target-hbbr-port');
+    if (hostInput) hostInput.value = host;
+    if (keyInput) keyInput.value = key;
+    if (hbbsInput) hbbsInput.value = hbbs || '21116';
+    if (hbbrInput) hbbrInput.value = hbbr || '21117';
+    formDirty = true;
+  }
+
+  function checkUrlParamsForPreload() {
+    const params = new URLSearchParams(window.location.search);
+    const host = params.get('load_host');
+    const key = params.get('load_key');
+    const hbbs = params.get('load_hbbs');
+    const hbbr = params.get('load_hbbr');
+    if (host && key) {
+      loadConfigIntoEditor(host, key, hbbs, hbbr);
+      showToast(`Configuration for ${host} pre-loaded from Migration Logs!`);
+    }
+  }
+
+  // INITIALIZE & START REAL-TIME 3s HEARTBEAT
+  document.addEventListener('DOMContentLoaded', () => {
+    setupFormDirtyTracking();
+    checkUrlParamsForPreload();
+    loadSyncStatus();
+    setInterval(loadSyncStatus, 3000);
+  });
 </script>
 {% endblock %}

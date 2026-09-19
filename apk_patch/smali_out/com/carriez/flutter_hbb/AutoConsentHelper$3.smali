@@ -21,7 +21,7 @@
 .method constructor <init>()V
     .registers 1
 
-    .line 864
+    .line 865
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -32,9 +32,9 @@
 .method public onClick(Landroid/content/DialogInterface;I)V
     .registers 3
 
-    .line 867
+    .line 868
     invoke-static {}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->returnToHomeLauncher()V
 
-    .line 868
+    .line 869
     return-void
 .end method

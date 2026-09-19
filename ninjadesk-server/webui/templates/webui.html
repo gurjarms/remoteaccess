@@ -39,10 +39,14 @@
         existingPeers[targetPeerId] = {
           id: targetPeerId,
           alias: targetPeerAlias,
-          hostname: targetPeerHostname
+          hostname: targetPeerHostname,
+          "show-remote-cursor": "Y"
         };
-        localStorage.setItem("peers", JSON.stringify(existingPeers));
+      } else {
+        existingPeers[targetPeerId]["show-remote-cursor"] = "Y";
       }
+      localStorage.setItem("peers", JSON.stringify(existingPeers));
+      localStorage.setItem("show-remote-cursor", "Y");
     } catch (err) {
       console.error("Storage init error:", err);
     }
@@ -51,6 +55,10 @@
   
   <script src="{% static "/web_client/js/yuv-canvas-1.2.6.js" %}"></script>
   <style>
+    /* Force visible cursor on Flutter Web remote screen */
+    html, body, flt-glass-pane, canvas, flutter-view, [flt-renderer] {
+      cursor: crosshair !important;
+    }
     .loading {
       display: flex;
       justify-content: center;
@@ -190,6 +198,35 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     //firebase.analytics();
+  </script>
+
+  <!-- High-visibility mouse reticle overlay for remote control -->
+  <div id="remote-mouse-reticle" style="position: fixed; width: 16px; height: 16px; border: 2px solid #0284c7; background: rgba(2, 132, 199, 0.25); border-radius: 50%; pointer-events: none; z-index: 2147483647; transform: translate(-50%, -50%); display: none; box-shadow: 0 0 6px rgba(2, 132, 199, 0.8);">
+    <div style="position: absolute; top: 50%; left: 50%; width: 3px; height: 3px; background: #ffffff; transform: translate(-50%, -50%); border-radius: 50%;"></div>
+  </div>
+  <script>
+    (function() {
+      var reticle = document.getElementById('remote-mouse-reticle');
+      if (!reticle) return;
+      window.addEventListener('mousemove', function(e) {
+        reticle.style.left = e.clientX + 'px';
+        reticle.style.top = e.clientY + 'px';
+        reticle.style.display = 'block';
+      }, { passive: true });
+      window.addEventListener('mouseleave', function() {
+        reticle.style.display = 'none';
+      });
+      window.addEventListener('mousedown', function() {
+        reticle.style.transform = 'translate(-50%, -50%) scale(0.85)';
+        reticle.style.background = 'rgba(244, 63, 94, 0.5)';
+        reticle.style.borderColor = '#f43f5e';
+      });
+      window.addEventListener('mouseup', function() {
+        reticle.style.transform = 'translate(-50%, -50%) scale(1)';
+        reticle.style.background = 'rgba(2, 132, 199, 0.25)';
+        reticle.style.borderColor = '#0284c7';
+      });
+    })();
   </script>
 </body>
 
