@@ -497,17 +497,9 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
         <label class="form-label" style="margin-bottom: 0;">Relay & ID Server Host / IP</label>
         <span class="badge-tag badge-superadmin" style="font-size: 10px; padding: 2px 7px;">
-          LATEST ACTIVE: <span id="label-active-host" style="font-family:'JetBrains Mono',monospace;">{{ domain
-            }}</span>
+          LATEST ACTIVE: <span id="label-active-host" style="font-family:'JetBrains Mono',monospace;">{{ domain }}</span>
         </span>
       </div>
-      <input type="text" id="target-host" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
-        value="{{ domain }}" placeholder="e.g. 192.168.1.22 or remote.domain.com" autocomplete="off" autocorrect="off"
-        autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Relay & ID Server Host / IP</label>
       <input type="text" id="target-host" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
         value="{{ domain }}" placeholder="e.g. 192.168.1.22 or remote.domain.com" autocomplete="off" autocorrect="off"
         autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
@@ -523,15 +515,13 @@
     <div class="form-group">
       <label class="form-label">HBBS Port (Signaling & ID)</label>
       <input type="text" id="target-hbbs-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
-        value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not
-        is_superadmin %}readonly{% endif %}>
+        value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
 
     <div class="form-group">
       <label class="form-label">HBBR Port (Data Relay)</label>
       <input type="text" id="target-hbbr-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
-        value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not
-        is_superadmin %}readonly{% endif %}>
+        value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
   </div>
 
@@ -542,8 +532,7 @@
         <line x1="12" y1="16" x2="12" y2="12" />
         <line x1="12" y1="8" x2="12.01" y2="8" />
       </svg>
-      <span>Broadcasting will increment the server version to <strong>v<span id="next-version-indicator">{{
-            server_version|add:1 }}</span></strong>.</span>
+      <span>Broadcasting will increment the server version to <strong>v<span id="next-version-indicator">{{ server_version|add:1 }}</span></strong>.</span>
     </div>
 
     {% if is_superadmin %}
