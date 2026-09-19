@@ -1217,17 +1217,18 @@ def api_device_config(request):
 
             target_version = cfg.version
 
+            # Determine if this push targets a different server_host than this server's own cfg.
+            is_migration_to_different_server = (server_host != old_server_host)
+
             # Dynamically compute target API server URL for this migration
             target_api_server = data.get('api_server', '').strip()
             if not target_api_server:
-                req_port = request.get_port()
-                port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
-                target_api_server = f"{request.scheme}://{server_host}{port_str}"
-
-            # Determine if this push targets a different server_host than this server's own cfg.
-            # Use old_server_host (captured BEFORE cfg was updated) — comparing against cfg.server_host
-            # after the update would always yield False since cfg.server_host was just set to server_host.
-            is_migration_to_different_server = (server_host != old_server_host)
+                if is_migration_to_different_server:
+                    req_port = request.get_port()
+                    port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
+                    target_api_server = f"{request.scheme}://{server_host}{port_str}"
+                else:
+                    target_api_server = request.build_absolute_uri('/')[:-1]
             import time
             current_push_id = str(int(time.time() * 1000))
 
