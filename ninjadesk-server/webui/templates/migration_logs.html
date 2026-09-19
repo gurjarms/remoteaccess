@@ -147,6 +147,44 @@
     border-color: var(--lcd-text);
     background: rgba(0, 240, 255, 0.05);
   }
+  .fleet-table-container {
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow-inset);
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .fleet-table {
+    width: 100%;
+    min-width: 950px;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .fleet-table thead th {
+    text-align: left;
+    padding: 14px 18px;
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--text-label);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--card-border);
+    white-space: nowrap;
+  }
+
+  .fleet-table tbody td {
+    padding: 15px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: middle;
+    color: var(--text-main);
+  }
+
+  .fleet-table tbody tr:hover td {
+    background: rgba(0, 240, 255, 0.04);
+  }
 
   .pagination-container {
     background: var(--panel-surface);

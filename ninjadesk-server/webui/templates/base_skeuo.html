@@ -763,11 +763,116 @@
         transform: translateX(100%);
         opacity: 0;
       }
-
       to {
         transform: translateX(0);
         opacity: 1;
       }
+    }
+
+    /* ============================================================================== */
+    /* GLOBAL HARDWARE RACKS & SKEUOMORPHIC FLEET TABLES                              */
+    /* ============================================================================== */
+    .fleet-rack {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--card-shadow-outset);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 26px;
+    }
+
+    .rack-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .rack-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.2px;
+    }
+
+    .fleet-table-container {
+      background: var(--panel-inset);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--card-shadow-inset);
+      border-radius: 12px;
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .fleet-table {
+      width: 100%;
+      min-width: 850px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .fleet-table thead th {
+      text-align: left;
+      padding: 13px 16px;
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text-label);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+    }
+
+    .fleet-table tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+      color: var(--text-main);
+    }
+
+    .fleet-table tbody tr {
+      transition: background-color 0.15s ease;
+    }
+
+    .fleet-table tbody tr:hover td {
+      background: rgba(2, 132, 199, 0.05);
+    }
+
+    .version-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--lcd-text);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+    }
+
+    .sync-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .sync-badge.synced {
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.35);
     }
   </style>
   {% block extra_head %}{% endblock %}
