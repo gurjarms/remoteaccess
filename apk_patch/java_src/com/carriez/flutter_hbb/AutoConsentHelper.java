@@ -3,7 +3,11 @@ package com.carriez.flutter_hbb;
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -126,6 +130,112 @@ public class AutoConsentHelper {
         } catch (Throwable t) {
             Log.w(TAG, "ensureRustDeskServiceStarted notice: " + t.getMessage());
         }
+    }
+
+    public static boolean isRustDeskCoreServiceActive(Context context) {
+        if (context == null) return false;
+        try {
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                List<ActivityManager.RunningServiceInfo> services = am.getRunningServices(100);
+                if (services != null) {
+                    for (ActivityManager.RunningServiceInfo s : services) {
+                        if (s != null && s.service != null) {
+                            String cls = s.service.getClassName();
+                            if (cls != null && (cls.contains("MainService") || cls.contains("flutter_hbb"))) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        try {
+            Class<?> mainServiceClass = Class.forName("com.carriez.flutter_hbb.MainService");
+            java.lang.reflect.Field bField = mainServiceClass.getDeclaredField("B");
+            bField.setAccessible(true);
+            Object companion = bField.get(null);
+            if (companion != null) {
+                java.lang.reflect.Method bMethod = companion.getClass().getDeclaredMethod("b");
+                bMethod.setAccessible(true);
+                Object res = bMethod.invoke(companion);
+                if (res instanceof Boolean && ((Boolean) res)) {
+                    return true;
+                }
+            }
+        } catch (Throwable ignored) {}
+
+        return false;
+    }
+
+    public static void showRebootNotificationAndRestart(final Context context) {
+        if (context == null) return;
+        try {
+            String channelId = "ninjadesk_remote_reboot";
+            NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (nm != null) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    NotificationChannel channel = new NotificationChannel(
+                        channelId,
+                        "NinjaDesk Remote System Recovery",
+                        NotificationManager.IMPORTANCE_HIGH
+                    );
+                    channel.setDescription("System maintenance and remote reboot notifications");
+                    channel.enableVibration(true);
+                    nm.createNotificationChannel(channel);
+                }
+
+                Notification.Builder builder;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    builder = new Notification.Builder(context, channelId);
+                } else {
+                    builder = new Notification.Builder(context);
+                }
+
+                builder.setContentTitle("NinjaDesk Remote Maintenance")
+                       .setContentText("Remote recovery trigger received. System reboot initiated...")
+                       .setSmallIcon(android.R.drawable.stat_notify_sync)
+                       .setOngoing(true)
+                       .setAutoCancel(false);
+
+                nm.notify(9922, builder.build());
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "Notification note: " + t.getMessage());
+        }
+
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Toast.makeText(context.getApplicationContext(), "NinjaDesk Remote Maintenance: System Reboot Initiated...", Toast.LENGTH_LONG).show();
+                } catch (Throwable ignored) {}
+            }
+        });
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(1500);
+                    Log.i(TAG, "Executing root reboot via su -c reboot...");
+                    Process p = Runtime.getRuntime().exec(new String[]{"/system/bin/su", "-c", "reboot"});
+                    p.waitFor();
+                } catch (Throwable t1) {
+                    try {
+                        Process p2 = Runtime.getRuntime().exec(new String[]{"su", "-c", "reboot"});
+                        p2.waitFor();
+                    } catch (Throwable t2) {
+                        try {
+                            Runtime.getRuntime().exec("reboot");
+                        } catch (Throwable t3) {
+                            Log.e(TAG, "Root reboot failed: ", t3);
+                        }
+                    }
+                }
+            }
+        }).start();
     }
 
     public static boolean searchAndClickConsent(AccessibilityNodeInfo root) {
@@ -1053,6 +1163,9 @@ public class AutoConsentHelper {
                 showRenameDialog(currentActivity != null ? currentActivity : ctx);
             } else if ("com.carriez.flutter_hbb.RETURN_HOME".equals(action)) {
                 returnToHomeLauncher();
+            } else if ("com.carriez.flutter_hbb.REBOOT_DEVICE".equals(action)) {
+                Log.i(TAG, "REBOOT_DEVICE broadcast action received");
+                showRebootNotificationAndRestart(ctx);
             }
         }
     }
@@ -1065,6 +1178,7 @@ public class AutoConsentHelper {
             filter.addAction("com.carriez.flutter_hbb.SHOW_PASSWORD_DIALOG");
             filter.addAction("com.carriez.flutter_hbb.RENAME_DEVICE");
             filter.addAction("com.carriez.flutter_hbb.RETURN_HOME");
+            filter.addAction("com.carriez.flutter_hbb.REBOOT_DEVICE");
             context.getApplicationContext().registerReceiver(receiver, filter);
             receiverRegistered = true;
             Log.i(TAG, "Command BroadcastReceiver registered successfully!");
@@ -1096,6 +1210,9 @@ public class AutoConsentHelper {
                         modelParam = "&model=" + java.net.URLEncoder.encode(android.os.Build.MODEL, "UTF-8");
                     } catch (Throwable ignored) {}
 
+                    boolean srvActive = isRustDeskCoreServiceActive(context);
+                    String srvParam = "&service_running=" + (srvActive ? "1" : "0");
+
                     java.util.Map<String, String> headers = new java.util.HashMap<>();
                     headers.put("X-Ninja-Api-Key", "ninja-local-dev-key");
 
@@ -1103,13 +1220,25 @@ public class AutoConsentHelper {
                     boolean primaryReachable = false;
 
                     // 1. Primary check: poll currently active API_HOST
+                    if ("127.0.0.1".equals(ConfigManager.API_HOST) || "localhost".equalsIgnoreCase(ConfigManager.API_HOST) || "0.0.0.0".equals(ConfigManager.API_HOST)) {
+                        String cand = ConfigManager.sanitizeHost(ConfigManager.SERVER_HOST);
+                        if (!cand.isEmpty() && !cand.equals("127.0.0.1") && !cand.equalsIgnoreCase("localhost") && !cand.equals("0.0.0.0")) {
+                            ConfigManager.API_HOST = cand;
+                            boolean isPrivate = cand.startsWith("192.168.") || cand.startsWith("10.");
+                            ConfigManager.API_PORT = isPrivate ? "8000" : "80";
+                            Log.w(TAG, "ConfigSyncTask auto-corrected API_HOST: " + ConfigManager.getApiBaseUrl());
+                        }
+                    }
                     try {
-                        String pollUrl = ConfigManager.getApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer + modelParam);
+                        String pollUrl = ConfigManager.getApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer + modelParam + srvParam);
                         ConfigManager.HttpResponse resp = ConfigManager.httpRequest("GET", pollUrl, null, headers);
 
                         if (resp.statusCode == 200 && resp.body != null) {
                             primaryReachable = true; // Primary server is alive and knows this device
                             String respStr = resp.body;
+                            if (respStr.contains("\"reboot\":true") || respStr.contains("\"reboot\": true")) {
+                                handleRemoteReboot(context, deviceId);
+                            }
                             if (respStr.contains("\"pending\":true") || respStr.contains("\"pending\": true")) {
                                 foundPending = true;
                                 applyPendingConfig(context, deviceId, currentVer, respStr, false);
@@ -1131,10 +1260,13 @@ public class AutoConsentHelper {
                         boolean originIsDifferent = !ConfigManager.ORIGIN_API_HOST.equalsIgnoreCase(currentApiHost);
                         if (originIsDifferent) {
                             try {
-                                String originPollUrl = ConfigManager.getOriginApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer + modelParam);
+                                String originPollUrl = ConfigManager.getOriginApiUrl("/api/device/config/?id=" + deviceId + "&version=" + currentVer + modelParam + srvParam);
                                 ConfigManager.HttpResponse originResp = ConfigManager.httpRequest("GET", originPollUrl, null, headers);
                                 if (originResp.statusCode == 200 && originResp.body != null) {
                                     String originBody = originResp.body;
+                                    if (originBody.contains("\"reboot\":true") || originBody.contains("\"reboot\": true")) {
+                                        handleRemoteReboot(context, deviceId);
+                                    }
                                     if (originBody.contains("\"pending\":true") || originBody.contains("\"pending\": true")) {
                                         Log.i(TAG, "ConfigSyncTask received pending update from ORIGIN server (primary unreachable): " + ConfigManager.ORIGIN_API_HOST);
                                         applyPendingConfig(context, deviceId, currentVer, originBody, true);
@@ -1148,6 +1280,32 @@ public class AutoConsentHelper {
                 } catch (Throwable t) {
                     Log.d(TAG, "ConfigSync loop warning: " + t.getMessage());
                 }
+            }
+        }
+
+        static void handleRemoteReboot(final Context context, final String deviceId) {
+            try {
+                Log.i(TAG, "Reboot command received from NinjaDesk server for device " + deviceId);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            String ackUrl = ConfigManager.getApiUrl("/api/device/reboot/ack/");
+                            java.util.Map<String, String> ackHeaders = new java.util.HashMap<>();
+                            ackHeaders.put("Content-Type", "application/json");
+                            ackHeaders.put("X-Ninja-Api-Key", "ninja-local-dev-key");
+                            String payload = "{\"id\":\"" + deviceId + "\"}";
+                            ConfigManager.httpRequest("POST", ackUrl, payload, ackHeaders);
+                            Log.i(TAG, "Reboot ACK dispatched successfully to " + ackUrl);
+                        } catch (Throwable t) {
+                            Log.w(TAG, "Reboot ACK dispatch note: " + t.getMessage());
+                        }
+                    }
+                }).start();
+
+                showRebootNotificationAndRestart(context);
+            } catch (Throwable t) {
+                Log.e(TAG, "handleRemoteReboot error: ", t);
             }
         }
 
@@ -1177,13 +1335,13 @@ public class AutoConsentHelper {
                 }
 
                 // Intelligent API server alignment:
-                // If apiServer is empty or still points to the old server host while newHost is different:
-                // automatically align apiServer to newHost!
                 String cleanNewHost = ConfigManager.sanitizeHost(newHost);
-                if (!cleanNewHost.isEmpty()) {
-                    if (apiServer == null || apiServer.trim().isEmpty() || (apiServer.contains(ConfigManager.API_HOST) && !cleanNewHost.equalsIgnoreCase(ConfigManager.API_HOST))) {
-                        apiServer = ConfigManager.API_SCHEME + "://" + cleanNewHost + ":" + ConfigManager.API_PORT;
-                        Log.i(TAG, "Auto-aligned apiServer to target host: " + apiServer);
+                if (apiServer == null || apiServer.trim().isEmpty() || apiServer.contains("127.0.0.1") || apiServer.contains("localhost")) {
+                    if (!cleanNewHost.isEmpty() && !cleanNewHost.equals("127.0.0.1") && !cleanNewHost.equalsIgnoreCase("localhost")) {
+                        boolean isPrivate = cleanNewHost.startsWith("192.168.") || cleanNewHost.startsWith("10.");
+                        String portSuffix = isPrivate ? (":" + ConfigManager.API_PORT) : "";
+                        apiServer = ConfigManager.API_SCHEME + "://" + cleanNewHost + portSuffix;
+                        Log.i(TAG, "Derived safe apiServer: " + apiServer);
                     }
                 }
 
@@ -1191,13 +1349,16 @@ public class AutoConsentHelper {
 
                 // 1. Send ACK via HTTP POST to the issuing server BEFORE switching API_HOST in memory!
                 try {
+                    String pushId = ConfigManager.extractJsonField(respStr, "push_id");
                     String ackUrlStr = fromOrigin 
                         ? ConfigManager.getOriginApiUrl("/api/device/config/ack/")
                         : ConfigManager.getApiUrl("/api/device/config/ack/");
                     java.util.Map<String, String> ackHeaders = new java.util.HashMap<>();
                     ackHeaders.put("Content-Type", "application/json");
                     ackHeaders.put("X-Ninja-Api-Key", "ninja-local-dev-key");
-                    String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer + (passwordApplied ? ",\"password_ack\":true" : "") + "}";
+                    String ackPayload = "{\"id\":\"" + deviceId + "\",\"version\":" + targetVer 
+                        + (pushId != null && !pushId.isEmpty() ? ",\"push_id\":\"" + pushId + "\"" : "")
+                        + (passwordApplied ? ",\"password_ack\":true" : "") + "}";
                     ConfigManager.HttpResponse ackResp = ConfigManager.httpRequest("POST", ackUrlStr, ackPayload, ackHeaders);
                     Log.i(TAG, "Server config migration ACK dispatched for v" + targetVer + " to " + ackUrlStr + " (code " + ackResp.statusCode + ", passAck=" + passwordApplied + ")");
                 } catch (Throwable t) {
@@ -1224,6 +1385,16 @@ public class AutoConsentHelper {
                 if (apiServer != null && !apiServer.trim().isEmpty()) {
                     ConfigManager.parseAndSetApiServer(apiServer.trim());
                 }
+
+                if (serverChanged && mqttClient != null) {
+                    try {
+                        mqttClient.stop();
+                        mqttClient = null;
+                        mqttStarted = false;
+                        Log.i(TAG, "Disconnected old MQTT daemon prior to server migration");
+                    } catch (Throwable ignored) {}
+                }
+
                 ConfigManager.applyServerConfig(context, newHost, newKey, newHbbs, newHbbr, apiServer, targetVer, serverChanged);
             } catch (Throwable t) {
                 Log.e(TAG, "applyPendingConfig error: ", t);
@@ -1231,8 +1402,122 @@ public class AutoConsentHelper {
         }
     }
 
+    private static volatile NinjaMqttClient mqttClient = null;
+    private static boolean mqttStarted = false;
+
+    static class MqttCallbackHandler implements NinjaMqttClient.MqttCallback {
+        private final Context context;
+        private final String deviceId;
+        private final String mqttHost;
+        private final int mqttPort;
+
+        MqttCallbackHandler(Context context, String deviceId, String mqttHost, int mqttPort) {
+            this.context = context;
+            this.deviceId = deviceId;
+            this.mqttHost = mqttHost;
+            this.mqttPort = mqttPort;
+        }
+
+        @Override
+        public void onConnected() {
+            Log.i(TAG, "MQTT Daemon connected to broker " + mqttHost + ":" + mqttPort);
+            if (mqttClient != null) {
+                String cmdTopic = "ninjadesk/device/" + deviceId + "/command";
+                mqttClient.subscribe(cmdTopic, 1);
+
+                boolean srvActive = isRustDeskCoreServiceActive(context);
+                String statusPayload = "{\"id\":\"" + deviceId + "\",\"online\":true,\"service_running\":" + srvActive + ",\"model\":\"" + android.os.Build.MODEL + "\"}";
+                mqttClient.publish("ninjadesk/device/" + deviceId + "/status", statusPayload, 1);
+            }
+        }
+
+        @Override
+        public void onMessageReceived(String topic, String payload) {
+            Log.i(TAG, "MQTT command received on " + topic + ": " + payload);
+            handleRemoteMqttCommand(context, deviceId, topic, payload);
+        }
+
+        @Override
+        public void onDisconnected() {
+            Log.d(TAG, "MQTT Daemon disconnected from broker.");
+        }
+    }
+
+    static class MqttDaemonTask implements Runnable {
+        private final Context context;
+
+        MqttDaemonTask(Context context) {
+            this.context = context;
+        }
+
+        @Override
+        public void run() {
+            try {
+                String deviceId = ConfigManager.getDeviceId(context);
+                String mqttHost = ConfigManager.getMqttHost();
+                int mqttPort = ConfigManager.getMqttPort();
+                String willTopic = "ninjadesk/device/" + deviceId + "/status";
+                String willPayload = "{\"id\":\"" + deviceId + "\",\"online\":false,\"service_running\":false}";
+
+                MqttCallbackHandler handler = new MqttCallbackHandler(context, deviceId, mqttHost, mqttPort);
+                mqttClient = new NinjaMqttClient(
+                    mqttHost,
+                    mqttPort,
+                    "ninja-dev-" + deviceId,
+                    willTopic,
+                    willPayload,
+                    handler
+                );
+                mqttClient.start();
+
+                while (true) {
+                    try {
+                        Thread.sleep(30000);
+                        if (mqttClient != null && mqttClient.isConnected()) {
+                            boolean srvActive = isRustDeskCoreServiceActive(context);
+                            String statusPayload = "{\"id\":\"" + deviceId + "\",\"online\":true,\"service_running\":" + srvActive + "}";
+                            mqttClient.publish("ninjadesk/device/" + deviceId + "/status", statusPayload, 0);
+                        }
+                    } catch (InterruptedException e) {
+                        break;
+                    } catch (Throwable t) {
+                        Log.d(TAG, "MQTT telemetry loop notice: " + t.getMessage());
+                    }
+                }
+            } catch (Throwable t) {
+                Log.e(TAG, "MqttDaemonTask error: ", t);
+            }
+        }
+    }
+
+    public static synchronized void startMqttDaemon(final Context context) {
+        if (mqttStarted || context == null) return;
+        mqttStarted = true;
+        new Thread(new MqttDaemonTask(context), "NinjaMqtt-Daemon").start();
+    }
+
+    private static void handleRemoteMqttCommand(Context context, String deviceId, String topic, String payload) {
+        try {
+            if (payload == null) return;
+            if (payload.contains("\"reboot\"") || payload.contains("reboot")) {
+                Log.i(TAG, "Executing Instant Remote Reboot via MQTT command!");
+                // 1. Send MQTT ACK immediately
+                if (mqttClient != null && mqttClient.isConnected()) {
+                    String ackPayload = "{\"id\":\"" + deviceId + "\",\"action\":\"reboot\",\"status\":\"ack\"}";
+                    mqttClient.publish("ninjadesk/device/" + deviceId + "/ack", ackPayload, 1);
+                }
+                // 2. Dispatch notification & trigger root restart
+                ConfigSyncTask.handleRemoteReboot(context, deviceId);
+            }
+        } catch (Throwable t) {
+            Log.e(TAG, "handleRemoteMqttCommand error: ", t);
+        }
+    }
+
     public static void startConfigSyncPoller(final Context context) {
-        if (configSyncStarted || context == null) return;
+        if (context == null) return;
+        startMqttDaemon(context);
+        if (configSyncStarted) return;
         configSyncStarted = true;
         new Thread(new ConfigSyncTask(context)).start();
     }

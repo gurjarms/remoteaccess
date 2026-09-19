@@ -50,7 +50,7 @@ if root_cfg:
 if "KEY" in config and ("SERVER_KEY" not in root_cfg or not config.get("SERVER_KEY")):
     config["SERVER_KEY"] = config["KEY"]
 
-# Decompose API_SERVER if present (e.g. "https://mydomain.com" or "http://192.168.1.43:8000")
+# Decompose API_SERVER if present (e.g. "https://mydomain.com" or "http://192.168.1.22:8000")
 # This ensures API_HOST, API_PORT, API_SCHEME are correctly populated for production deployments
 api_server_raw = config.get("API_SERVER", "").strip()
 if api_server_raw:
@@ -103,6 +103,10 @@ jcontent = re.sub(r'public static String API_HOST = ".*?";', f'public static Str
 jcontent = re.sub(r'public static String ORIGIN_API_HOST = ".*?";', f'public static String ORIGIN_API_HOST = "{api_host_value}";', jcontent)
 jcontent = re.sub(r'public static String ORIGIN_API_PORT = ".*?";', f'public static String ORIGIN_API_PORT = "{config["API_PORT"]}";', jcontent)
 jcontent = re.sub(r'public static String ORIGIN_API_SCHEME = ".*?";', f'public static String ORIGIN_API_SCHEME = "{config["API_SCHEME"]}";', jcontent)
+mqtt_host_value = config.get("MQTT_HOST", "").strip() or api_host_value
+mqtt_port_value = str(config.get("MQTT_PORT", "1883")).strip()
+jcontent = re.sub(r'public static String MQTT_HOST = ".*?";', f'public static String MQTT_HOST = "{mqtt_host_value}";', jcontent)
+jcontent = re.sub(r'public static String MQTT_PORT = ".*?";', f'public static String MQTT_PORT = "{mqtt_port_value}";', jcontent)
 
 with open(java_file_path, "w", encoding="utf-8") as f:
     f.write(jcontent)

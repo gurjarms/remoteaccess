@@ -18,12 +18,19 @@ import copy
 from django.views.decorators.csrf import csrf_exempt
 from .views_front import *
 from django.utils.translation import gettext as _
+from django.utils import timezone
+import logging
+
+logger = logging.getLogger('ninjadesk.api')
 
 
 def get_or_create_server_config_state():
     cfg = ServerConfigVersion.objects.order_by('-id').first()
     if not cfg:
-        default_host = getattr(settings, 'ID_SERVER', '') or getattr(settings, 'SERVER_HOST', '') or '127.0.0.1'
+        raw_default_host = getattr(settings, 'ID_SERVER', '') or getattr(settings, 'SERVER_HOST', '')
+        if raw_default_host:
+            raw_default_host = re.sub(r'^https?://', '', raw_default_host).split('/')[0].split(':')[0]
+        default_host = raw_default_host if raw_default_host else '127.0.0.1'
         default_key = getattr(settings, 'SERVER_KEY', getattr(settings, 'KEY', 'DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ='))
         default_hbbs = str(getattr(settings, 'HBBS_PORT', '21116'))
         default_hbbr = str(getattr(settings, 'HBBR_PORT', '21117'))
@@ -299,11 +306,11 @@ def sysinfo(request):
             device.save(update_fields=['uuid'])
 
     if device and device.is_deleted:
-        # Device has been soft-deleted from dashboard by administrator
-        result['data'] = 'ok'
-        result['server_version'] = cfg.version
-        result['device_version'] = dev_config_ver
-        return JsonResponse(result)
+        # Device was soft-deleted, but now it sent an active online signal!
+        # Automatically un-delete and restore to active fleet
+        device.is_deleted = False
+        device.deleted_at = None
+        device.save(update_fields=['is_deleted', 'deleted_at'])
 
     if not device:
         device = RustDesDevice(
@@ -327,10 +334,13 @@ def sysinfo(request):
         # Protect existing custom or hardware username if incoming is '-'
         if postdata2.get('username') in ['-', '', None] and device.username and device.username != '-':
             postdata2.pop('username', None)
-        # Never let sysinfo overwrite hardware_id, password_updated_at, is_deleted, deleted_at
-        for prot in ['hardware_id', 'password_updated_at', 'is_deleted', 'deleted_at']:
+        # Never let sysinfo overwrite hardware_id, password_updated_at
+        for prot in ['hardware_id', 'password_updated_at', 'last_reboot_requested_at']:
             postdata2.pop(prot, None)
         postdata2['ip_address'] = client_ip
+        # Ensure device is marked active
+        postdata2['is_deleted'] = False
+        postdata2['deleted_at'] = None
         RustDesDevice.objects.filter(rid=postdata['id']).update(**postdata2)
         if 'config_version' in postdata:
             RustDesDevice.objects.filter(rid=postdata['id']).update(config_version=dev_config_ver)
@@ -345,9 +355,15 @@ def heartbeat(request):
     postdata = json.loads(request.body)
     rid = postdata.get('id')
     device = RustDesDevice.objects.filter(Q(rid=rid) & Q(uuid=postdata['uuid'])).first()
+    if not device:
+        device = RustDesDevice.objects.filter(rid=rid).first()
     if device:
         client_ip = get_client_ip(request)
         device.ip_address = client_ip
+        # Auto-reactivate if soft-deleted
+        if device.is_deleted:
+            device.is_deleted = False
+            device.deleted_at = None
         if 'config_version' in postdata:
             try:
                 device.config_version = int(postdata['config_version'])
@@ -566,7 +582,6 @@ def peers(request):
     return JsonResponse(result)
 
 
-@require_ninja_api_key
 def api_health(request):
     """
     Lets the Ninja Remote Electron app check real Django reachability instead
@@ -598,7 +613,7 @@ def api_devices_list(request):
             continue
         seen_ids.add(d.rid)
         peer = peers.get(d.rid)
-        is_online = bool(d.update_time and (now - d.update_time).total_seconds() <= 15)
+        is_online = bool(d.update_time and (now - d.update_time).total_seconds() <= 45)
 
         # 3-Day Tag window calculation
         password_updated_recent = False
@@ -612,6 +627,19 @@ def api_devices_list(request):
                 password_days_left = max(1, int(math.ceil(remaining_seconds / 86400.0)))
             password_updated_at_str = d.password_updated_at.strftime('%Y-%m-%d %H:%M')
 
+        # Dual-status detection: Device network reachability vs RustDesk Core Service health
+        if not is_online:
+            service_status_label = 'offline'
+        elif getattr(d, 'rustdesk_service_running', True):
+            service_status_label = 'running'
+        else:
+            service_status_label = 'stalled'
+
+        reboot_pending = False
+        if getattr(d, 'last_reboot_requested_at', None):
+            if (timezone.now() - d.last_reboot_requested_at).total_seconds() <= 600:
+                reboot_pending = True
+
         data.append({
             'id': d.rid,
             'name': (peer.alias if peer and peer.alias else d.hostname) or f"Device {d.rid}",
@@ -622,6 +650,10 @@ def api_devices_list(request):
             'ip_address': d.ip_address,
             'battery_level': None,
             'online': is_online,
+            'rustdesk_service_running': getattr(d, 'rustdesk_service_running', True),
+            'service_status_label': service_status_label,
+            'reboot_pending': reboot_pending,
+            'last_reboot_requested_at': d.last_reboot_requested_at.isoformat() if getattr(d, 'last_reboot_requested_at', None) else None,
             'last_seen': d.update_time.isoformat() if d.update_time else None,
             'password_updated_recent': password_updated_recent,
             'password_days_left': password_days_left,
@@ -686,6 +718,101 @@ def api_device_delete(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+@require_ninja_api_key
+def api_device_reboot(request):
+    """
+    Queue a remote system reboot for a rooted Android device.
+    Requires: id (or device_ids list)
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        device_ids = data.get('device_ids', [])
+        if not device_ids and 'id' in data:
+            device_ids = [str(data['id']).strip()]
+
+        if not device_ids:
+            return JsonResponse({'error': 'device id required'}, status=400)
+
+        # Disallow rebooting devices that have been migrated away to another server
+        updates = load_device_config_updates()
+        active_device_ids = []
+        for did in device_ids:
+            target_cfg = updates.get(str(did).strip())
+            if target_cfg and target_cfg.get('migrated_away', False):
+                logger.warning(f"[api_device_reboot] Device {did} was migrated away. Blocking reboot from old server.")
+            else:
+                active_device_ids.append(did)
+
+        if not active_device_ids:
+            return JsonResponse({
+                'error': 'The selected device has been migrated to another server and cannot be rebooted from this server.'
+            }, status=400)
+
+        device_ids = active_device_ids
+        now = timezone.now()
+        updated_count = RustDesDevice.objects.filter(rid__in=device_ids).update(
+            last_reboot_requested_at=now
+        )
+
+        # Broadcast instant reboot command via MQTT
+        try:
+            from . import mqtt_service
+            for dev_id in device_ids:
+                mqtt_service.publish_device_command(str(dev_id), {
+                    'action': 'reboot',
+                    'timestamp': int(now.timestamp()),
+                    'device_id': str(dev_id)
+                })
+        except Exception as mqtt_err:
+            logger.warning(f"[api_device_reboot] MQTT publish warning: {mqtt_err}")
+
+        return JsonResponse({
+            'status': 'ok',
+            'device_ids': device_ids,
+            'count': updated_count,
+            'message': f'Remote reboot command successfully queued and broadcast via MQTT for {updated_count} device(s).'
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_ninja_api_key
+def api_device_reboot_ack(request):
+    """
+    Device acknowledges receipt and execution of reboot command.
+    Clears last_reboot_requested_at.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        rid = str(data.get('id', '')).strip()
+        if not rid:
+            return JsonResponse({'error': 'id required'}, status=400)
+
+        dev = RustDesDevice.objects.filter(rid=rid).first()
+        if dev:
+            # Device acknowledges reboot execution.
+            # Do NOT clear last_reboot_requested_at here!
+            # The device is now actively executing 'su -c reboot' and restarting.
+            # It must remain in rebooting/disabled state until it boots back up and sends
+            # an online telemetry/heartbeat signal.
+            logger.info(f"[api_device_reboot_ack] Device {rid} acknowledged reboot execution; restart in progress.")
+
+        return JsonResponse({
+            'status': 'ok',
+            'id': rid,
+            'message': 'Reboot command acknowledged by device. Device restart in progress.'
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+
 DEVICE_PASSWORDS_FILE = os.path.join(settings.BASE_DIR, 'db', 'device_passwords.json')
 
 def load_device_passwords():
@@ -729,8 +856,9 @@ def api_device_password(request):
                 return JsonResponse({'error': 'Superadmin password is required to change device password'}, status=403)
 
             # Authenticate superadmin password against UserProfile
-            admin_user = UserProfile.objects.filter(Q(is_admin=True) | Q(is_superuser=True)).first()
-            if not admin_user or not check_password(superadmin_pass, admin_user.password):
+            admin_users = UserProfile.objects.filter(Q(is_admin=True) | Q(is_superuser=True))
+            authenticated = any(check_password(superadmin_pass, admin.password) for admin in admin_users)
+            if not authenticated:
                 return JsonResponse({'error': 'Invalid superadmin password. Authorization denied.'}, status=403)
 
             passwords[rid] = new_pass
@@ -920,6 +1048,19 @@ def api_device_config(request):
                 )
         else:
             update_fields = {'ip_address': client_ip}
+            # Auto-revive soft-deleted device upon receiving active communication signal
+            if getattr(dev_obj, 'is_deleted', False):
+                dev_obj.is_deleted = False
+                dev_obj.deleted_at = None
+                update_fields['is_deleted'] = False
+                update_fields['deleted_at'] = None
+
+            # Telemetry for RustDesk core service status (1=running, 0=stalled)
+            srv_running_param = request.GET.get('service_running')
+            if srv_running_param is not None:
+                srv_running = str(srv_running_param).strip().lower() in ('1', 'true', 'yes')
+                update_fields['rustdesk_service_running'] = srv_running
+
             # ONLY update update_time if device is actively belonging to this server.
             # If migrated_away is True, do NOT mark device online on this old server!
             if not is_migrated_away:
@@ -934,16 +1075,23 @@ def api_device_config(request):
         target_cfg = updates.get(rid)
         dev_ver = dev_obj.config_version if dev_obj else 0
 
-        # Auto-clear pending state if device has already applied or reports target version.
-        # IMPORTANT: Do NOT auto-clear if entry has an undelivered 'password' field —
-        # password updates are confirmed only via explicit ACK, not version number matching.
-        if target_cfg and target_cfg.get('pending', False):
-            queued_ver = target_cfg.get('version', cfg.version)
-            has_undelivered_password = 'password' in target_cfg
-            if not has_undelivered_password and param_ver >= queued_ver and param_ver > 0:
-                target_cfg['pending'] = False
-                target_cfg['acknowledged_at'] = now_dt.isoformat()
-                save_device_config_updates(updates)
+        # Check if remote reboot is queued for this device (valid within 10 minutes)
+        reboot_queued = False
+        if dev_obj and getattr(dev_obj, 'last_reboot_requested_at', None) and not is_migrated_away:
+            now_tz = timezone.now()
+            elapsed_reboot = (now_tz - dev_obj.last_reboot_requested_at).total_seconds()
+            if elapsed_reboot <= 600:
+                if elapsed_reboot >= 8:
+                    # Device has completed reboot and reconnected online! Clear reboot state.
+                    dev_obj.last_reboot_requested_at = None
+                    RustDesDevice.objects.filter(rid=rid).update(last_reboot_requested_at=None)
+                    reboot_queued = False
+                    logger.info(f"[api_device_config] Device {rid} reconnected online after reboot. Cleared reboot state.")
+                else:
+                    reboot_queued = True
+            else:
+                dev_obj.last_reboot_requested_at = None
+                RustDesDevice.objects.filter(rid=rid).update(last_reboot_requested_at=None)
 
         if target_cfg and target_cfg.get('pending', False):
             target_host = sanitize_server_host(target_cfg.get('server_host')) or cfg.server_host
@@ -956,6 +1104,7 @@ def api_device_config(request):
             resp = {
                 'id': rid,
                 'pending': True,
+                'push_id': str(target_cfg.get('push_id', '')),
                 'version': target_cfg.get('version', cfg.version),
                 'server_version': cfg.version,
                 'server_host': target_host,
@@ -966,6 +1115,8 @@ def api_device_config(request):
             }
             if 'password' in target_cfg:
                 resp['password'] = target_cfg['password']
+            if reboot_queued:
+                resp['reboot'] = True
             return JsonResponse(resp)
         elif dev_ver < cfg.version and cfg.version > 0:
             # Device has outdated config version. ONLY auto-push if this device has NOT been
@@ -990,9 +1141,14 @@ def api_device_config(request):
                     'hbbr_port': str(cfg.hbbr_port),
                     'api_server': target_api,
                 }
+                if reboot_queued:
+                    resp['reboot'] = True
                 return JsonResponse(resp)
 
-        return JsonResponse({'id': rid, 'pending': False, 'version': dev_ver, 'server_version': cfg.version, 'api_server': api_server_url})
+        resp = {'id': rid, 'pending': False, 'version': dev_ver, 'server_version': cfg.version, 'api_server': api_server_url}
+        if reboot_queued:
+            resp['reboot'] = True
+        return JsonResponse(resp)
 
     elif request.method == 'POST':
         # Enforce that only Superadmin can push server configurations to devices
@@ -1064,22 +1220,42 @@ def api_device_config(request):
 
             target_version = cfg.version
 
+            # Determine if this push targets a different server_host than this server's own cfg.
+            clean_server_host = sanitize_server_host(server_host)
+            clean_old_server_host = sanitize_server_host(old_server_host)
+            is_migration_to_different_server = bool(clean_server_host and clean_old_server_host and clean_server_host != clean_old_server_host)
+
             # Dynamically compute target API server URL for this migration
             target_api_server = data.get('api_server', '').strip()
             if not target_api_server:
-                req_port = request.get_port()
-                port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
-                target_api_server = f"{request.scheme}://{server_host}{port_str}"
-
-            # Determine if this push targets a different server_host than this server's own cfg.
-            # Use old_server_host (captured BEFORE cfg was updated) — comparing against cfg.server_host
-            # after the update would always yield False since cfg.server_host was just set to server_host.
-            is_migration_to_different_server = (server_host != old_server_host)
+                if clean_server_host and clean_server_host not in ('127.0.0.1', 'localhost', '0.0.0.0'):
+                    is_lan = clean_server_host.startswith('192.168.') or clean_server_host.startswith('10.') or clean_server_host.startswith('172.')
+                    if is_lan:
+                        req_port = request.get_port()
+                        port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ":8000"
+                        target_api_server = f"{request.scheme}://{clean_server_host}{port_str}"
+                    else:
+                        # Public domain or public IP uses standard HTTP/HTTPS ports (never :8000)
+                        target_api_server = f"{request.scheme}://{clean_server_host}"
+                else:
+                    uri_base = request.build_absolute_uri('/')[:-1]
+                    if '127.0.0.1' in uri_base or 'localhost' in uri_base:
+                        ext_host = getattr(settings, 'ID_SERVER', '') or request.get_host().split(':')[0]
+                        ext_host = re.sub(r'^https?://', '', ext_host).split('/')[0].split(':')[0]
+                        if ext_host and ext_host not in ('127.0.0.1', 'localhost', '0.0.0.0'):
+                            target_api_server = f"{request.scheme}://{ext_host}"
+                        else:
+                            target_api_server = uri_base
+                    else:
+                        target_api_server = uri_base
+            import time
+            current_push_id = str(int(time.time() * 1000))
 
             for did in device_ids:
                 did_str = str(did).strip()
                 dev_entry = updates.get(did_str, {})
                 dev_entry['pending'] = True
+                dev_entry['push_id'] = current_push_id
                 dev_entry['server_host'] = server_host
                 dev_entry['server_key'] = server_key
                 dev_entry['hbbs_port'] = hbbs_port
@@ -1159,6 +1335,7 @@ def api_device_config_ack(request):
         had_password_pending = False
         if rid in updates:
             updates[rid]['pending'] = False
+            updates[rid].pop('push_id', None)
             if 'password' in updates[rid]:
                 had_password_pending = True
                 updates[rid].pop('password', None)
@@ -1200,15 +1377,19 @@ def api_device_sync_status(request):
             peers[p.rid] = p
 
     now = datetime.datetime.now()
-    cutoff = now - datetime.timedelta(seconds=15)
+    cutoff = now - datetime.timedelta(seconds=45)
 
-    total = devices.count()
+    seen_ids = set()
+    device_list = []
     synced = 0
     pending_count = 0
     outdated = 0
 
-    device_list = []
     for d in devices:
+        if not d.rid or d.rid in seen_ids:
+            continue
+        seen_ids.add(d.rid)
+
         is_online = bool(d.update_time and d.update_time >= cutoff)
         dev_ver = d.config_version
         target_entry = updates.get(d.rid, {})
@@ -1250,6 +1431,7 @@ def api_device_sync_status(request):
             'last_seen': d.update_time.strftime('%Y-%m-%d %H:%M:%S') if d.update_time else None,
         })
 
+    total = len(device_list)
     sync_pct = round((synced / total * 100)) if total > 0 else 100
 
     history_items = list(ServerConfigVersion.objects.order_by('-id')[:20].values(

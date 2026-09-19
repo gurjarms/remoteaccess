@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/app/Activity;)V
     .registers 2
 
-    .line 454
+    .line 564
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 455
+    .line 565
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$RenameBtnClickListener;->activity:Landroid/app/Activity;
 
-    .line 456
+    .line 566
     return-void
 .end method
 
@@ -40,12 +40,12 @@
 .method public onClick(Landroid/view/View;)V
     .registers 2
 
-    .line 460
+    .line 570
     iget-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$RenameBtnClickListener;->activity:Landroid/app/Activity;
 
     # invokes: Lcom/carriez/flutter_hbb/AutoConsentHelper;->buildAndShowRenameDialog(Landroid/content/Context;)V
     invoke-static {p1}, Lcom/carriez/flutter_hbb/AutoConsentHelper;->access$100(Landroid/content/Context;)V
 
-    .line 461
+    .line 571
     return-void
 .end method

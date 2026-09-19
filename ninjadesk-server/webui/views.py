@@ -82,7 +82,13 @@ def check_port_status(host, port, timeout=0.25):
 
 
 def get_server_context(request, active_nav='devices'):
-    domain = getattr(_settings, 'ID_SERVER', '') or request.get_host().split(":")[0]
+    req_host = request.get_host().split(":")[0]
+    domain = getattr(_settings, 'ID_SERVER', '')
+    if domain:
+        domain = re.sub(r'^https?://', '', domain).split('/')[0].split(':')[0]
+    if not domain or domain in ('127.0.0.1', 'localhost', '0.0.0.0'):
+        domain = req_host
+
     hbbs_port = getattr(_settings, 'HBBS_PORT', 21116)
     hbbr_port = getattr(_settings, 'HBBR_PORT', 21117)
     public_key = getattr(_settings, 'KEY', getattr(_settings, 'ID_SERVER_PUB_KEY', 'DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ='))
@@ -93,8 +99,11 @@ def get_server_context(request, active_nav='devices'):
         from api.views_api import get_or_create_server_config_state
         cfg = get_or_create_server_config_state()
         if cfg:
-            if cfg.server_host:
-                domain = cfg.server_host
+            clean_cfg_host = re.sub(r'^https?://', '', cfg.server_host or '').split('/')[0].split(':')[0]
+            if clean_cfg_host and clean_cfg_host not in ('127.0.0.1', 'localhost', '0.0.0.0'):
+                domain = clean_cfg_host
+            elif not domain or domain in ('127.0.0.1', 'localhost', '0.0.0.0'):
+                domain = req_host
             if cfg.server_key:
                 public_key = cfg.server_key
             if cfg.hbbs_port:
@@ -310,26 +319,25 @@ def index(request):
     peer_id = request.GET.get('peer')
     if peer_id:
         is_default_peer = peer_id == DEFAULT_PEER_ID
-        context = {
-            'domain': getattr(_settings, 'ID_SERVER', '') or request.get_host().split(":")[0],
+        context = get_server_context(request)
+        context.update({
             'peer_id': peer_id,
             'peer_alias': request.GET.get('alias') or (DEFAULT_PEER_ALIAS if is_default_peer else peer_id),
             'peer_hostname': request.GET.get('hostname') or (DEFAULT_PEER_HOSTNAME if is_default_peer else peer_id),
-        }
+        })
         return render(request, 'webui.html', context)
     return redirect('/webui/devices/')
 
 
 def remote_view(request):
-    domain = getattr(_settings, 'ID_SERVER', '') or request.get_host().split(":")[0]
     peer_id = request.GET.get('peer') or DEFAULT_PEER_ID
     is_default_peer = peer_id == DEFAULT_PEER_ID
-    context = {
-        'domain': domain,
+    context = get_server_context(request)
+    context.update({
         'peer_id': peer_id,
         'peer_alias': request.GET.get('alias') or (DEFAULT_PEER_ALIAS if is_default_peer else peer_id),
         'peer_hostname': request.GET.get('hostname') or (DEFAULT_PEER_HOSTNAME if is_default_peer else peer_id),
-    }
+    })
     return render(request, 'webui.html', context)
 
 
@@ -405,9 +413,13 @@ def migration_view(request):
 
     sync_pct = round((synced / total * 100)) if total > 0 else 100
 
+    clean_migration_domain = re.sub(r'^https?://', '', cfg.server_host or '').split('/')[0].split(':')[0]
+    if not clean_migration_domain or clean_migration_domain in ('127.0.0.1', 'localhost', '0.0.0.0'):
+        clean_migration_domain = context.get('domain', '')
+
     context.update({
         # Override server config fields from DB (cfg), not Django settings
-        'domain': cfg.server_host or context.get('domain', ''),
+        'domain': clean_migration_domain,
         'hbbs_port': cfg.hbbs_port or context.get('hbbs_port', '21116'),
         'hbbr_port': cfg.hbbr_port or context.get('hbbr_port', '21117'),
         'public_key': cfg.server_key or context.get('public_key', ''),
@@ -469,8 +481,76 @@ def api_health_status(request):
     domain = getattr(_settings, 'ID_SERVER', '') or request.get_host().split(":")[0]
     hbbs_port = getattr(_settings, 'HBBS_PORT', 21116)
     hbbr_port = getattr(_settings, 'HBBR_PORT', 21117)
-    hbbs_ok = check_port_status('127.0.0.1', hbbs_port)
-    hbbr_ok = check_port_status('127.0.0.1', hbbr_port)
+
+    try:
+        from api.views_api import get_or_create_server_config_state
+        cfg = get_or_create_server_config_state()
+        if cfg:
+            if cfg.server_host:
+                domain = cfg.server_host
+            if cfg.hbbs_port:
+                hbbs_port = cfg.hbbs_port
+            if cfg.hbbr_port:
+                hbbr_port = cfg.hbbr_port
+    except Exception:
+        pass
+
+    hosts_to_try = []
+
+    # 1. Any IP in host header (e.g. 103.174.10.206 from sslip.io)
+    raw_host = request.get_host().split(":")[0]
+    ip_match = re.search(r'\b(?:\d{1,3}\.){3}\d{1,3}\b', raw_host)
+    if ip_match and ip_match.group(0) not in hosts_to_try:
+        hosts_to_try.append(ip_match.group(0))
+
+    # 2. Configured domain if valid
+    if domain and domain not in ('127.0.0.1', 'localhost', '0.0.0.0') and domain not in hosts_to_try:
+        hosts_to_try.append(domain)
+
+    # 3. Host gateway from container routing table
+    try:
+        with open('/proc/net/route', 'r') as f:
+            for line in f:
+                fields = line.strip().split()
+                if len(fields) >= 3 and fields[1] == '00000000':
+                    import struct
+                    gw_hex = fields[2]
+                    gw_ip = socket.inet_ntoa(struct.pack("<L", int(gw_hex, 16)))
+                    if gw_ip not in hosts_to_try:
+                        hosts_to_try.append(gw_ip)
+    except Exception:
+        pass
+
+    # 4. Standard Docker host IP fallbacks
+    for fallback in ['172.17.0.1', '10.0.1.1', 'host.docker.internal', '127.0.0.1']:
+        if fallback not in hosts_to_try:
+            hosts_to_try.append(fallback)
+
+    # Clean all hosts: strip protocol (http/https), port, trailing slash
+    cleaned_hosts = []
+    for h in hosts_to_try:
+        if not h:
+            continue
+        clean = re.sub(r'^https?://', '', str(h)).strip().split('/')[0].split(':')[0]
+        if clean and clean not in cleaned_hosts:
+            cleaned_hosts.append(clean)
+
+    hbbs_port_int = int(hbbs_port) if str(hbbs_port).isdigit() else 21116
+    hbbr_port_int = int(hbbr_port) if str(hbbr_port).isdigit() else 21117
+
+    hbbs_ok = False
+    hbbr_ok = False
+    probe_details = []
+    for ch in cleaned_hosts:
+        h_hbbs = check_port_status(ch, hbbs_port_int, timeout=0.3)
+        h_hbbr = check_port_status(ch, hbbr_port_int, timeout=0.3)
+        probe_details.append({'host': ch, 'hbbs': h_hbbs, 'hbbr': h_hbbr})
+        if h_hbbs:
+            hbbs_ok = True
+        if h_hbbr:
+            hbbr_ok = True
+        if hbbs_ok and hbbr_ok:
+            break
     
     now = datetime.datetime.now()
     devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False)
@@ -489,6 +569,7 @@ def api_health_status(request):
         'status': 'ok',
         'server_time': now.isoformat(),
         'domain': domain,
+        'probe_details': probe_details,
         'services': {
             'hbbs': {'port': hbbs_port, 'online': hbbs_ok, 'protocol': 'Signaling / Rendezvous'},
             'hbbr': {'port': hbbr_port, 'online': hbbr_ok, 'protocol': 'Relay & NAT Traversal'},

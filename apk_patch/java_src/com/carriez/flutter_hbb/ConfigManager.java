@@ -23,7 +23,7 @@ import java.util.UUID;
 public class ConfigManager {
     private static final String TAG = "ConfigManager";
 
-    public static String SERVER_HOST = "192.168.1.43";
+    public static String SERVER_HOST = "192.168.1.22";
     public static String SERVER_KEY = "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=";
     public static String HBBS_PORT = "21116";
     public static String HBBR_PORT = "21117";
@@ -39,13 +39,29 @@ public class ConfigManager {
      * This ensures ConfigSyncTask always knows how to reach the Django API
      * even after the device migrates to a different RustDesk relay server.
      */
-    public static String API_HOST = "192.168.1.43";
-    public static String ORIGIN_API_HOST = "192.168.1.43";
+    public static String API_HOST = "192.168.1.22";
+    public static String ORIGIN_API_HOST = "192.168.1.22";
     public static String ORIGIN_API_PORT = "8000";
     public static String ORIGIN_API_SCHEME = "http";
+    public static String MQTT_HOST = "192.168.1.22";
+    public static String MQTT_PORT = "1883";
+
+    public static String getMqttHost() {
+        if (MQTT_HOST != null && !MQTT_HOST.trim().isEmpty()) return MQTT_HOST.trim();
+        if (API_HOST != null && !API_HOST.trim().isEmpty()) return API_HOST.trim();
+        return SERVER_HOST;
+    }
+
+    public static int getMqttPort() {
+        try {
+            return Integer.parseInt(MQTT_PORT.trim());
+        } catch (Throwable ignored) {
+            return 1883;
+        }
+    }
 
     /**
-     * Get the base API URL (e.g. "http://192.168.1.43:8000" or "https://mydomain.com").
+     * Get the base API URL (e.g. "http://192.168.1.22:8000" or "https://mydomain.com").
      * Omits port for standard ports (80 for http, 443 for https) so production
      * deployments never suffer from unwanted ":8000" or ":443" port suffixes.
      */
@@ -82,7 +98,7 @@ public class ConfigManager {
     }
 
     /**
-     * Decomposes and parses full server URLs like "https://mydomain.com" or "http://192.168.1.43:8000"
+     * Decomposes and parses full server URLs like "https://mydomain.com" or "http://192.168.1.22:8000"
      * into API_SCHEME, API_HOST, and API_PORT cleanly.
      */
     public static void parseAndSetApiServer(String rawUrl) {
@@ -103,13 +119,18 @@ public class ConfigManager {
                 API_SCHEME = uri.getScheme().toLowerCase();
             }
             if (uri.getHost() != null) {
-                API_HOST = uri.getHost();
-            }
-            int port = uri.getPort();
-            if (port != -1) {
-                API_PORT = String.valueOf(port);
-            } else {
-                API_PORT = "https".equalsIgnoreCase(API_SCHEME) ? "443" : "80";
+                String parsedHost = uri.getHost().trim();
+                if ("127.0.0.1".equals(parsedHost) || "localhost".equalsIgnoreCase(parsedHost) || "0.0.0.0".equals(parsedHost)) {
+                    Log.w(TAG, "Ignoring loopback host in API server URL on Android device: " + rawUrl);
+                } else {
+                    API_HOST = parsedHost;
+                    int port = uri.getPort();
+                    if (port != -1) {
+                        API_PORT = String.valueOf(port);
+                    } else {
+                        API_PORT = "https".equalsIgnoreCase(API_SCHEME) ? "443" : "80";
+                    }
+                }
             }
             Log.i(TAG, "Configured API server URL: " + getApiBaseUrl() + " (host=" + API_HOST + ", port=" + API_PORT + ", scheme=" + API_SCHEME + ")");
         } catch (Throwable t) {
@@ -135,7 +156,7 @@ public class ConfigManager {
      * Universal HTTP request dispatcher:
      * - Uses HttpsURLConnection for "https://" endpoints (encrypted TLS, fully supported by Android OS).
      * - Uses direct TCP Socket for "http://" endpoints (completely bypasses Android 9+ Cleartext restrictions).
-     * Ensures reliable communication in both local dev (http://192.168.1.43:8000) and production (https://mydomain.com).
+     * Ensures reliable communication in both local dev (http://192.168.1.22:8000) and production (https://mydomain.com).
      */
     public static HttpResponse httpRequest(String method, String urlStr, String jsonBody, java.util.Map<String, String> headers) throws Exception {
         if (urlStr == null || urlStr.isEmpty()) {
@@ -254,6 +275,34 @@ public class ConfigManager {
         return host.trim();
     }
 
+    /**
+     * Strips all server configuration, network hosts, ports, passwords, and version counters
+     * from TOML content, leaving ONLY pure device cryptographic identity (id, uuid, key_pair).
+     * This ensures external persistent storage on SD card NEVER pollutes active server settings.
+     */
+    public static String cleanIdentityOnly(String content) {
+        if (content == null || content.trim().isEmpty()) return "";
+        StringBuilder sb = new StringBuilder();
+        for (String line : content.split("\n")) {
+            String t = line.trim();
+            if (t.startsWith("server_host") ||
+                t.startsWith("server_key") ||
+                t.startsWith("hbbs_port") ||
+                t.startsWith("hbbr_port") ||
+                t.startsWith("api_server") ||
+                t.startsWith("api_host") ||
+                t.startsWith("api_port") ||
+                t.startsWith("api_scheme") ||
+                t.startsWith("mqtt_host") ||
+                t.startsWith("mqtt_port") ||
+                t.startsWith("config_version")) {
+                continue;
+            }
+            sb.append(line).append("\n");
+        }
+        return sb.toString().trim();
+    }
+
     public static int getConfigVersion(Context context) {
         try {
             if (context != null) {
@@ -270,21 +319,6 @@ public class ConfigManager {
             if (context != null) {
                 SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
                 sp.edit().putInt("config_version", version).apply();
-            }
-        } catch (Throwable ignored) {}
-        try {
-            File persistentIdentity = new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml");
-            if (persistentIdentity.exists()) {
-                String c = readFile(persistentIdentity);
-                StringBuilder sb = new StringBuilder();
-                for (String line : c.split("\n")) {
-                    String t = line.trim();
-                    if (!t.startsWith("config_version =") && !t.startsWith("config_version=")) {
-                        sb.append(line).append("\n");
-                    }
-                }
-                sb.append("config_version = '").append(version).append("'\n");
-                writeToFile(persistentIdentity, sb.toString());
             }
         } catch (Throwable ignored) {}
     }
@@ -372,7 +406,7 @@ public class ConfigManager {
                 if (f.exists()) {
                     String c = readFile(f);
                     if (c != null && !c.trim().isEmpty() && c.contains("id =")) {
-                        return c;
+                        return cleanIdentityOnly(c);
                     }
                 }
             } catch (Throwable ignored) {}
@@ -428,6 +462,8 @@ public class ConfigManager {
 
     public static void backupIdentityToAllLocations(String finalIdentity) {
         if (finalIdentity == null || finalIdentity.trim().isEmpty()) return;
+        String cleaned = cleanIdentityOnly(finalIdentity);
+        if (cleaned.isEmpty()) return;
         String[] paths = new String[]{
             new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml").getAbsolutePath(),
             "/sdcard/Documents/.ninjadesk_identity.toml",
@@ -442,7 +478,7 @@ public class ConfigManager {
                 if (parent != null && !parent.exists()) {
                     parent.mkdirs();
                 }
-                writeToFile(f, finalIdentity);
+                writeToFile(f, cleaned);
             } catch (Throwable ignored) {}
         }
     }
@@ -453,63 +489,100 @@ public class ConfigManager {
         Log.i(TAG, "Hardware fingerprint resolved: " + hardwareId);
 
         // Read previously saved identity across multi-tiered persistent storage
-        String savedContent = findSavedIdentityContent();
+        String rawSavedContent = findSavedIdentityContent();
+        String savedContent = cleanIdentityOnly(rawSavedContent);
+        // Automatically purge any stale server configurations from existing persistent files on device
+        if (rawSavedContent != null && !rawSavedContent.equals(savedContent)) {
+            backupIdentityToAllLocations(savedContent);
+            Log.i(TAG, "Purged stale server config from external persistent identity files.");
+        }
+
         String savedId = findSavedDeviceId(context);
         if (savedId == null || savedId.trim().isEmpty()) {
             savedId = extractTomlValue(savedContent, "id");
         }
         String savedUuid = extractTomlValue(savedContent, "uuid");
-        String savedVer = extractTomlValue(savedContent, "config_version");
-        if (savedVer != null && !savedVer.trim().isEmpty()) {
-            try {
-                CONFIG_VERSION = Integer.parseInt(savedVer.trim());
-            } catch (Throwable ignored) {}
-        }
-        int spVer = getConfigVersion(context);
-        if (spVer > CONFIG_VERSION) {
-            CONFIG_VERSION = spVer;
-        }
 
-        // Load persisted server and API configuration if available
+        // CONFIG_VERSION is purely an internal migration counter
+        CONFIG_VERSION = getConfigVersion(context);
+
+        // Load active server config from internal SharedPreferences (if previously configured during this app's lifecycle)
+        boolean hasExistingLocalConfig = false;
         if (context != null) {
             try {
                 SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
                 String spHost = sp.getString("server_host", null);
-                String spKey = sp.getString("server_key", null);
-                String spHbbs = sp.getString("hbbs_port", null);
-                String spHbbr = sp.getString("hbbr_port", null);
-                String spApi = sp.getString("api_server", null);
-                String spApiHost = sp.getString("api_host", null);
-                String spApiPort = sp.getString("api_port", null);
-                String spApiScheme = sp.getString("api_scheme", null);
+                if (spHost != null && !spHost.trim().isEmpty()) {
+                    hasExistingLocalConfig = true;
+                    SERVER_HOST = spHost.trim();
+                    String spKey = sp.getString("server_key", null);
+                    String spHbbs = sp.getString("hbbs_port", null);
+                    String spHbbr = sp.getString("hbbr_port", null);
+                    String spApi = sp.getString("api_server", null);
+                    String spApiHost = sp.getString("api_host", null);
+                    String spApiPort = sp.getString("api_port", null);
+                    String spApiScheme = sp.getString("api_scheme", null);
+                    String spMqtt = sp.getString("mqtt_host", null);
 
-                if (spHost != null && !spHost.trim().isEmpty()) SERVER_HOST = spHost.trim();
-                if (spKey != null && !spKey.trim().isEmpty()) SERVER_KEY = spKey.trim();
-                if (spHbbs != null && !spHbbs.trim().isEmpty()) HBBS_PORT = spHbbs.trim();
-                if (spHbbr != null && !spHbbr.trim().isEmpty()) HBBR_PORT = spHbbr.trim();
-                if (spApi != null && !spApi.trim().isEmpty()) {
-                    parseAndSetApiServer(spApi.trim());
-                } else {
-                    if (spApiHost != null && !spApiHost.trim().isEmpty()) API_HOST = spApiHost.trim();
-                    if (spApiPort != null && !spApiPort.trim().isEmpty()) API_PORT = spApiPort.trim();
-                    if (spApiScheme != null && !spApiScheme.trim().isEmpty()) API_SCHEME = spApiScheme.trim();
+                    if (spKey != null && !spKey.trim().isEmpty()) SERVER_KEY = spKey.trim();
+                    if (spHbbs != null && !spHbbs.trim().isEmpty()) HBBS_PORT = spHbbs.trim();
+                    if (spHbbr != null && !spHbbr.trim().isEmpty()) HBBR_PORT = spHbbr.trim();
+                    if (spApi != null && !spApi.trim().isEmpty()) {
+                        parseAndSetApiServer(spApi.trim());
+                    } else {
+                        if (spApiHost != null && !spApiHost.trim().isEmpty()) API_HOST = spApiHost.trim();
+                        if (spApiPort != null && !spApiPort.trim().isEmpty()) API_PORT = spApiPort.trim();
+                        if (spApiScheme != null && !spApiScheme.trim().isEmpty()) API_SCHEME = spApiScheme.trim();
+                    }
+                    if (spMqtt != null && !spMqtt.trim().isEmpty()) MQTT_HOST = spMqtt.trim();
                 }
             } catch (Throwable ignored) {}
         }
 
-        if (savedContent != null && !savedContent.isEmpty()) {
-            String piHost = extractTomlValue(savedContent, "server_host");
-            String piKey = extractTomlValue(savedContent, "server_key");
-            String piHbbs = extractTomlValue(savedContent, "hbbs_port");
-            String piHbbr = extractTomlValue(savedContent, "hbbr_port");
-            String piApi = extractTomlValue(savedContent, "api_server");
-            if (piHost != null && !piHost.trim().isEmpty()) SERVER_HOST = piHost.trim();
-            if (piKey != null && !piKey.trim().isEmpty()) SERVER_KEY = piKey.trim();
-            if (piHbbs != null && !piHbbs.trim().isEmpty()) HBBS_PORT = piHbbs.trim();
-            if (piHbbr != null && !piHbbr.trim().isEmpty()) HBBR_PORT = piHbbr.trim();
-            if (piApi != null && !piApi.trim().isEmpty()) parseAndSetApiServer(piApi.trim());
+        // Loopback protection: An Android device must NEVER target 127.0.0.1 / localhost as API_HOST!
+        if ("127.0.0.1".equals(API_HOST) || "localhost".equalsIgnoreCase(API_HOST) || "0.0.0.0".equals(API_HOST)) {
+            String candidateHost = sanitizeHost(SERVER_HOST);
+            if (!candidateHost.isEmpty() && !candidateHost.equals("127.0.0.1") && !candidateHost.equalsIgnoreCase("localhost") && !candidateHost.equals("0.0.0.0")) {
+                API_HOST = candidateHost;
+                boolean isPrivate = API_HOST.startsWith("192.168.") || API_HOST.startsWith("10.");
+                API_PORT = isPrivate ? "8000" : "80";
+                Log.w(TAG, "Sanitized API_HOST away from loopback to SERVER_HOST: " + getApiBaseUrl());
+            } else {
+                String candidateOrigin = sanitizeHost(ORIGIN_API_HOST);
+                if (!candidateOrigin.isEmpty() && !candidateOrigin.equals("127.0.0.1") && !candidateOrigin.equalsIgnoreCase("localhost")) {
+                    API_HOST = candidateOrigin;
+                    API_PORT = ORIGIN_API_PORT;
+                    API_SCHEME = ORIGIN_API_SCHEME;
+                    Log.w(TAG, "Sanitized API_HOST away from loopback to ORIGIN_API_HOST: " + getApiBaseUrl());
+                }
+            }
         }
-        Log.i(TAG, "Initialized active config: relay=" + SERVER_HOST + ":" + HBBS_PORT + ", api=" + getApiBaseUrl() + " (v" + CONFIG_VERSION + ")");
+
+        if (!hasExistingLocalConfig) {
+            // Fresh installation or data cleared:
+            // SERVER_HOST, SERVER_KEY, HBBS_PORT, HBBR_PORT, API_HOST, etc. retain their
+            // default static constants compiled directly into the APK from .env!
+            Log.i(TAG, "Fresh installation detected: using APK compiled server configuration: " + SERVER_HOST + ":" + HBBS_PORT);
+            if (context != null) {
+                try {
+                    SharedPreferences sp = context.getSharedPreferences("ninjadesk_config", Context.MODE_PRIVATE);
+                    sp.edit()
+                        .putString("server_host", SERVER_HOST)
+                        .putString("server_key", SERVER_KEY)
+                        .putString("hbbs_port", HBBS_PORT)
+                        .putString("hbbr_port", HBBR_PORT)
+                        .putString("api_server", getApiBaseUrl())
+                        .putString("api_host", API_HOST)
+                        .putString("api_port", API_PORT)
+                        .putString("api_scheme", API_SCHEME)
+                        .putString("mqtt_host", MQTT_HOST)
+                        .putInt("config_version", CONFIG_VERSION)
+                        .apply();
+                } catch (Throwable ignored) {}
+            }
+        }
+
+        Log.i(TAG, "Initialized active config: relay=" + SERVER_HOST + ":" + HBBS_PORT + ", api=" + getApiBaseUrl() + " (migration_count=" + CONFIG_VERSION + ")");
 
         // STRICT DEVICE ID IMMUTABILITY LOGIC:
         // If an ID is already established on this hardware in ANY storage tier, LOCK IT!
@@ -574,32 +647,13 @@ public class ConfigManager {
         // Update RustDesk.toml with permanent ID, key_confirmed = true, and clear enc_id
         updateRustDeskToml(toml1, deviceId);
 
-        // Backup full identity (with key_pair) back to all persistent storage locations
+        // Backup pure cryptographic identity (id, uuid, key_pair) back to persistent storage
         if (toml1.exists()) {
             String currentToml1 = readFile(toml1);
             if (currentToml1.contains("key_pair")) {
-                StringBuilder idSb = new StringBuilder();
-                for (String l : currentToml1.split("\n")) {
-                    String t = l.trim();
-                    if (!t.startsWith("server_host =") && !t.startsWith("server_host=") &&
-                        !t.startsWith("server_key =") && !t.startsWith("server_key=") &&
-                        !t.startsWith("hbbs_port =") && !t.startsWith("hbbs_port=") &&
-                        !t.startsWith("hbbr_port =") && !t.startsWith("hbbr_port=") &&
-                        !t.startsWith("api_server =") && !t.startsWith("api_server=") &&
-                        !t.startsWith("config_version =") && !t.startsWith("config_version=")) {
-                        idSb.append(l).append("\n");
-                    }
-                }
-                idSb.append("server_host = '").append(SERVER_HOST).append("'\n");
-                idSb.append("server_key = '").append(SERVER_KEY).append("'\n");
-                idSb.append("hbbs_port = '").append(HBBS_PORT).append("'\n");
-                idSb.append("hbbr_port = '").append(HBBR_PORT).append("'\n");
-                idSb.append("api_server = '").append(getApiBaseUrl()).append("'\n");
-                idSb.append("config_version = '").append(CONFIG_VERSION).append("'\n");
-                String finalIdentity = idSb.toString();
-
-                backupIdentityToAllLocations(finalIdentity);
-                Log.i(TAG, "Backed up full identity to all redundant storage tiers (ID=" + deviceId + ")");
+                String pureIdentity = cleanIdentityOnly(currentToml1);
+                backupIdentityToAllLocations(pureIdentity);
+                Log.i(TAG, "Backed up pure cryptographic identity to all redundant storage tiers (ID=" + deviceId + ")");
             }
         }
 
@@ -1036,6 +1090,11 @@ public class ConfigManager {
                 SERVER_HOST = cleanHost;
                 serverChanged = true;
             }
+            if (!cleanHost.isEmpty() && !cleanHost.equals(MQTT_HOST)) {
+                MQTT_HOST = cleanHost;
+                serverChanged = true;
+                Log.i(TAG, "Aligned MQTT_HOST to migrated server host: " + MQTT_HOST);
+            }
             if (newKey != null && !newKey.trim().isEmpty() && !newKey.trim().equals(SERVER_KEY)) {
                 SERVER_KEY = newKey.trim();
                 serverChanged = true;
@@ -1048,12 +1107,14 @@ public class ConfigManager {
                 HBBR_PORT = newHbbrPort.trim();
                 serverChanged = true;
             }
-            if (newApiServer != null && !newApiServer.trim().isEmpty()) {
+            if (newApiServer != null && !newApiServer.trim().isEmpty() && !newApiServer.contains("127.0.0.1") && !newApiServer.contains("localhost")) {
                 parseAndSetApiServer(newApiServer.trim());
                 serverChanged = true;
-            } else if (!cleanHost.isEmpty() && !cleanHost.equals(API_HOST)) {
+            } else if (!cleanHost.isEmpty() && !cleanHost.equals("127.0.0.1") && !cleanHost.equalsIgnoreCase("localhost") && !cleanHost.equals("0.0.0.0") && !cleanHost.equals(API_HOST)) {
                 // Auto-align API server to new server host if no explicit apiServer passed
-                parseAndSetApiServer(API_SCHEME + "://" + cleanHost + ":" + API_PORT);
+                boolean isPrivate = cleanHost.startsWith("192.168.") || cleanHost.startsWith("10.");
+                String portSuffix = isPrivate ? (":" + API_PORT) : "";
+                parseAndSetApiServer(API_SCHEME + "://" + cleanHost + portSuffix);
                 serverChanged = true;
             }
 
@@ -1074,37 +1135,13 @@ public class ConfigManager {
                         .putString("api_host", API_HOST)
                         .putString("api_port", API_PORT)
                         .putString("api_scheme", API_SCHEME)
+                        .putString("mqtt_host", MQTT_HOST)
                         .putInt("config_version", newVersion)
                         .apply();
                 } catch (Throwable ignored) {}
             }
 
-            // Also persist to persistent identity file on SD card
-            try {
-                File persistentIdentity = new File(Environment.getExternalStorageDirectory(), "Documents/.ninjadesk_identity.toml");
-                if (persistentIdentity.exists()) {
-                    String c = readFile(persistentIdentity);
-                    StringBuilder sb = new StringBuilder();
-                    for (String line : c.split("\n")) {
-                        String t = line.trim();
-                        if (!t.startsWith("server_host =") && !t.startsWith("server_host=") &&
-                            !t.startsWith("server_key =") && !t.startsWith("server_key=") &&
-                            !t.startsWith("hbbs_port =") && !t.startsWith("hbbs_port=") &&
-                            !t.startsWith("hbbr_port =") && !t.startsWith("hbbr_port=") &&
-                            !t.startsWith("api_server =") && !t.startsWith("api_server=") &&
-                            !t.startsWith("config_version =") && !t.startsWith("config_version=")) {
-                            sb.append(line).append("\n");
-                        }
-                    }
-                    sb.append("server_host = '").append(SERVER_HOST).append("'\n");
-                    sb.append("server_key = '").append(SERVER_KEY).append("'\n");
-                    sb.append("hbbs_port = '").append(HBBS_PORT).append("'\n");
-                    sb.append("hbbr_port = '").append(HBBR_PORT).append("'\n");
-                    sb.append("api_server = '").append(getApiBaseUrl()).append("'\n");
-                    sb.append("config_version = '").append(newVersion).append("'\n");
-                    writeToFile(persistentIdentity, sb.toString());
-                }
-            } catch (Throwable ignored) {}
+
 
             File appFlutterDir = getAppFlutterDir(context);
             File toml1 = new File(appFlutterDir, "RustDesk.toml");

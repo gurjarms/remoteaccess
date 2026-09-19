@@ -130,6 +130,41 @@
     border-bottom: 1px solid var(--card-border);
     color: var(--text-main);
   }
+
+  /* SERVICE STATUS PILLS */
+  .service-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .service-pill.pill-active {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #10b981;
+  }
+  .service-pill.pill-stalled {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.45);
+    color: #f59e0b;
+  }
+  .service-pill.pill-offline {
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+  }
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 </style>
 {% endblock %}
 
@@ -206,26 +241,32 @@
   </div>
 </div>
 
-<!-- ACTIVE NODES TELEMETRY TABLE -->
+<!-- FLEET DIAGNOSTICS & REMOTE RECOVERY RACK -->
 <div class="nodes-rack">
-  <div class="services-title">
-    <svg class="icon icon-md" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-    <span>Live Device Node Telemetry</span>
+  <div class="services-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <svg class="icon icon-md" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <span>Fleet Device Diagnostics & Remote Recovery Rack</span>
+    </div>
+    <div style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+      Dual-Status: Network Online + RustDesk Service Monitoring
+    </div>
   </div>
   <table class="nodes-table">
     <thead>
       <tr>
-        <th>Status</th>
+        <th>Network</th>
+        <th>RustDesk Service</th>
         <th>Device Name / Alias</th>
         <th>Device ID</th>
         <th>IP Address</th>
         <th>OS / Hardware</th>
-        <th>Action</th>
+        <th style="text-align: right;">Remote Actions</th>
       </tr>
     </thead>
     <tbody id="dashboard-nodes-body">
       <tr>
-        <td colspan="6" style="text-align: center; color: var(--text-muted);">Polling registry nodes...</td>
+        <td colspan="7" style="text-align: center; color: var(--text-muted);">Polling registry nodes...</td>
       </tr>
     </tbody>
   </table>
@@ -253,31 +294,75 @@
 
       const tbody = document.getElementById('dashboard-nodes-body');
       if (devices.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color: var(--text-muted);">No devices registered yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">No devices registered yet.</td></tr>';
         return;
       }
 
       tbody.innerHTML = devices.map(d => {
         const safeName = (d.name || d.hostname || `Device ${d.id}`).replace(/'/g, "\\'");
         const safeHost = (d.hostname || d.id).replace(/'/g, "\\'");
+
+        // Dual-status badge calculation
+        let serviceBadge = '';
+        if (!d.online) {
+          serviceBadge = `<span class="service-pill pill-offline"><span class="led-diode offline" style="width:5px; height:5px;"></span> OFFLINE</span>`;
+        } else if (d.rustdesk_service_running) {
+          serviceBadge = `<span class="service-pill pill-active" title="RustDesk core background service active"><span class="led-diode online" style="width:5px; height:5px;"></span> SERVICE ACTIVE</span>`;
+        } else {
+          serviceBadge = `<span class="service-pill pill-stalled" title="Device is reachable but RustDesk core service is stopped or stalled"><span class="led-diode" style="background:#f59e0b; box-shadow:0 0 6px #f59e0b; width:5px; height:5px;"></span> SERVICE STALLED</span>`;
+        }
+
+        // Reboot action button calculation
+        let rebootBtn = '';
+        if (d.reboot_pending) {
+          rebootBtn = `
+            <button class="btn-corner-reboot pending" disabled title="Device reboot in progress. Will re-enable once device boots back up and reconnects online.">
+              <svg class="icon icon-sm spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            </button>
+          `;
+        } else if (!d.online) {
+          rebootBtn = `
+            <button class="btn-corner-reboot" disabled style="opacity: 0.5; cursor: not-allowed;" title="Device is offline. Remote reboot cannot be triggered until device is online.">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            </button>
+          `;
+        } else {
+          rebootBtn = `
+            <button class="btn-corner-reboot" onclick="triggerRebootDevice('${d.id}', '${safeName}')" title="Trigger Remote Reboot (${safeName})">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            </button>
+          `;
+        }
+
         return `
         <tr>
           <td>
-            <span class="led-diode ${d.online ? 'online' : 'offline'}"></span>
-          </td>
-          <td style="font-weight: 600;">${d.name || d.hostname}</td>
-          <td><span style="color: var(--lcd-text);">${d.id}</span></td>
-          <td>${d.ip_address || '--'}</td>
-          <td style="color: var(--text-muted);">${d.os_version || d.platform}</td>
-          <td>
             <div style="display: flex; align-items: center; gap: 6px;">
-              <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="triggerRemoteAccess('${d.id}', '${safeName}', '${safeHost}')">
+              <span class="led-diode ${d.online ? 'online' : 'offline'}"></span>
+              <span style="font-size: 11px; font-weight: 700; color: ${d.online ? '#10b981' : 'var(--text-muted)'};">${d.online ? 'ONLINE' : 'OFFLINE'}</span>
+            </div>
+          </td>
+          <td>${serviceBadge}</td>
+          <td>
+            <div style="font-weight: 600; color: var(--text-main);">${d.name || d.hostname}</div>
+            ${d.password_updated_recent ? `
+              <div style="margin-top: 2px;">
+                <span style="font-size: 10px; color: #10b981; font-weight: 700;">● PWD UPDATED: ${d.password_updated_at || 'Recently'}</span>
+              </div>
+            ` : ''}
+          </td>
+          <td><span style="color: var(--lcd-text); font-weight: 700;">${d.id}</span></td>
+          <td>${d.ip_address || '--'}</td>
+          <td style="color: var(--text-muted); font-size: 12px;">${d.os_version || d.platform}</td>
+          <td style="text-align: right;">
+            <div style="display: inline-flex; align-items: center; gap: 6px;">
+              <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="triggerRemoteAccess('${d.id}', '${safeName}', '${safeHost}')">
                 <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/></svg>
                 <span>Connect</span>
               </button>
-              <button class="tactile-btn tactile-btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="triggerDeleteDevice('${d.id}', '${safeName}')" title="Delete Device">
+              ${rebootBtn}
+              <button class="btn-delete-quick" onclick="triggerDeleteDevice('${d.id}', '${safeName}')" title="Delete Device">
                 <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                <span>Delete</span>
               </button>
             </div>
           </td>

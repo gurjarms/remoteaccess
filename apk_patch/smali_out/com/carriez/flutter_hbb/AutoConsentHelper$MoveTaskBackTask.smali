@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/app/Activity;)V
     .registers 2
 
-    .line 201
+    .line 311
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 202
+    .line 312
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$MoveTaskBackTask;->activity:Landroid/app/Activity;
 
-    .line 203
+    .line 313
     return-void
 .end method
 
@@ -40,7 +40,7 @@
 .method public run()V
     .registers 4
 
-    .line 208
+    .line 318
     const-string v0, "AutoConsentHelper"
 
     :try_start_2
@@ -50,26 +50,26 @@
 
     invoke-virtual {v1, v2}, Landroid/app/Activity;->moveTaskToBack(Z)Z
 
-    .line 209
+    .line 319
     const-string v1, "moveTaskToBack successfully executed (returning to previous screen/app)"
 
     invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_d
     .catchall {:try_start_2 .. :try_end_d} :catchall_e
 
-    .line 212
+    .line 322
     goto :goto_14
 
-    .line 210
+    .line 320
     :catchall_e
     move-exception v1
 
-    .line 211
+    .line 321
     const-string v2, "moveTaskToBack error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 213
+    .line 323
     :goto_14
     return-void
 .end method

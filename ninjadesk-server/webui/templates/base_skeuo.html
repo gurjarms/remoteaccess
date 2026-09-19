@@ -564,6 +564,51 @@
       background: rgba(244, 63, 94, 0.15);
     }
 
+    .btn-corner-reboot {
+      background: rgba(244, 63, 94, 0.08);
+      border: 1px solid rgba(244, 63, 94, 0.25);
+      cursor: pointer;
+      color: #f43f5e;
+      padding: 4px 6px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      line-height: 1;
+    }
+
+    .btn-corner-reboot:hover {
+      background: #f43f5e;
+      color: #ffffff;
+      border-color: #e11d48;
+      box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-corner-reboot.pending {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #f59e0b;
+      cursor: not-allowed;
+    }
+
+    .btn-corner-reboot:disabled,
+    .btn-corner-reboot[disabled] {
+      cursor: not-allowed !important;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .btn-corner-reboot:disabled:hover,
+    .btn-corner-reboot[disabled]:hover {
+      background: inherit;
+      color: inherit;
+      border-color: inherit;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
     /* INSET LCD DIGITAL SCREEN */
     .lcd-screen {
       background: var(--lcd-bg);
@@ -884,8 +929,7 @@
           <span>OPERATORS</span>
           {% if pending_approval_count > 0 %}
           <span class="nav-badge-pending"
-            title="{{ pending_approval_count }} registration(s) pending Superadmin approval">{{ pending_approval_count
-            }}</span>
+            title="{{ pending_approval_count }} registration(s) pending Superadmin approval">{{ pending_approval_count }}</span>
           {% endif %}
         </a>
         {% endif %}
@@ -944,16 +988,16 @@
     </div>
   </div>
 
-  <!-- 2. PASSWORD MANAGEMENT MODAL -->
+  <!-- 2. UNIFIED PASSWORD MANAGEMENT MODAL -->
   <div class="modal-overlay" id="password-modal">
-    <div class="modal-chassis">
+    <div class="modal-chassis" style="max-width: 500px;">
       <div class="modal-header">
         <div class="modal-title">
           <svg class="icon icon-md" viewBox="0 0 24 24">
             <path d="M21 2l-2 2m-1.5 1.5L14 9m0 0l-3 3-2-2-4 4v3h3l4-4-2-2 3-3m0 0l3.5-3.5" />
             <circle cx="16.5" cy="7.5" r="2.5" />
           </svg>
-          <span>Unattended Access Password</span>
+          <span>Device Password Management</span>
         </div>
         <button class="modal-close" onclick="closeModal('password-modal')">
           <svg class="icon icon-sm" viewBox="0 0 24 24">
@@ -962,21 +1006,79 @@
           </svg>
         </button>
       </div>
-      <div class="form-group">
-        <label class="form-label">Target Device ID</label>
-        <input type="text" id="pass-device-id" class="form-input" readonly>
+
+      <!-- Target Device Header -->
+      <div class="lcd-screen" style="padding: 10px 14px; margin-bottom: 16px;">
+        <div>
+          <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Target Device</div>
+          <div id="pass-device-name-display" style="font-size: 14px; font-weight: 700; color: var(--text-main);">--</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device ID</div>
+          <input type="hidden" id="pass-device-id">
+          <div id="pass-device-id-display" style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--lcd-text);">--</div>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">New Device Password</label>
-        <input type="password" id="pass-new-password" class="form-input" placeholder="Enter permanent password">
+
+      <!-- Single Superadmin Verification Field -->
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label" for="pass-admin-password" style="font-weight: 700; color: var(--text-main);">
+          Superadmin Password (Master Verification)
+        </label>
+        <input type="password" id="pass-admin-password" class="form-input" placeholder="Enter Superadmin Account Password" autocomplete="current-password">
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
+          🔒 Single master field required to either view or update device credentials.
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Superadmin Password (Verification)</label>
-        <input type="password" id="pass-admin-password" class="form-input" placeholder="Enter Superadmin password">
+
+      <!-- Section 1: View Current Password -->
+      <div style="background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>View Current Password</span>
+          </span>
+          <button type="button" class="tactile-btn tactile-btn-secondary" id="btn-modal-reveal-pass" onclick="handleUnifiedViewPassword()" style="padding: 4px 10px; font-size: 11px;">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Reveal Password</span>
+          </button>
+        </div>
+
+        <!-- Revealed Box (Initially hidden) -->
+        <div id="unified-revealed-section" style="display: none; margin-top: 10px;">
+          <div class="lcd-screen" style="padding: 10px 12px; background: rgba(2, 132, 199, 0.08); border-color: rgba(2, 132, 199, 0.4);">
+            <div style="flex: 1;">
+              <div style="font-size: 9px; color: var(--text-label); text-transform: uppercase;">Active Permanent Password</div>
+              <div id="unified-revealed-value" style="font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 800; color: var(--lcd-text); letter-spacing: 1px;">--</div>
+            </div>
+            <button type="button" class="tactile-btn tactile-btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="copyUnifiedRevealedPassword()" title="Copy password">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <div id="unified-revealed-time" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;"></div>
+        </div>
       </div>
-      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-        <button class="tactile-btn tactile-btn-secondary" onclick="closeModal('password-modal')">Cancel</button>
-        <button class="tactile-btn tactile-btn-primary" onclick="submitDevicePassword()">Update Password</button>
+
+      <!-- Section 2: Change Device Password -->
+      <div style="background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+        <span style="font-size: 12px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          <span>Change Permanent Password</span>
+        </span>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="pass-new-password">New Device Password</label>
+          <input type="password" id="pass-new-password" class="form-input" placeholder="Enter new permanent password for this device">
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <button class="tactile-btn tactile-btn-secondary" onclick="closeModal('password-modal')">Close</button>
+        <button class="tactile-btn tactile-btn-primary" id="btn-submit-change-pass" onclick="submitDevicePassword()">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span>Save New Password</span>
+        </button>
       </div>
     </div>
   </div>
@@ -1107,7 +1209,54 @@
     </div>
   </div>
 
-  <!-- 6. VIEW DEVICE PASSWORD MODAL (SUPERADMIN) -->
+  <!-- 6. REMOTE REBOOT MODAL -->
+  <div class="modal-overlay" id="reboot-device-modal">
+    <div class="modal-chassis" style="max-width: 480px;">
+      <div class="modal-header" style="border-bottom-color: rgba(244, 63, 94, 0.3);">
+        <div class="modal-title" style="color: #f43f5e;">
+          <svg class="icon icon-md" viewBox="0 0 24 24">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          <span>Remote System Reboot</span>
+        </div>
+        <button class="modal-close" onclick="closeModal('reboot-device-modal')">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <p style="font-size: 14px; color: var(--text-main); margin-bottom: 14px; line-height: 1.5;">
+          Trigger a remote hardware reboot for this target device?
+        </p>
+        <div class="lcd-screen" style="padding: 12px 14px; margin-bottom: 14px; border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.06);">
+          <div>
+            <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Target Device</div>
+            <div id="reboot-device-name" style="font-size: 15px; font-weight: 700; color: var(--text-main); word-break: break-all;">--</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device ID</div>
+            <div id="reboot-device-id" style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--lcd-text);">--</div>
+          </div>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; background: var(--panel-inset); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: 8px;">
+          ⚡ <strong>Out-of-Band Root Trigger:</strong> The device will receive a priority recovery notification and execute root reboot (<code>su -c reboot</code>). RustDesk auto-consent and core background services will resume automatically upon boot.
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="tactile-btn tactile-btn-secondary" onclick="closeModal('reboot-device-modal')">Cancel</button>
+        <button class="tactile-btn tactile-btn-danger" id="confirm-reboot-device-btn" onclick="submitDeviceReboot()">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <span>Confirm & Reboot</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. VIEW DEVICE PASSWORD MODAL (SUPERADMIN) -->
   <div class="modal-overlay" id="view-password-modal">
     <div class="modal-chassis" style="max-width: 480px;">
       <div class="modal-header" style="border-bottom-color: rgba(2, 132, 199, 0.3);">
@@ -1293,11 +1442,70 @@
       }
     }
 
-    function triggerPassword(id) {
+    let currentUnifiedRevealedPassword = '';
+
+    function triggerPassword(id, name) {
       document.getElementById('pass-device-id').value = id;
+      const nameEl = document.getElementById('pass-device-name-display');
+      const idEl = document.getElementById('pass-device-id-display');
+      if (nameEl) nameEl.textContent = name || `Device ${id}`;
+      if (idEl) idEl.textContent = id;
+
       document.getElementById('pass-new-password').value = '';
       document.getElementById('pass-admin-password').value = '';
+
+      // Reset reveal state
+      currentUnifiedRevealedPassword = '';
+      const revSec = document.getElementById('unified-revealed-section');
+      if (revSec) revSec.style.display = 'none';
+
       openModal('password-modal');
+      setTimeout(() => document.getElementById('pass-admin-password').focus(), 150);
+    }
+
+    async function handleUnifiedViewPassword() {
+      const id = document.getElementById('pass-device-id').value;
+      const superadmin_password = document.getElementById('pass-admin-password').value;
+
+      if (!superadmin_password) {
+        return showToast('Please enter your Superadmin password above to authenticate', true);
+      }
+
+      const btn = document.getElementById('btn-modal-reveal-pass');
+      if (btn) btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/device/view_password/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Ninja-Api-Key': '{{ api_key }}'
+          },
+          body: JSON.stringify({ id, superadmin_password })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          currentUnifiedRevealedPassword = data.password;
+          document.getElementById('unified-revealed-value').textContent = data.password;
+          document.getElementById('unified-revealed-time').textContent = data.password_updated_at 
+            ? `Confirmed on device: ${data.password_updated_at}`
+            : 'Active default credential';
+          document.getElementById('unified-revealed-section').style.display = 'block';
+          showToast('Authenticated! Current password revealed.');
+        } else {
+          showToast(data.error || 'Authentication denied: Incorrect Superadmin password', true);
+        }
+      } catch (e) {
+        showToast(e.message, true);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function copyUnifiedRevealedPassword() {
+      if (currentUnifiedRevealedPassword) {
+        copyToClipboard(currentUnifiedRevealedPassword, 'Password');
+      }
     }
 
     async function submitDevicePassword() {
@@ -1305,9 +1513,15 @@
       const password = document.getElementById('pass-new-password').value;
       const superadmin_password = document.getElementById('pass-admin-password').value;
 
-      if (!password || !superadmin_password) {
-        return showToast('Both passwords required', true);
+      if (!superadmin_password) {
+        return showToast('Superadmin password required to authenticate change', true);
       }
+      if (!password) {
+        return showToast('Please enter the new device password', true);
+      }
+
+      const btn = document.getElementById('btn-submit-change-pass');
+      if (btn) btn.disabled = true;
 
       try {
         const res = await fetch('/api/device/password/', {
@@ -1320,13 +1534,15 @@
         });
         const data = await res.json();
         if (data.status === 'ok') {
-          showToast(`Password updated for device ${id}`);
+          showToast(`Password successfully updated for device ${id}`);
           closeModal('password-modal');
         } else {
           showToast(data.error || 'Failed to update password', true);
         }
       } catch (e) {
         showToast(e.message, true);
+      } finally {
+        if (btn) btn.disabled = false;
       }
     }
 
@@ -1455,6 +1671,75 @@
         showToast(e.message, true);
       } finally {
         if (btn) btn.disabled = false;
+      }
+    }
+
+    // ============================================================================
+    // REMOTE REBOOT HANDLERS
+    // ============================================================================
+    let pendingRebootDeviceId = '';
+
+    function triggerRebootDevice(id, name) {
+      pendingRebootDeviceId = id;
+      const nameEl = document.getElementById('reboot-device-name');
+      const idEl = document.getElementById('reboot-device-id');
+      if (nameEl) nameEl.textContent = name || `Device ${id}`;
+      if (idEl) idEl.textContent = id;
+      openModal('reboot-device-modal');
+    }
+
+    async function submitDeviceReboot() {
+      const id = pendingRebootDeviceId;
+      if (!id) return;
+      const btn = document.getElementById('confirm-reboot-device-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <svg class="icon icon-sm spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          <span>Queuing Reboot...</span>
+        `;
+      }
+
+      try {
+        const res = await fetch('/api/device/reboot/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Ninja-Api-Key': '{{ api_key }}'
+          },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          showToast(`Reboot signal queued for Device ${id}. Out-of-band notification dispatched!`);
+          closeModal('reboot-device-modal');
+          if (typeof rawDevices !== 'undefined' && Array.isArray(rawDevices)) {
+            const devObj = rawDevices.find(d => String(d.id) === String(id));
+            if (devObj) {
+              devObj.reboot_pending = true;
+              if (typeof renderDevices === 'function') renderDevices();
+            }
+          }
+          if (typeof refreshDashboard === 'function') {
+            refreshDashboard();
+          } else if (typeof loadDevices === 'function') {
+            loadDevices();
+          } else {
+            setTimeout(() => location.reload(), 600);
+          }
+        } else {
+          showToast(data.error || 'Failed to queue reboot', true);
+        }
+      } catch (e) {
+        showToast(e.message, true);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>Confirm & Reboot</span>
+          `;
+        }
       }
     }
 

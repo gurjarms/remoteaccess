@@ -27,16 +27,16 @@
 .method constructor <init>(Landroid/content/Context;Landroid/widget/EditText;)V
     .registers 3
 
-    .line 935
+    .line 1045
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 936
+    .line 1046
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SaveNameClickListener;->context:Landroid/content/Context;
 
-    .line 937
+    .line 1047
     iput-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SaveNameClickListener;->nameInput:Landroid/widget/EditText;
 
-    .line 938
+    .line 1048
     return-void
 .end method
 
@@ -45,7 +45,7 @@
 .method public onClick(Landroid/content/DialogInterface;I)V
     .registers 5
 
-    .line 942
+    .line 1052
     iget-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SaveNameClickListener;->nameInput:Landroid/widget/EditText;
 
     invoke-virtual {p1}, Landroid/widget/EditText;->getText()Landroid/text/Editable;
@@ -60,14 +60,14 @@
 
     move-result-object p1
 
-    .line 943
+    .line 1053
     invoke-virtual {p1}, Ljava/lang/String;->isEmpty()Z
 
     move-result p2
 
     if-nez p2, :cond_23
 
-    .line 944
+    .line 1054
     new-instance p2, Ljava/lang/Thread;
 
     new-instance v0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SendRenameTask;
@@ -80,7 +80,7 @@
 
     invoke-virtual {p2}, Ljava/lang/Thread;->start()V
 
-    .line 946
+    .line 1056
     :cond_23
     return-void
 .end method

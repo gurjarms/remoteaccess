@@ -160,6 +160,48 @@
     overflow-x: auto;
   }
 
+  /* COLLAPSIBLE CONFIG HISTORY */
+  .collapsible-container {
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease, margin 0.25s ease;
+    max-height: 2500px;
+    opacity: 1;
+    overflow: hidden;
+  }
+
+  .collapsible-container.collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-width: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    pointer-events: none;
+  }
+
+  .history-toggle-pill {
+    background: var(--panel-inset);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  .history-toggle-pill:hover {
+    background: rgba(2, 132, 199, 0.15);
+    border-color: rgba(2, 132, 199, 0.4);
+    color: var(--lcd-text);
+  }
+
   .fleet-table {
     width: 100%;
     border-collapse: collapse;
@@ -221,8 +263,17 @@
   }
 
   @keyframes pulse-glow {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.75; transform: scale(0.98); }
+
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.75;
+      transform: scale(0.98);
+    }
   }
 
   .version-chip {
@@ -276,20 +327,29 @@
   <div class="rack-header">
     <div>
       <div class="rack-title">
-        <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+        <svg class="icon icon-md" viewBox="0 0 24 24">
+          <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+        </svg>
         <span>Server Configuration & Fleet Migration Station</span>
       </div>
       <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-        Centrally manage RustDesk relay parameters, upgrade server configuration generations, and verify real-time device synchronization.
+        Centrally manage RustDesk relay parameters, upgrade server configuration generations, and verify real-time
+        device synchronization.
       </div>
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
       <span class="badge-tag {% if is_superadmin %}badge-superadmin{% else %}badge-readonly{% endif %}">
-        <span class="led-diode {% if is_superadmin %}online{% else %}warning{% endif %}" style="width:6px;height:6px;"></span>
+        <span class="led-diode {% if is_superadmin %}online{% else %}warning{% endif %}"
+          style="width:6px;height:6px;"></span>
         {% if is_superadmin %}Superadmin Authorization Active{% else %}Read-Only Viewer{% endif %}
       </span>
-      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;" onclick="loadSyncStatus()">
-        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;"
+        onclick="loadSyncStatus()">
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <path d="M23 4v6h-6" />
+          <path d="M1 20v-6h6" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
         <span>Refresh Matrix</span>
       </button>
     </div>
@@ -300,7 +360,12 @@
     <!-- CARD 1: ACTIVE CONFIG VERSION -->
     <div class="metric-card">
       <div class="metric-label">
-        <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
         <span>Server Config Generation</span>
       </div>
       <div class="metric-val" id="stat-server-version">v{{ server_version }}</div>
@@ -312,13 +377,17 @@
     <!-- CARD 2: FLEET SYNCHRONIZATION STATUS -->
     <div class="metric-card">
       <div class="metric-label">
-        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
         <span>Fleet Synchronization</span>
       </div>
       <div class="metric-val" id="stat-sync-ratio">{{ synced_devices_count }} / {{ total_devices_count }}</div>
       <div>
         <div class="metric-sub">
-          <strong id="stat-sync-pct" style="color: #10b981;">{{ sync_percentage }}%</strong> of remote devices up-to-date
+          <strong id="stat-sync-pct" style="color: #10b981;">{{ sync_percentage }}%</strong> of remote devices
+          up-to-date
         </div>
         <div class="progress-track">
           <div class="progress-fill" id="stat-progress-fill" style="width: {{ sync_percentage }}%;"></div>
@@ -329,7 +398,10 @@
     <!-- CARD 3: PENDING & OUTDATED -->
     <div class="metric-card">
       <div class="metric-label">
-        <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 14 14" />
+        </svg>
         <span>Pending & Outdated</span>
       </div>
       <div style="display: flex; align-items: baseline; gap: 8px;">
@@ -346,10 +418,15 @@
     <!-- CARD 4: AUDIT META -->
     <div class="metric-card">
       <div class="metric-label">
-        <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
         <span>Active Relay Host</span>
       </div>
-      <div style="font-family: 'JetBrains Mono'; font-size: 13px; font-weight: 700; color: var(--lcd-text); word-break: break-all;" id="stat-server-host">
+      <div
+        style="font-family: 'JetBrains Mono'; font-size: 13px; font-weight: 700; color: var(--lcd-text); word-break: break-all;"
+        id="stat-server-host">
         {{ domain }}:{{ hbbs_port }}
       </div>
       <div class="metric-sub">
@@ -361,13 +438,20 @@
   <!-- QUICK COPY CLIENT STRING -->
   <div class="quick-copy-bar">
     <div style="flex: 1; min-width: 260px;">
-      <div style="font-size: 11px; font-weight: 700; color: var(--text-label); text-transform: uppercase; margin-bottom: 4px;">
+      <div
+        style="font-size: 11px; font-weight: 700; color: var(--text-label); text-transform: uppercase; margin-bottom: 4px;">
         Active Client Configuration String (Host & Key):
       </div>
-      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--lcd-text); background: var(--card-bg); padding: 7px 12px; border-radius: 6px; border: 1px solid var(--card-border); word-break: break-all;" id="val-client-string">host={{ domain }}:{{ hbbs_port }},key={{ public_key }}</div>
+      <div
+        style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--lcd-text); background: var(--card-bg); padding: 7px 12px; border-radius: 6px; border: 1px solid var(--card-border); word-break: break-all;"
+        id="val-client-string">host={{ domain }}:{{ hbbs_port }},key={{ public_key }}</div>
     </div>
-    <button class="tactile-btn tactile-btn-secondary" style="padding: 8px 14px; font-size: 12px;" onclick="copyClientString()">
-      <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    <button class="tactile-btn tactile-btn-secondary" style="padding: 8px 14px; font-size: 12px;"
+      onclick="copyClientString()">
+      <svg class="icon icon-sm" viewBox="0 0 24 24">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+      </svg>
       <span id="copy-btn-text">Copy String</span>
     </button>
   </div>
@@ -380,16 +464,26 @@
   <div class="rack-header">
     <div>
       <div class="rack-title">
-        <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
+        <svg class="icon icon-md" viewBox="0 0 24 24">
+          <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
+          <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+          <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+        </svg>
         <span>Server Configuration Broadcast Console</span>
       </div>
       <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-        To migrate to a new server, edit the parameters below. Broadcasting a new configuration upgrades the global version (e.g. v{{ server_version }} -> v{{ server_version|add:1 }}).
+        To migrate to a new server, edit the parameters below. Broadcasting a new configuration upgrades the global
+        version (e.g. v{{ server_version }} -> v{{ server_version|add:1 }}).
       </div>
     </div>
     {% if is_superadmin %}
-    <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;" onclick="resetFormToActive()">
-      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;"
+      onclick="resetFormToActive()">
+      <svg class="icon icon-sm" viewBox="0 0 24 24">
+        <path d="M23 4v6h-6" />
+        <path d="M1 20v-6h6" />
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+      </svg>
       <span>Reset Form to Active Server</span>
     </button>
     {% endif %}
@@ -403,43 +497,56 @@
           LATEST ACTIVE: <span id="label-active-host" style="font-family:'JetBrains Mono',monospace;">{{ domain }}</span>
         </span>
       </div>
-      <input type="text" id="target-host" class="form-input {% if not is_superadmin %}input-locked{% endif %}" 
-             value="{{ domain }}" placeholder="e.g. 192.168.1.43 or remote.domain.com" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
+      <input type="text" id="target-host" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
+        value="{{ domain }}" placeholder="e.g. 192.168.1.22 or remote.domain.com" autocomplete="off" autocorrect="off"
+        autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
 
     <div class="form-group">
       <label class="form-label">Server Public Key</label>
-      <input type="text" id="target-key" class="form-input {% if not is_superadmin %}input-locked{% endif %}" 
-             value="{{ public_key }}" placeholder="e.g. DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
+      <input type="text" id="target-key" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
+        value="{{ public_key }}" placeholder="e.g. DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=" autocomplete="off"
+        autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
 
     <div class="form-group">
       <label class="form-label">HBBS Port (Signaling & ID)</label>
-      <input type="text" id="target-hbbs-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}" 
-             value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
+      <input type="text" id="target-hbbs-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
+        value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
 
     <div class="form-group">
       <label class="form-label">HBBR Port (Data Relay)</label>
-      <input type="text" id="target-hbbr-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}" 
-             value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
+      <input type="text" id="target-hbbr-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
+        value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
     </div>
   </div>
 
   <div class="editor-actions-bar">
     <div style="font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
-      <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <svg class="icon icon-sm" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg>
       <span>Broadcasting will increment the server version to <strong>v<span id="next-version-indicator">{{ server_version|add:1 }}</span></strong>.</span>
     </div>
 
     {% if is_superadmin %}
     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-      <button class="tactile-btn tactile-btn-secondary" style="padding: 10px 16px; font-size: 12px;" onclick="broadcastNewConfig(false)">
-        <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <button class="tactile-btn tactile-btn-secondary" style="padding: 10px 16px; font-size: 12px;"
+        onclick="broadcastNewConfig(false)">
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
         <span>Push New Config to Selected (<span id="selected-btn-count">0</span>)</span>
       </button>
-      <button class="tactile-btn tactile-btn-primary" style="padding: 10px 20px; font-size: 13px;" onclick="broadcastNewConfig(true)">
-        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg>
+      <button class="tactile-btn tactile-btn-primary" style="padding: 10px 20px; font-size: 13px;"
+        onclick="broadcastNewConfig(true)">
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+          <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+        </svg>
         <span>Save & Broadcast New Config to ALL Devices</span>
       </button>
     </div>
@@ -455,22 +562,34 @@
 <!-- 2.5 SERVER CONFIGURATION HISTORY TABLE                                        -->
 <!-- ============================================================================== -->
 <div class="fleet-rack" style="margin-bottom: 24px;">
-  <div class="rack-header">
+  <div class="rack-header" style="cursor: pointer; user-select: none;" onclick="toggleConfigHistory()" title="Click to Expand or Collapse Server Configuration History">
     <div>
       <div class="rack-title">
-        <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+        <svg class="icon icon-md" viewBox="0 0 24 24">
+          <path d="M12 8v4l3 3" />
+          <circle cx="12" cy="12" r="9" />
+        </svg>
         <span>Server Configuration Versions & History</span>
       </div>
       <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-        Recorded history of all applied server configurations. The latest configuration is automatically set in the input fields above.
+        Recorded history of all applied server configurations. The latest configuration is automatically set in the
+        input fields above.
       </div>
     </div>
-    <div style="font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted);">
-      <span id="config-history-badge">{{ config_history|length }}</span> Configuration(s) Stored
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="font-size: 11px; font-family: 'JetBrains Mono'; color: var(--text-muted);">
+        <span id="config-history-badge">{{ config_history|length }}</span> Configuration(s) Stored
+      </div>
+      <button type="button" class="history-toggle-pill" id="btn-toggle-config-history" onclick="event.stopPropagation(); toggleConfigHistory();" title="Expand or Collapse Configuration History">
+        <span id="history-toggle-text">Expand</span>
+        <svg class="icon icon-sm" id="history-toggle-icon" style="transition: transform 0.25s ease; transform: rotate(0deg);" viewBox="0 0 24 24">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
     </div>
   </div>
 
-  <div class="fleet-table-container">
+  <div class="fleet-table-container collapsible-container collapsed" id="config-history-container">
     <table class="fleet-table" id="config-history-table">
       <thead>
         <tr>
@@ -491,17 +610,20 @@
             <span class="version-chip">v{{ c.version }}</span>
           </td>
           <td>
-            <div style="font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">
+            <div
+              style="font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">
               {{ c.server_host }}
             </div>
             {% if forloop.first %}
-            <span class="sync-badge synced" style="font-size: 10px; padding: 1px 6px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
+            <span class="sync-badge synced"
+              style="font-size: 10px; padding: 1px 6px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;">
               <span class="led-diode online" style="width: 5px; height: 5px;"></span> CURRENT LATEST
             </span>
             {% endif %}
           </td>
           <td>
-            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);" title="{{ c.server_key }}">
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);"
+              title="{{ c.server_key }}">
               {{ c.server_key|truncatechars:28 }}
             </span>
           </td>
@@ -511,9 +633,12 @@
           <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">{{ c.updated_at|date:"Y-m-d H:i:s" }}</td>
           <td style="text-align: center;">
             {% if is_superadmin %}
-            <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;" 
-                    onclick="loadConfigIntoEditor('{{ c.server_host }}', '{{ c.server_key }}', '{{ c.hbbs_port }}', '{{ c.hbbr_port }}')">
-              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;"
+              onclick="loadConfigIntoEditor('{{ c.server_host }}', '{{ c.server_key }}', '{{ c.hbbs_port }}', '{{ c.hbbr_port }}')">
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
               <span>Load to Form</span>
             </button>
             {% else %}
@@ -540,11 +665,16 @@
   <div class="rack-header">
     <div>
       <div class="rack-title">
-        <svg class="icon icon-md" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <svg class="icon icon-md" viewBox="0 0 24 24">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+          <line x1="8" y1="21" x2="16" y2="21" />
+          <line x1="12" y1="17" x2="12" y2="21" />
+        </svg>
         <span>Remote Devices Fleet & Real-Time Sync Matrix</span>
       </div>
       <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
-        Monitor real-time synchronization state per device. Push current configuration to single or selected devices without incrementing version.
+        Monitor real-time synchronization state per device. Push current configuration to single or selected devices
+        without incrementing version.
       </div>
     </div>
     <div style="display: flex; align-items: center; gap: 8px;">
@@ -556,20 +686,31 @@
   <!-- TOOLBAR -->
   <div class="fleet-toolbar">
     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-      <input type="text" id="fleet-filter-input" class="form-input" style="padding: 6px 14px; font-size: 12px; width: 240px;" placeholder="Search by name, ID, or IP..." onkeyup="filterFleetTable()">
-      <span id="selected-badge" style="font-family: 'JetBrains Mono'; font-size: 11px; color: var(--text-muted); background: var(--panel-inset); padding: 5px 10px; border-radius: 6px; border: 1px solid var(--card-border);">0 Selected</span>
+      <input type="text" id="fleet-filter-input" class="form-input"
+        style="padding: 6px 14px; font-size: 12px; width: 240px;" placeholder="Search by name, ID, or IP..."
+        onkeyup="filterFleetTable()">
+      <span id="selected-badge"
+        style="font-family: 'JetBrains Mono'; font-size: 11px; color: var(--text-muted); background: var(--panel-inset); padding: 5px 10px; border-radius: 6px; border: 1px solid var(--card-border);">0
+        Selected</span>
     </div>
 
     {% if is_superadmin %}
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;" onclick="selectDevicesByType('all')">Select All</button>
-      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;" onclick="selectDevicesByType('outdated')">Select Outdated</button>
-      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;" onclick="selectDevicesByType('none')">Clear</button>
-      <button class="tactile-btn tactile-btn-primary" style="padding: 6px 14px; font-size: 11px;" onclick="pushCurrentConfigToSelected()">
-        <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;"
+        onclick="selectDevicesByType('all')">Select All</button>
+      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;"
+        onclick="selectDevicesByType('outdated')">Select Outdated</button>
+      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 11px;"
+        onclick="selectDevicesByType('none')">Clear</button>
+      <button class="tactile-btn tactile-btn-primary" style="padding: 6px 14px; font-size: 11px;"
+        onclick="pushCurrentConfigToSelected()">
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
         <span>Push Current Config (v<span class="curr-ver-text">{{ server_version }}</span>) to Selected</span>
       </button>
-      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 14px; font-size: 11px;" onclick="pushCurrentConfigToAllOutdated()">
+      <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 14px; font-size: 11px;"
+        onclick="pushCurrentConfigToAllOutdated()">
         <span>Push to All Outdated</span>
       </button>
     </div>
@@ -582,7 +723,8 @@
       <thead>
         <tr>
           <th style="width: 36px; text-align: center;">
-            <input type="checkbox" id="check-all" class="row-checkbox" {% if not is_superadmin %}disabled{% endif %} onchange="toggleCheckAll(this.checked)">
+            <input type="checkbox" id="check-all" class="row-checkbox" {% if not is_superadmin %}disabled{% endif %}
+              onchange="toggleCheckAll(this.checked)">
           </th>
           <th>Device Name & Hardware ID</th>
           <th>IP Address</th>
@@ -607,496 +749,557 @@
 
 {% block extra_scripts %}
 <script>
-  const IS_SUPERADMIN = {{ is_superadmin|yesno:"true,false" }};
-  const API_KEY = '{{ api_key }}';
-  let activeServerVersion = {{ server_version|default:0 }};
-  let activeServerHost = "{{ domain }}";
-  let activeServerKey = "{{ public_key }}";
-  let activeHbbs = "{{ hbbs_port }}";
-  let activeHbbr = "{{ hbbr_port }}";
+const IS_SUPERADMIN = {% if is_superadmin %}true{% else %}false{% endif %};
+const API_KEY = '{{ api_key }}';
+let activeServerVersion = parseInt("{{ server_version|default:'0' }}", 10) || 0;
+let activeServerHost = "{{ domain }}";
+let activeServerKey = "{{ public_key }}";
+let activeHbbs = "{{ hbbs_port }}";
+let activeHbbr = "{{ hbbr_port }}";
 
-  let fleetDevices = [];
-  let formDirty = false;
-  let initialFormPopulated = false;
+let fleetDevices = [];
+let formDirty = false;
+let initialFormPopulated = false;
 
-  function setupFormDirtyTracking() {
-    ['target-host', 'target-key', 'target-hbbs-port', 'target-hbbr-port'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('input', () => { formDirty = true; });
-      }
-    });
+function setupFormDirtyTracking() {
+['target-host', 'target-key', 'target-hbbs-port', 'target-hbbr-port'].forEach(id => {
+const el = document.getElementById(id);
+if (el) {
+el.addEventListener('input', () => { formDirty = true; });
+}
+});
+}
+
+// 1. CLIPBOARD COPY
+async function copyClientString() {
+const el = document.getElementById('val-client-string');
+if (!el) return;
+const text = el.textContent.trim();
+try {
+await navigator.clipboard.writeText(text);
+const btnText = document.getElementById('copy-btn-text');
+btnText.textContent = 'Copied!';
+setTimeout(() => btnText.textContent = 'Copy String', 2000);
+} catch (e) {
+showToast('Copied to clipboard');
+}
+}
+
+// 2. RESET FORM TO CURRENT ACTIVE VALUES
+function resetFormToActive() {
+formDirty = false;
+document.getElementById('target-host').value = activeServerHost;
+document.getElementById('target-key').value = activeServerKey;
+document.getElementById('target-hbbs-port').value = activeHbbs;
+document.getElementById('target-hbbr-port').value = activeHbbr;
+const labelHost = document.getElementById('label-active-host');
+if (labelHost) labelHost.textContent = activeServerHost;
+showToast('Form reset to latest active server configuration: ' + activeServerHost);
+}
+
+function loadConfigIntoEditor(host, key, hbbs, hbbr) {
+formDirty = true;
+const hostInput = document.getElementById('target-host');
+const keyInput = document.getElementById('target-key');
+const hbbsInput = document.getElementById('target-hbbs-port');
+const hbbrInput = document.getElementById('target-hbbr-port');
+if (hostInput) hostInput.value = host;
+if (keyInput) keyInput.value = key;
+if (hbbsInput) hbbsInput.value = hbbs;
+if (hbbrInput) hbbrInput.value = hbbr;
+showToast('Loaded configuration for ' + host + ' into form.');
+hostInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+hostInput.focus();
+}
+
+// 3. LOAD SYNCHRONIZATION STATUS & RENDER TABLE
+async function loadSyncStatus() {
+try {
+const res = await fetch('/api/device/sync_status/', {
+headers: { 'X-Ninja-Api-Key': API_KEY }
+});
+const data = await res.json();
+activeServerVersion = data.server_version;
+activeServerHost = data.server_host || activeServerHost;
+activeServerKey = data.server_key || activeServerKey;
+activeHbbs = data.hbbs_port || activeHbbs;
+activeHbbr = data.hbbr_port || activeHbbr;
+fleetDevices = data.devices || [];
+
+// Always populate the input fields with the latest active server configuration
+// when user is not actively typing a new custom migration target
+if (!formDirty || !initialFormPopulated) {
+const hostInput = document.getElementById('target-host');
+const keyInput = document.getElementById('target-key');
+const hbbsInput = document.getElementById('target-hbbs-port');
+const hbbrInput = document.getElementById('target-hbbr-port');
+if (hostInput && data.server_host) hostInput.value = data.server_host;
+if (keyInput && data.server_key) keyInput.value = data.server_key;
+if (hbbsInput && data.hbbs_port) hbbsInput.value = data.hbbs_port;
+if (hbbrInput && data.hbbr_port) hbbrInput.value = data.hbbr_port;
+initialFormPopulated = true;
+}
+const labelHost = document.getElementById('label-active-host');
+if (labelHost && data.server_host) labelHost.textContent = data.server_host;
+
+if (data.config_history && data.config_history.length > 0) {
+renderConfigHistoryTable(data.config_history);
+}
+
+// Update Header Metrics
+const verEl = document.getElementById('stat-server-version');
+if (verEl) verEl.textContent = `v${data.server_version}`;
+const nextVerEl = document.getElementById('next-version-indicator');
+if (nextVerEl) nextVerEl.textContent = data.server_version + 1;
+document.querySelectorAll('.curr-ver-text').forEach(el => el.textContent = data.server_version);
+
+const timesEl = document.getElementById('stat-times-changed');
+if (timesEl) timesEl.textContent = data.times_changed;
+const ratioEl = document.getElementById('stat-sync-ratio');
+if (ratioEl) ratioEl.textContent = `${data.synced_devices} / ${data.total_devices}`;
+const pctEl = document.getElementById('stat-sync-pct');
+if (pctEl) pctEl.textContent = `${data.sync_percentage}%`;
+const fillEl = document.getElementById('stat-progress-fill');
+if (fillEl) fillEl.style.width = `${data.sync_percentage}%`;
+
+const pendEl = document.getElementById('stat-pending-count');
+if (pendEl) pendEl.textContent = data.pending_devices || 0;
+const outEl = document.getElementById('stat-outdated-count');
+if (outEl) outEl.textContent = data.outdated_devices;
+
+const hostEl = document.getElementById('stat-server-host');
+if (hostEl) hostEl.textContent = `${data.server_host}:${data.hbbs_port}`;
+const clientStrEl = document.getElementById('val-client-string');
+if (clientStrEl) clientStrEl.textContent = `host=${data.server_host}:${data.hbbs_port},key=${data.server_key}`;
+
+const updEl = document.getElementById('stat-updated-at');
+if (updEl && data.updated_at) updEl.textContent = data.updated_at;
+
+renderFleetTable();
+} catch (e) {
+console.error('loadSyncStatus error:', e);
+}
+}
+
+function renderConfigHistoryTable(history) {
+const tbody = document.getElementById('config-history-body');
+if (!tbody || !history) return;
+const countEl = document.getElementById('config-history-badge');
+if (countEl) countEl.textContent = history.length;
+
+tbody.innerHTML = history.map((c, idx) => {
+const isLatest = (idx === 0);
+const badge = isLatest
+? `<span class="sync-badge synced"
+  style="font-size: 10px; padding: 1px 6px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;"><span
+    class="led-diode online" style="width: 5px; height: 5px;"></span> CURRENT LATEST</span>`
+: '';
+const keyShort = (c.server_key && c.server_key.length > 28) ? c.server_key.substring(0, 28) + '...' : (c.server_key ||
+'-');
+const safeKey = (c.server_key || '').replace(/'/g, "\\'");
+const safeHost = (c.server_host || '').replace(/'/g, "\\'");
+
+return `<tr>
+  <td style="text-align: center;"><span class="version-chip">v${c.version}</span></td>
+  <td>
+    <div style="font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">
+      ${c.server_host || '-'}</div>
+    ${badge}
+  </td>
+  <td><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);"
+      title="${c.server_key || ''}">${keyShort}</span></td>
+  <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">${c.hbbs_port || '21116'}</td>
+  <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">${c.hbbr_port || '21117'}</td>
+  <td style="font-size: 12px; color: var(--text-muted);">${c.updated_by || 'System'}</td>
+  <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">${c.updated_at || '-'}</td>
+  <td style="text-align: center;">
+    ${IS_SUPERADMIN ? `
+    <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;"
+      onclick="loadConfigIntoEditor('${safeHost}', '${safeKey}', '${c.hbbs_port}', '${c.hbbr_port}')">
+      <svg class="icon icon-sm" viewBox="0 0 24 24">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </svg>
+      <span>Load to Form</span>
+    </button>` : `<span style="font-size: 11px; color: var(--text-muted);">Locked</span>`}
+  </td>
+</tr>`;
+}).join('');
+}
+
+// 4. RENDER FLEET TABLE (PRESERVING CHECKBOX SELECTIONS)
+function renderFleetTable() {
+const tbody = document.getElementById('fleet-table-body');
+if (!tbody) return;
+
+// Retain selected set
+const previouslyChecked = new Set(
+Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value)
+);
+
+const query = (document.getElementById('fleet-filter-input')?.value || '').toLowerCase().trim();
+
+const seenIds = new Set();
+const filtered = fleetDevices.filter(d => {
+if (!d || !d.id || seenIds.has(d.id)) return false;
+seenIds.add(d.id);
+if (!query) return true;
+const name = (d.name || '').toLowerCase();
+const host = (d.hostname || '').toLowerCase();
+const id = (d.id || '').toLowerCase();
+const ip = (d.ip_address || '').toLowerCase();
+return name.includes(query) || host.includes(query) || id.includes(query) || ip.includes(query);
+});
+
+if (filtered.length === 0) {
+tbody.innerHTML = `<tr>
+  <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No registered devices match your
+    search filter.</td>
+</tr>`;
+updateSelectionCounts();
+return;
+}
+
+tbody.innerHTML = filtered.map(d => {
+const isChecked = previouslyChecked.has(d.id);
+
+let badgeHtml = '';
+if (d.status === 'synced' || d.is_synced) {
+badgeHtml = `<span class="sync-badge synced"><span class="led-diode online" style="width:6px;height:6px;"></span>
+  Up-to-Date (v${d.config_version})</span>`;
+} else if (d.status === 'pending' || d.is_pending) {
+badgeHtml = `<span class="sync-badge pending"><span class="led-diode warning" style="width:6px;height:6px;"></span>
+  Pending Sync (v${d.config_version} → v${d.target_version})</span>`;
+} else {
+badgeHtml = `<span class="sync-badge outdated"><span class="led-diode"
+    style="width:6px;height:6px;background:#ef4444;box-shadow:0 0 6px #ef4444;"></span> Outdated
+  (v${d.config_version})</span>`;
+}
+
+let ackDisplay = '--';
+if (d.acknowledged_at) {
+ackDisplay = `<span style="color:#10b981;font-weight:600;">Confirmed: ${d.acknowledged_at.replace('T', ' ').substring(0,
+  19)}</span>`;
+} else if (d.config_updated_at) {
+ackDisplay = `Synced: ${d.config_updated_at}`;
+} else if (d.last_seen) {
+ackDisplay = `Seen: ${d.last_seen}`;
+}
+
+let actionHtml = '';
+if (IS_SUPERADMIN) {
+const safeName = (d.name || d.hostname || d.id).replace(/'/g, "\\'");
+actionHtml = `
+<div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+  <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px; white-space: nowrap;"
+    onclick="pushConfigToSingleDevice('${d.id}')">
+    <svg class="icon icon-sm" viewBox="0 0 24 24" style="width:12px;height:12px;">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+    <span>Push Config</span>
+  </button>
+  <button class="btn-delete-quick" onclick="triggerDeleteDevice('${d.id}', '${safeName}')" title="Delete Device">
+    <svg class="icon icon-sm" viewBox="0 0 24 24">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </svg>
+  </button>
+</div>`;
+} else {
+actionHtml = `<span style="color:var(--text-muted);font-size:11px;">Restricted</span>`;
+}
+
+return `
+<tr>
+  <td style="text-align: center;">
+    <input type="checkbox" class="row-checkbox device-row-cb" value="${d.id}" data-status="${d.status}" ${isChecked
+      ? 'checked' : '' } ${!IS_SUPERADMIN ? 'disabled' : '' } onchange="updateSelectionCounts()">
+  </td>
+  <td>
+    <div style="font-weight: 700; color: var(--text-main);">${d.name || d.hostname}</div>
+    <div style="font-family: 'JetBrains Mono'; font-size: 11px; color: var(--lcd-text);">${d.id}</div>
+  </td>
+  <td style="font-family: 'JetBrains Mono'; font-size: 12px;">${d.ip_address || '127.0.0.1'}</td>
+  <td style="text-align: center;">
+    <span class="led-diode ${d.online ? 'online' : 'offline'}" title="${d.online ? 'Online' : 'Offline'}"></span>
+  </td>
+  <td style="text-align: center;">
+    <span class="version-chip">v${d.config_version}</span>
+  </td>
+  <td>${badgeHtml}</td>
+  <td style="font-size: 11px; color: var(--text-muted);">${ackDisplay}</td>
+  <td style="text-align: right;">${actionHtml}</td>
+</tr>
+`;
+}).join('');
+
+updateSelectionCounts();
+}
+
+function filterFleetTable() {
+renderFleetTable();
+}
+
+function updateSelectionCounts() {
+const checkedBoxes = document.querySelectorAll('.device-row-cb:checked');
+const count = checkedBoxes.length;
+const badge = document.getElementById('selected-badge');
+if (badge) {
+badge.textContent = `${count} Selected`;
+badge.style.color = count > 0 ? 'var(--lcd-text)' : 'var(--text-muted)';
+}
+const btnCount = document.getElementById('selected-btn-count');
+if (btnCount) btnCount.textContent = count;
+
+const allBoxes = document.querySelectorAll('.device-row-cb');
+const checkAll = document.getElementById('check-all');
+if (checkAll && allBoxes.length > 0) {
+checkAll.checked = (count === allBoxes.length);
+}
+}
+
+function toggleCheckAll(checked) {
+if (!IS_SUPERADMIN) return;
+document.querySelectorAll('.device-row-cb').forEach(cb => cb.checked = checked);
+updateSelectionCounts();
+}
+
+function selectDevicesByType(type) {
+if (!IS_SUPERADMIN) return;
+document.querySelectorAll('.device-row-cb').forEach(cb => {
+if (type === 'all') {
+cb.checked = true;
+} else if (type === 'none') {
+cb.checked = false;
+} else if (type === 'outdated') {
+const st = cb.getAttribute('data-status');
+cb.checked = (st === 'outdated' || st === 'pending');
+}
+});
+updateSelectionCounts();
+}
+
+function sanitizeHostInput(raw) {
+if (!raw) return '';
+let s = raw.trim();
+if (s.startsWith('http://')) s = s.substring(7);
+if (s.startsWith('https://')) s = s.substring(8);
+s = s.split('/')[0];
+if (s.includes(':')) s = s.split(':')[0];
+return s.trim();
+}
+
+// 5. BROADCAST NEW SERVER CONFIGURATION (INCREMENTS VERSION)
+async function broadcastNewConfig(broadcastAll) {
+if (!IS_SUPERADMIN) {
+return showToast('Superadmin authorization required to broadcast configuration', true);
+}
+
+let host = sanitizeHostInput(document.getElementById('target-host').value);
+const key = document.getElementById('target-key').value.trim();
+const hbbs_port = document.getElementById('target-hbbs-port').value.trim();
+const hbbr_port = document.getElementById('target-hbbr-port').value.trim();
+
+if (!host || !key) {
+return showToast('Server Host and Public Key are required', true);
+}
+document.getElementById('target-host').value = host;
+
+let selectedIds = [];
+if (!broadcastAll) {
+selectedIds = Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value);
+if (selectedIds.length === 0) {
+return showToast('Please select at least one device, or click "Save & Broadcast to ALL Devices"', true);
+}
+}
+
+const targetDesc = broadcastAll ? 'ALL registered devices' : `${selectedIds.length} selected device(s)`;
+const nextVer = activeServerVersion + 1;
+
+if (!confirm(`Save new server configuration and UPGRADE to v${nextVer} for ${targetDesc}?\n\nTarget Server:
+${host}:${hbbs_port}`)) {
+return;
+}
+
+try {
+const res = await fetch('/api/device/config/', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-Ninja-Api-Key': API_KEY
+},
+body: JSON.stringify({
+all_devices: broadcastAll,
+device_ids: selectedIds,
+server_host: host,
+server_key: key,
+hbbs_port: hbbs_port,
+hbbr_port: hbbr_port,
+increment_version: true
+})
+});
+
+const data = await res.json();
+if (data.status === 'ok') {
+showToast(`Server config upgraded to v${data.version}! Queued for ${data.targeted_devices} device(s).`);
+formDirty = false;
+selectDevicesByType('none');
+await loadSyncStatus();
+const hostInput = document.getElementById('target-host');
+if (hostInput && data.server_host) hostInput.value = data.server_host;
+} else {
+showToast(data.error || 'Broadcast failed', true);
+}
+} catch (e) {
+showToast(e.message, true);
+}
+}
+
+// 6. PUSH CURRENT CONFIGURATION TO A SINGLE DEVICE (DOES NOT INCREMENT VERSION)
+async function pushConfigToSingleDevice(deviceId) {
+if (!IS_SUPERADMIN) {
+return showToast('Superadmin authorization required', true);
+}
+
+try {
+const res = await fetch('/api/device/config/', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-Ninja-Api-Key': API_KEY
+},
+body: JSON.stringify({
+id: deviceId,
+increment_version: false,
+push_current: true
+})
+});
+
+const data = await res.json();
+if (data.status === 'ok') {
+showToast(`Current config (v${data.version}) queued for device ${deviceId}!`);
+loadSyncStatus();
+} else {
+showToast(data.error || 'Push failed', true);
+}
+} catch (e) {
+showToast(e.message, true);
+}
+}
+
+// 7. PUSH CURRENT CONFIGURATION TO SELECTED DEVICES (DOES NOT INCREMENT VERSION)
+async function pushCurrentConfigToSelected() {
+if (!IS_SUPERADMIN) {
+return showToast('Superadmin authorization required', true);
+}
+
+const selectedIds = Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value);
+if (selectedIds.length === 0) {
+return showToast('Select at least one device to push', true);
+}
+
+try {
+const res = await fetch('/api/device/config/', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-Ninja-Api-Key': API_KEY
+},
+body: JSON.stringify({
+device_ids: selectedIds,
+increment_version: false,
+push_current: true
+})
+});
+
+const data = await res.json();
+if (data.status === 'ok') {
+showToast(`Current config (v${data.version}) pushed to ${selectedIds.length} device(s)!`);
+loadSyncStatus();
+} else {
+showToast(data.error || 'Push failed', true);
+}
+} catch (e) {
+showToast(e.message, true);
+}
+}
+
+// 8. PUSH CURRENT CONFIGURATION TO ALL OUTDATED (DOES NOT INCREMENT VERSION)
+async function pushCurrentConfigToAllOutdated() {
+if (!IS_SUPERADMIN) {
+return showToast('Superadmin authorization required', true);
+}
+
+const outdatedIds = fleetDevices.filter(d => !d.is_synced).map(d => d.id);
+if (outdatedIds.length === 0) {
+return showToast('All devices are already up-to-date with current version!');
+}
+
+try {
+const res = await fetch('/api/device/config/', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'X-Ninja-Api-Key': API_KEY
+},
+body: JSON.stringify({
+device_ids: outdatedIds,
+increment_version: false,
+push_current: true
+})
+});
+
+const data = await res.json();
+if (data.status === 'ok') {
+showToast(`Current config (v${data.version}) pushed to ${outdatedIds.length} outdated device(s)!`);
+loadSyncStatus();
+} else {
+showToast(data.error || 'Push failed', true);
+}
+} catch (e) {
+showToast(e.message, true);
+}
+}
+
+// EXPAND / COLLAPSE CONFIG HISTORY
+function toggleConfigHistory(forceState = null) {
+  const container = document.getElementById('config-history-container');
+  const icon = document.getElementById('history-toggle-icon');
+  const text = document.getElementById('history-toggle-text');
+  if (!container) return;
+
+  const isCollapsed = container.classList.contains('collapsed');
+  const willCollapse = (forceState !== null) ? forceState : !isCollapsed;
+
+  if (willCollapse) {
+    container.classList.add('collapsed');
+    if (icon) icon.style.transform = 'rotate(0deg)'; // points down: ready to expand
+    if (text) text.textContent = 'Expand';
+    localStorage.setItem('ninja_config_history_collapsed', 'true');
+  } else {
+    container.classList.remove('collapsed');
+    if (icon) icon.style.transform = 'rotate(180deg)'; // points up: ready to collapse
+    if (text) text.textContent = 'Collapse';
+    localStorage.setItem('ninja_config_history_collapsed', 'false');
   }
+}
 
-  // 1. CLIPBOARD COPY
-  async function copyClientString() {
-    const el = document.getElementById('val-client-string');
-    if (!el) return;
-    const text = el.textContent.trim();
-    try {
-      await navigator.clipboard.writeText(text);
-      const btnText = document.getElementById('copy-btn-text');
-      btnText.textContent = 'Copied!';
-      setTimeout(() => btnText.textContent = 'Copy String', 2000);
-    } catch (e) {
-      showToast('Copied to clipboard');
-    }
+function initConfigHistoryCollapseState() {
+  const saved = localStorage.getItem('ninja_config_history_collapsed');
+  // Default to collapsed unless user explicitly previously expanded it ('false')
+  if (saved === 'false') {
+    toggleConfigHistory(false);
+  } else {
+    toggleConfigHistory(true);
   }
+}
 
-  // 2. RESET FORM TO CURRENT ACTIVE VALUES
-  function resetFormToActive() {
-    formDirty = false;
-    document.getElementById('target-host').value = activeServerHost;
-    document.getElementById('target-key').value = activeServerKey;
-    document.getElementById('target-hbbs-port').value = activeHbbs;
-    document.getElementById('target-hbbr-port').value = activeHbbr;
-    const labelHost = document.getElementById('label-active-host');
-    if (labelHost) labelHost.textContent = activeServerHost;
-    showToast('Form reset to latest active server configuration: ' + activeServerHost);
-  }
-
-  function loadConfigIntoEditor(host, key, hbbs, hbbr) {
-    formDirty = true;
-    const hostInput = document.getElementById('target-host');
-    const keyInput = document.getElementById('target-key');
-    const hbbsInput = document.getElementById('target-hbbs-port');
-    const hbbrInput = document.getElementById('target-hbbr-port');
-    if (hostInput) hostInput.value = host;
-    if (keyInput) keyInput.value = key;
-    if (hbbsInput) hbbsInput.value = hbbs;
-    if (hbbrInput) hbbrInput.value = hbbr;
-    showToast('Loaded configuration for ' + host + ' into form.');
-    hostInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    hostInput.focus();
-  }
-
-  // 3. LOAD SYNCHRONIZATION STATUS & RENDER TABLE
-  async function loadSyncStatus() {
-    try {
-      const res = await fetch('/api/device/sync_status/', {
-        headers: { 'X-Ninja-Api-Key': API_KEY }
-      });
-      const data = await res.json();
-      activeServerVersion = data.server_version;
-      activeServerHost = data.server_host || activeServerHost;
-      activeServerKey = data.server_key || activeServerKey;
-      activeHbbs = data.hbbs_port || activeHbbs;
-      activeHbbr = data.hbbr_port || activeHbbr;
-      fleetDevices = data.devices || [];
-
-      // Always populate the input fields with the latest active server configuration
-      // when user is not actively typing a new custom migration target
-      if (!formDirty || !initialFormPopulated) {
-        const hostInput = document.getElementById('target-host');
-        const keyInput = document.getElementById('target-key');
-        const hbbsInput = document.getElementById('target-hbbs-port');
-        const hbbrInput = document.getElementById('target-hbbr-port');
-        if (hostInput && data.server_host) hostInput.value = data.server_host;
-        if (keyInput && data.server_key) keyInput.value = data.server_key;
-        if (hbbsInput && data.hbbs_port) hbbsInput.value = data.hbbs_port;
-        if (hbbrInput && data.hbbr_port) hbbrInput.value = data.hbbr_port;
-        initialFormPopulated = true;
-      }
-      const labelHost = document.getElementById('label-active-host');
-      if (labelHost && data.server_host) labelHost.textContent = data.server_host;
-
-      if (data.config_history && data.config_history.length > 0) {
-        renderConfigHistoryTable(data.config_history);
-      }
-
-      // Update Header Metrics
-      const verEl = document.getElementById('stat-server-version');
-      if (verEl) verEl.textContent = `v${data.server_version}`;
-      const nextVerEl = document.getElementById('next-version-indicator');
-      if (nextVerEl) nextVerEl.textContent = data.server_version + 1;
-      document.querySelectorAll('.curr-ver-text').forEach(el => el.textContent = data.server_version);
-
-      const timesEl = document.getElementById('stat-times-changed');
-      if (timesEl) timesEl.textContent = data.times_changed;
-      const ratioEl = document.getElementById('stat-sync-ratio');
-      if (ratioEl) ratioEl.textContent = `${data.synced_devices} / ${data.total_devices}`;
-      const pctEl = document.getElementById('stat-sync-pct');
-      if (pctEl) pctEl.textContent = `${data.sync_percentage}%`;
-      const fillEl = document.getElementById('stat-progress-fill');
-      if (fillEl) fillEl.style.width = `${data.sync_percentage}%`;
-
-      const pendEl = document.getElementById('stat-pending-count');
-      if (pendEl) pendEl.textContent = data.pending_devices || 0;
-      const outEl = document.getElementById('stat-outdated-count');
-      if (outEl) outEl.textContent = data.outdated_devices;
-
-      const hostEl = document.getElementById('stat-server-host');
-      if (hostEl) hostEl.textContent = `${data.server_host}:${data.hbbs_port}`;
-      const clientStrEl = document.getElementById('val-client-string');
-      if (clientStrEl) clientStrEl.textContent = `host=${data.server_host}:${data.hbbs_port},key=${data.server_key}`;
-
-      const updEl = document.getElementById('stat-updated-at');
-      if (updEl && data.updated_at) updEl.textContent = data.updated_at;
-
-      renderFleetTable();
-    } catch (e) {
-      console.error('loadSyncStatus error:', e);
-    }
-  }
-
-  function renderConfigHistoryTable(history) {
-    const tbody = document.getElementById('config-history-body');
-    if (!tbody || !history) return;
-    const countEl = document.getElementById('config-history-badge');
-    if (countEl) countEl.textContent = history.length;
-
-    tbody.innerHTML = history.map((c, idx) => {
-      const isLatest = (idx === 0);
-      const badge = isLatest 
-        ? `<span class="sync-badge synced" style="font-size: 10px; padding: 1px 6px; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px;"><span class="led-diode online" style="width: 5px; height: 5px;"></span> CURRENT LATEST</span>`
-        : '';
-      const keyShort = (c.server_key && c.server_key.length > 28) ? c.server_key.substring(0, 28) + '...' : (c.server_key || '-');
-      const safeKey = (c.server_key || '').replace(/'/g, "\\'");
-      const safeHost = (c.server_host || '').replace(/'/g, "\\'");
-
-      return `<tr>
-        <td style="text-align: center;"><span class="version-chip">v${c.version}</span></td>
-        <td>
-          <div style="font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">${c.server_host || '-'}</div>
-          ${badge}
-        </td>
-        <td><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);" title="${c.server_key || ''}">${keyShort}</span></td>
-        <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">${c.hbbs_port || '21116'}</td>
-        <td style="text-align: center; font-family: 'JetBrains Mono'; font-size: 12px;">${c.hbbr_port || '21117'}</td>
-        <td style="font-size: 12px; color: var(--text-muted);">${c.updated_by || 'System'}</td>
-        <td style="font-size: 12px; color: var(--text-muted); font-family: 'JetBrains Mono';">${c.updated_at || '-'}</td>
-        <td style="text-align: center;">
-          ${IS_SUPERADMIN ? `
-          <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px;" 
-                  onclick="loadConfigIntoEditor('${safeHost}', '${safeKey}', '${c.hbbs_port}', '${c.hbbr_port}')">
-            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            <span>Load to Form</span>
-          </button>` : `<span style="font-size: 11px; color: var(--text-muted);">Locked</span>`}
-        </td>
-      </tr>`;
-    }).join('');
-  }
-
-  // 4. RENDER FLEET TABLE (PRESERVING CHECKBOX SELECTIONS)
-  function renderFleetTable() {
-    const tbody = document.getElementById('fleet-table-body');
-    if (!tbody) return;
-
-    // Retain selected set
-    const previouslyChecked = new Set(
-      Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value)
-    );
-
-    const query = (document.getElementById('fleet-filter-input')?.value || '').toLowerCase().trim();
-
-    const filtered = fleetDevices.filter(d => {
-      if (!query) return true;
-      const name = (d.name || '').toLowerCase();
-      const host = (d.hostname || '').toLowerCase();
-      const id = (d.id || '').toLowerCase();
-      const ip = (d.ip_address || '').toLowerCase();
-      return name.includes(query) || host.includes(query) || id.includes(query) || ip.includes(query);
-    });
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No registered devices match your search filter.</td></tr>`;
-      updateSelectionCounts();
-      return;
-    }
-
-    tbody.innerHTML = filtered.map(d => {
-      const isChecked = previouslyChecked.has(d.id);
-      
-      let badgeHtml = '';
-      if (d.status === 'synced' || d.is_synced) {
-        badgeHtml = `<span class="sync-badge synced"><span class="led-diode online" style="width:6px;height:6px;"></span> Up-to-Date (v${d.config_version})</span>`;
-      } else if (d.status === 'pending' || d.is_pending) {
-        badgeHtml = `<span class="sync-badge pending"><span class="led-diode warning" style="width:6px;height:6px;"></span> Pending Sync (v${d.config_version} → v${d.target_version})</span>`;
-      } else {
-        badgeHtml = `<span class="sync-badge outdated"><span class="led-diode" style="width:6px;height:6px;background:#ef4444;box-shadow:0 0 6px #ef4444;"></span> Outdated (v${d.config_version})</span>`;
-      }
-
-      let ackDisplay = '--';
-      if (d.acknowledged_at) {
-        ackDisplay = `<span style="color:#10b981;font-weight:600;">Confirmed: ${d.acknowledged_at.replace('T', ' ').substring(0, 19)}</span>`;
-      } else if (d.config_updated_at) {
-        ackDisplay = `Synced: ${d.config_updated_at}`;
-      } else if (d.last_seen) {
-        ackDisplay = `Seen: ${d.last_seen}`;
-      }
-
-      let actionHtml = '';
-      if (IS_SUPERADMIN) {
-        const safeName = (d.name || d.hostname || d.id).replace(/'/g, "\\'");
-        actionHtml = `
-        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
-          <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px; white-space: nowrap;" onclick="pushConfigToSingleDevice('${d.id}')">
-            <svg class="icon icon-sm" viewBox="0 0 24 24" style="width:12px;height:12px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            <span>Push Config</span>
-          </button>
-          <button class="btn-delete-quick" onclick="triggerDeleteDevice('${d.id}', '${safeName}')" title="Delete Device">
-            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          </button>
-        </div>`;
-      } else {
-        actionHtml = `<span style="color:var(--text-muted);font-size:11px;">Restricted</span>`;
-      }
-
-      return `
-        <tr>
-          <td style="text-align: center;">
-            <input type="checkbox" class="row-checkbox device-row-cb" value="${d.id}" data-status="${d.status}" ${isChecked ? 'checked' : ''} ${!IS_SUPERADMIN ? 'disabled' : ''} onchange="updateSelectionCounts()">
-          </td>
-          <td>
-            <div style="font-weight: 700; color: var(--text-main);">${d.name || d.hostname}</div>
-            <div style="font-family: 'JetBrains Mono'; font-size: 11px; color: var(--lcd-text);">${d.id}</div>
-          </td>
-          <td style="font-family: 'JetBrains Mono'; font-size: 12px;">${d.ip_address || '127.0.0.1'}</td>
-          <td style="text-align: center;">
-            <span class="led-diode ${d.online ? 'online' : 'offline'}" title="${d.online ? 'Online' : 'Offline'}"></span>
-          </td>
-          <td style="text-align: center;">
-            <span class="version-chip">v${d.config_version}</span>
-          </td>
-          <td>${badgeHtml}</td>
-          <td style="font-size: 11px; color: var(--text-muted);">${ackDisplay}</td>
-          <td style="text-align: right;">${actionHtml}</td>
-        </tr>
-      `;
-    }).join('');
-
-    updateSelectionCounts();
-  }
-
-  function filterFleetTable() {
-    renderFleetTable();
-  }
-
-  function updateSelectionCounts() {
-    const checkedBoxes = document.querySelectorAll('.device-row-cb:checked');
-    const count = checkedBoxes.length;
-    const badge = document.getElementById('selected-badge');
-    if (badge) {
-      badge.textContent = `${count} Selected`;
-      badge.style.color = count > 0 ? 'var(--lcd-text)' : 'var(--text-muted)';
-    }
-    const btnCount = document.getElementById('selected-btn-count');
-    if (btnCount) btnCount.textContent = count;
-
-    const allBoxes = document.querySelectorAll('.device-row-cb');
-    const checkAll = document.getElementById('check-all');
-    if (checkAll && allBoxes.length > 0) {
-      checkAll.checked = (count === allBoxes.length);
-    }
-  }
-
-  function toggleCheckAll(checked) {
-    if (!IS_SUPERADMIN) return;
-    document.querySelectorAll('.device-row-cb').forEach(cb => cb.checked = checked);
-    updateSelectionCounts();
-  }
-
-  function selectDevicesByType(type) {
-    if (!IS_SUPERADMIN) return;
-    document.querySelectorAll('.device-row-cb').forEach(cb => {
-      if (type === 'all') {
-        cb.checked = true;
-      } else if (type === 'none') {
-        cb.checked = false;
-      } else if (type === 'outdated') {
-        const st = cb.getAttribute('data-status');
-        cb.checked = (st === 'outdated' || st === 'pending');
-      }
-    });
-    updateSelectionCounts();
-  }
-
-  function sanitizeHostInput(raw) {
-    if (!raw) return '';
-    let s = raw.trim();
-    if (s.startsWith('http://')) s = s.substring(7);
-    if (s.startsWith('https://')) s = s.substring(8);
-    s = s.split('/')[0];
-    if (s.includes(':')) s = s.split(':')[0];
-    return s.trim();
-  }
-
-  // 5. BROADCAST NEW SERVER CONFIGURATION (INCREMENTS VERSION)
-  async function broadcastNewConfig(broadcastAll) {
-    if (!IS_SUPERADMIN) {
-      return showToast('Superadmin authorization required to broadcast configuration', true);
-    }
-
-    let host = sanitizeHostInput(document.getElementById('target-host').value);
-    const key = document.getElementById('target-key').value.trim();
-    const hbbs_port = document.getElementById('target-hbbs-port').value.trim();
-    const hbbr_port = document.getElementById('target-hbbr-port').value.trim();
-
-    if (!host || !key) {
-      return showToast('Server Host and Public Key are required', true);
-    }
-    document.getElementById('target-host').value = host;
-
-    let selectedIds = [];
-    if (!broadcastAll) {
-      selectedIds = Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value);
-      if (selectedIds.length === 0) {
-        return showToast('Please select at least one device, or click "Save & Broadcast to ALL Devices"', true);
-      }
-    }
-
-    const targetDesc = broadcastAll ? 'ALL registered devices' : `${selectedIds.length} selected device(s)`;
-    const nextVer = activeServerVersion + 1;
-
-    if (!confirm(`Save new server configuration and UPGRADE to v${nextVer} for ${targetDesc}?\n\nTarget Server: ${host}:${hbbs_port}`)) {
-      return;
-    }
-
-    try {
-      const res = await fetch('/api/device/config/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Ninja-Api-Key': API_KEY
-        },
-        body: JSON.stringify({
-          all_devices: broadcastAll,
-          device_ids: selectedIds,
-          server_host: host,
-          server_key: key,
-          hbbs_port: hbbs_port,
-          hbbr_port: hbbr_port,
-          increment_version: true
-        })
-      });
-
-      const data = await res.json();
-      if (data.status === 'ok') {
-        showToast(`Server config upgraded to v${data.version}! Queued for ${data.targeted_devices} device(s).`);
-        formDirty = false;
-        selectDevicesByType('none');
-        await loadSyncStatus();
-        const hostInput = document.getElementById('target-host');
-        if (hostInput && data.server_host) hostInput.value = data.server_host;
-      } else {
-        showToast(data.error || 'Broadcast failed', true);
-      }
-    } catch (e) {
-      showToast(e.message, true);
-    }
-  }
-
-  // 6. PUSH CURRENT CONFIGURATION TO A SINGLE DEVICE (DOES NOT INCREMENT VERSION)
-  async function pushConfigToSingleDevice(deviceId) {
-    if (!IS_SUPERADMIN) {
-      return showToast('Superadmin authorization required', true);
-    }
-
-    try {
-      const res = await fetch('/api/device/config/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Ninja-Api-Key': API_KEY
-        },
-        body: JSON.stringify({
-          id: deviceId,
-          increment_version: false,
-          push_current: true
-        })
-      });
-
-      const data = await res.json();
-      if (data.status === 'ok') {
-        showToast(`Current config (v${data.version}) queued for device ${deviceId}!`);
-        loadSyncStatus();
-      } else {
-        showToast(data.error || 'Push failed', true);
-      }
-    } catch (e) {
-      showToast(e.message, true);
-    }
-  }
-
-  // 7. PUSH CURRENT CONFIGURATION TO SELECTED DEVICES (DOES NOT INCREMENT VERSION)
-  async function pushCurrentConfigToSelected() {
-    if (!IS_SUPERADMIN) {
-      return showToast('Superadmin authorization required', true);
-    }
-
-    const selectedIds = Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value);
-    if (selectedIds.length === 0) {
-      return showToast('Select at least one device to push', true);
-    }
-
-    try {
-      const res = await fetch('/api/device/config/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Ninja-Api-Key': API_KEY
-        },
-        body: JSON.stringify({
-          device_ids: selectedIds,
-          increment_version: false,
-          push_current: true
-        })
-      });
-
-      const data = await res.json();
-      if (data.status === 'ok') {
-        showToast(`Current config (v${data.version}) pushed to ${selectedIds.length} device(s)!`);
-        loadSyncStatus();
-      } else {
-        showToast(data.error || 'Push failed', true);
-      }
-    } catch (e) {
-      showToast(e.message, true);
-    }
-  }
-
-  // 8. PUSH CURRENT CONFIGURATION TO ALL OUTDATED (DOES NOT INCREMENT VERSION)
-  async function pushCurrentConfigToAllOutdated() {
-    if (!IS_SUPERADMIN) {
-      return showToast('Superadmin authorization required', true);
-    }
-
-    const outdatedIds = fleetDevices.filter(d => !d.is_synced).map(d => d.id);
-    if (outdatedIds.length === 0) {
-      return showToast('All devices are already up-to-date with current version!');
-    }
-
-    try {
-      const res = await fetch('/api/device/config/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Ninja-Api-Key': API_KEY
-        },
-        body: JSON.stringify({
-          device_ids: outdatedIds,
-          increment_version: false,
-          push_current: true
-        })
-      });
-
-      const data = await res.json();
-      if (data.status === 'ok') {
-        showToast(`Current config (v${data.version}) pushed to ${outdatedIds.length} outdated device(s)!`);
-        loadSyncStatus();
-      } else {
-        showToast(data.error || 'Push failed', true);
-      }
-    } catch (e) {
-      showToast(e.message, true);
-    }
-  }
-
-  // INITIALIZE & START REAL-TIME 3s HEARTBEAT
-  document.addEventListener('DOMContentLoaded', () => {
-    setupFormDirtyTracking();
-    loadSyncStatus();
-    setInterval(loadSyncStatus, 3000);
-  });
+// INITIALIZE & START REAL-TIME 3s HEARTBEAT
+document.addEventListener('DOMContentLoaded', () => {
+  setupFormDirtyTracking();
+  initConfigHistoryCollapseState();
+  loadSyncStatus();
+  setInterval(loadSyncStatus, 3000);
+});
 </script>
 {% endblock %}

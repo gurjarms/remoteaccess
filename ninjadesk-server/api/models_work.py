@@ -88,6 +88,8 @@ class RustDesDevice(models.Model):
     deleted_at = models.DateTimeField(verbose_name=_('软删除时间'), null=True, blank=True)
     hardware_id = models.CharField(verbose_name=_('硬件标识'), max_length=128, blank=True, default='', db_index=True)
     password_updated_at = models.DateTimeField(verbose_name=_('密码更新确认时间'), null=True, blank=True)
+    rustdesk_service_running = models.BooleanField(verbose_name=_('RustDesk服务正常运行'), default=True)
+    last_reboot_requested_at = models.DateTimeField(verbose_name=_('最后重启指令时间'), null=True, blank=True)
 
     class Meta:
         ordering = ('-rid',)

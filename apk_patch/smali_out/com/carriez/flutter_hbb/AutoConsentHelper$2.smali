@@ -8,7 +8,7 @@
 
 # annotations
 .annotation system Ldalvik/annotation/EnclosingMethod;
-    value = Lcom/carriez/flutter_hbb/AutoConsentHelper;->savePermanentPassword(Landroid/content/Context;Ljava/lang/String;)V
+    value = Lcom/carriez/flutter_hbb/AutoConsentHelper;->showRebootNotificationAndRestart(Landroid/content/Context;)V
 .end annotation
 
 .annotation system Ldalvik/annotation/InnerClass;
@@ -17,26 +17,11 @@
 .end annotation
 
 
-# instance fields
-.field final synthetic val$context:Landroid/content/Context;
-
-.field final synthetic val$newPass:Ljava/lang/String;
-
-
 # direct methods
-.method constructor <init>(Landroid/content/Context;Ljava/lang/String;)V
-    .registers 3
-    .annotation system Ldalvik/annotation/Signature;
-        value = {
-            "()V"
-        }
-    .end annotation
+.method constructor <init>()V
+    .registers 1
 
-    .line 850
-    iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$2;->val$context:Landroid/content/Context;
-
-    iput-object p2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$2;->val$newPass:Ljava/lang/String;
-
+    .line 217
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -45,51 +30,119 @@
 
 # virtual methods
 .method public run()V
-    .registers 4
+    .registers 11
 
-    .line 854
-    :try_start_0
-    iget-object v0, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$2;->val$context:Landroid/content/Context;
+    .line 221
+    const-string v0, "-c"
 
-    new-instance v1, Ljava/lang/StringBuilder;
+    const-string v1, "AutoConsentHelper"
 
-    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+    const-string v2, "reboot"
 
-    const-string v2, "Ninja Desk password set to: "
+    const-wide/16 v3, 0x5dc
 
-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    const/4 v5, 0x2
 
-    move-result-object v1
+    const/4 v6, 0x1
 
-    iget-object v2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$2;->val$newPass:Ljava/lang/String;
+    const/4 v7, 0x0
 
-    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    const/4 v8, 0x3
 
-    move-result-object v1
+    :try_start_c
+    invoke-static {v3, v4}, Ljava/lang/Thread;->sleep(J)V
 
-    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
+    .line 222
+    const-string v3, "Executing root reboot via su -c reboot..."
 
-    move-result-object v1
+    invoke-static {v1, v3}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
 
-    const/4 v2, 0x0
+    .line 223
+    invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
 
-    invoke-static {v0, v1, v2}, Landroid/widget/Toast;->makeText(Landroid/content/Context;Ljava/lang/CharSequence;I)Landroid/widget/Toast;
+    move-result-object v3
+
+    new-array v4, v8, [Ljava/lang/String;
+
+    const-string v9, "/system/bin/su"
+
+    aput-object v9, v4, v7
+
+    aput-object v0, v4, v6
+
+    aput-object v2, v4, v5
+
+    invoke-virtual {v3, v4}, Ljava/lang/Runtime;->exec([Ljava/lang/String;)Ljava/lang/Process;
+
+    move-result-object v3
+
+    .line 224
+    invoke-virtual {v3}, Ljava/lang/Process;->waitFor()I
+    :try_end_29
+    .catchall {:try_start_c .. :try_end_29} :catchall_2a
+
+    .line 236
+    goto :goto_50
+
+    .line 225
+    :catchall_2a
+    move-exception v3
+
+    .line 227
+    :try_start_2b
+    invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
+
+    move-result-object v3
+
+    new-array v4, v8, [Ljava/lang/String;
+
+    const-string v8, "su"
+
+    aput-object v8, v4, v7
+
+    aput-object v0, v4, v6
+
+    aput-object v2, v4, v5
+
+    invoke-virtual {v3, v4}, Ljava/lang/Runtime;->exec([Ljava/lang/String;)Ljava/lang/Process;
 
     move-result-object v0
 
-    invoke-virtual {v0}, Landroid/widget/Toast;->show()V
-    :try_end_1f
-    .catchall {:try_start_0 .. :try_end_1f} :catchall_20
+    .line 228
+    invoke-virtual {v0}, Ljava/lang/Process;->waitFor()I
+    :try_end_40
+    .catchall {:try_start_2b .. :try_end_40} :catchall_41
 
-    goto :goto_21
+    .line 235
+    goto :goto_50
 
-    .line 855
-    :catchall_20
+    .line 229
+    :catchall_41
     move-exception v0
 
-    :goto_21
-    nop
+    .line 231
+    :try_start_42
+    invoke-static {}, Ljava/lang/Runtime;->getRuntime()Ljava/lang/Runtime;
 
-    .line 856
+    move-result-object v0
+
+    invoke-virtual {v0, v2}, Ljava/lang/Runtime;->exec(Ljava/lang/String;)Ljava/lang/Process;
+    :try_end_49
+    .catchall {:try_start_42 .. :try_end_49} :catchall_4a
+
+    .line 234
+    goto :goto_50
+
+    .line 232
+    :catchall_4a
+    move-exception v0
+
+    .line 233
+    const-string v2, "Root reboot failed: "
+
+    invoke-static {v1, v2, v0}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
+
+    .line 237
+    :goto_50
     return-void
 .end method

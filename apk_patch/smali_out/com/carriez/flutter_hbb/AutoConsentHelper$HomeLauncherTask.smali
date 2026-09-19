@@ -21,7 +21,7 @@
 .method constructor <init>()V
     .registers 1
 
-    .line 216
+    .line 326
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
     return-void
@@ -32,16 +32,16 @@
 .method public run()V
     .registers 4
 
-    .line 220
+    .line 330
     const-wide/16 v0, 0x12c
 
     :try_start_2
     invoke-static {v0, v1}, Ljava/lang/Thread;->sleep(J)V
 
-    .line 221
+    .line 331
     sget-object v0, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentActivity:Landroid/app/Activity;
 
-    .line 222
+    .line 332
     if-eqz v0, :cond_17
 
     invoke-virtual {v0}, Landroid/app/Activity;->isFinishing()Z
@@ -50,7 +50,7 @@
 
     if-nez v1, :cond_17
 
-    .line 223
+    .line 333
     new-instance v1, Lcom/carriez/flutter_hbb/AutoConsentHelper$MoveTaskBackTask;
 
     invoke-direct {v1, v0}, Lcom/carriez/flutter_hbb/AutoConsentHelper$MoveTaskBackTask;-><init>(Landroid/app/Activity;)V
@@ -59,22 +59,22 @@
     :try_end_17
     .catchall {:try_start_2 .. :try_end_17} :catchall_18
 
-    .line 227
+    .line 337
     :cond_17
     goto :goto_20
 
-    .line 225
+    .line 335
     :catchall_18
     move-exception v0
 
-    .line 226
+    .line 336
     const-string v1, "AutoConsentHelper"
 
     const-string v2, "HomeLauncherTask error: "
 
     invoke-static {v1, v2, v0}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 228
+    .line 338
     :goto_20
     return-void
 .end method

@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/app/Activity;)V
     .registers 2
 
-    .line 260
+    .line 370
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 261
+    .line 371
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$NotifyFlutterInputTask;->activity:Landroid/app/Activity;
 
-    .line 262
+    .line 372
     return-void
 .end method
 
@@ -40,7 +40,7 @@
 .method public run()V
     .registers 11
 
-    .line 267
+    .line 377
     const-string v0, "AutoConsentHelper"
 
     :try_start_2
@@ -50,10 +50,10 @@
 
     move-result-object v1
 
-    .line 268
+    .line 378
     nop
 
-    .line 269
+    .line 379
     invoke-virtual {v1}, Ljava/lang/Class;->getDeclaredFields()[Ljava/lang/reflect/Field;
 
     move-result-object v1
@@ -71,7 +71,7 @@
 
     aget-object v6, v1, v4
 
-    .line 270
+    .line 380
     invoke-virtual {v6}, Ljava/lang/reflect/Field;->getType()Ljava/lang/Class;
 
     move-result-object v7
@@ -102,34 +102,34 @@
 
     goto :goto_35
 
-    .line 269
+    .line 379
     :cond_32
     add-int/lit8 v4, v4, 0x1
 
     goto :goto_10
 
-    .line 271
+    .line 381
     :cond_35
     :goto_35
     nop
 
-    .line 272
+    .line 382
     goto :goto_38
 
-    .line 269
+    .line 379
     :cond_37
     move-object v6, v5
 
-    .line 275
+    .line 385
     :goto_38
     if-eqz v6, :cond_9a
 
-    .line 276
+    .line 386
     const/4 v1, 0x1
 
     invoke-virtual {v6, v1}, Ljava/lang/reflect/Field;->setAccessible(Z)V
 
-    .line 277
+    .line 387
     iget-object v2, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$NotifyFlutterInputTask;->activity:Landroid/app/Activity;
 
     invoke-virtual {v6, v2}, Ljava/lang/reflect/Field;->get(Ljava/lang/Object;)Ljava/lang/Object;
@@ -138,13 +138,13 @@
     :try_end_44
     .catchall {:try_start_2 .. :try_end_44} :catchall_9b
 
-    .line 278
+    .line 388
     if-eqz v2, :cond_9a
 
-    .line 279
+    .line 389
     nop
 
-    .line 281
+    .line 391
     const/4 v4, 0x2
 
     :try_start_48
@@ -170,14 +170,14 @@
     :try_end_5c
     .catchall {:try_start_48 .. :try_end_5c} :catchall_5d
 
-    .line 286
+    .line 396
     goto :goto_75
 
-    .line 282
+    .line 392
     :catchall_5d
     move-exception v6
 
-    .line 284
+    .line 394
     :try_start_5e
     invoke-virtual {v2}, Ljava/lang/Object;->getClass()Ljava/lang/Class;
 
@@ -203,38 +203,38 @@
 
     goto :goto_74
 
-    .line 285
+    .line 395
     :catchall_73
     move-exception v6
 
     :goto_74
     nop
 
-    .line 287
+    .line 397
     :goto_75
     if-eqz v5, :cond_9a
 
-    .line 288
+    .line 398
     :try_start_77
     new-instance v6, Ljava/util/HashMap;
 
     invoke-direct {v6}, Ljava/util/HashMap;-><init>()V
 
-    .line 289
+    .line 399
     const-string v7, "name"
 
     const-string v8, "input"
 
     invoke-interface {v6, v7, v8}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 290
+    .line 400
     const-string v7, "value"
 
     const-string v8, "true"
 
     invoke-interface {v6, v7, v8}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 291
+    .line 401
     new-array v4, v4, [Ljava/lang/Object;
 
     const-string v7, "on_state_changed"
@@ -245,27 +245,27 @@
 
     invoke-virtual {v5, v2, v4}, Ljava/lang/reflect/Method;->invoke(Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;
 
-    .line 292
+    .line 402
     const-string v1, "Notified Flutter on_state_changed: input=true"
 
     invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_9a
     .catchall {:try_start_77 .. :try_end_9a} :catchall_9b
 
-    .line 298
+    .line 408
     :cond_9a
     goto :goto_a1
 
-    .line 296
+    .line 406
     :catchall_9b
     move-exception v1
 
-    .line 297
+    .line 407
     const-string v2, "NotifyFlutterInputTask error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->w(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 299
+    .line 409
     :goto_a1
     return-void
 .end method

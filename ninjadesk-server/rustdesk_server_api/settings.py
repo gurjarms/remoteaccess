@@ -105,14 +105,25 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+]
+
+try:
+    import whitenoise  # noqa: F401
+    MIDDLEWARE.append('whitenoise.middleware.WhiteNoiseMiddleware')
+except ImportError:
+    pass
+
+MIDDLEWARE.extend([
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
+
+    
     # 'django.middleware.csrf.CsrfViewMiddleware',   # 取消post的验证。
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+])
 
 ROOT_URLCONF = 'rustdesk_server_api.urls'
 
@@ -134,18 +145,21 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'rustdesk_server_api.wsgi.application'
-
+ASGI_APPLICATION = 'rustdesk_server_api.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db/db.sqlite3',
+        'OPTIONS': {
+            'timeout': 30,
+        },
     }
 }
+CONN_MAX_AGE = int(os.environ.get("CONN_MAX_AGE", "60"))
 if DATABASE_TYPE == 'MYSQL' and MYSQL_DBNAME != '-' and MYSQL_USER != '-' and MYSQL_PASSWORD != '-':
     # 简单通过数据库名、账密信息过滤下，防止用户未配置mysql却使用mysql
     DATABASES = {
@@ -201,6 +215,21 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
+try:
+    import whitenoise  # noqa: F401
+    STATICFILES_STORAGE_BACKEND = "whitenoise.storage.CompressedStaticFilesStorage"
+except ImportError:
+    STATICFILES_STORAGE_BACKEND = "django.contrib.staticfiles.storage.StaticFilesStorage"
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": STATICFILES_STORAGE_BACKEND,
+    },
+}
+
 LANGUAGES = (
     ('zh-hans', '中文简体'),
     ('en', 'English'),
@@ -210,3 +239,8 @@ LANGUAGES = (
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 )
+
+# MQTT Broker Settings
+MQTT_HOST = os.environ.get("MQTT_HOST", ID_SERVER)
+MQTT_PORT = int(os.environ.get("MQTT_PORT", "1883"))
+MQTT_ENABLED = os.environ.get("MQTT_ENABLED", "True").lower() == "true"

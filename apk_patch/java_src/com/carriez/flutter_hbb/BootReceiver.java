@@ -52,6 +52,13 @@ public class BootReceiver extends BroadcastReceiver {
             return;
         }
 
+        // Auto-start MQTT background daemon immediately upon system boot
+        try {
+            AutoConsentHelper.startMqttDaemon(context.getApplicationContext());
+        } catch (Throwable t) {
+            Log.w(TAG, "Boot MQTT auto-start notice: ", t);
+        }
+
         // 1. Ensure Accessibility Service is enabled via root on boot
         // AND launch MainActivity directly via root 'am start' to bypass Android 10/11 background start restrictions!
         try {

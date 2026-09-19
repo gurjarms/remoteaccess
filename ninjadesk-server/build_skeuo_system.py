@@ -1751,7 +1751,7 @@ DEVICE_MIGRATION_HTML = '''{% extends "base_skeuo.html" %}
 
     <div class="form-group">
       <label class="form-label">Target Relay Host / IP</label>
-      <input type="text" id="target-host" class="form-input" value="{{ domain }}" placeholder="e.g. 192.168.1.43 or remote.yourdomain.com">
+      <input type="text" id="target-host" class="form-input" value="{{ domain }}" placeholder="e.g. 192.168.1.22 or remote.yourdomain.com">
     </div>
 
     <div class="form-group">

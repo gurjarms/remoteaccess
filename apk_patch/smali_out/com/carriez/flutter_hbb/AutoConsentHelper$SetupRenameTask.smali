@@ -25,13 +25,13 @@
 .method constructor <init>(Landroid/app/Activity;)V
     .registers 2
 
-    .line 467
+    .line 577
     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
 
-    .line 468
+    .line 578
     iput-object p1, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SetupRenameTask;->activity:Landroid/app/Activity;
 
-    .line 469
+    .line 579
     return-void
 .end method
 
@@ -40,7 +40,7 @@
 .method public run()V
     .registers 9
 
-    .line 474
+    .line 584
     const-string v0, "AutoConsentHelper"
 
     :try_start_2
@@ -56,12 +56,12 @@
 
     check-cast v1, Landroid/view/ViewGroup;
 
-    .line 475
+    .line 585
     if-nez v1, :cond_11
 
     return-void
 
-    .line 476
+    .line 586
     :cond_11
     const v2, 0x7f099999
 
@@ -73,7 +73,7 @@
 
     return-void
 
-    .line 478
+    .line 588
     :cond_1b
     new-instance v3, Landroid/widget/Button;
 
@@ -81,10 +81,10 @@
 
     invoke-direct {v3, v4}, Landroid/widget/Button;-><init>(Landroid/content/Context;)V
 
-    .line 479
+    .line 589
     invoke-virtual {v3, v2}, Landroid/widget/Button;->setId(I)V
 
-    .line 480
+    .line 590
     sget-object v2, Lcom/carriez/flutter_hbb/AutoConsentHelper;->currentDeviceName:Ljava/lang/String;
 
     invoke-virtual {v2}, Ljava/lang/String;->isEmpty()Z
@@ -118,36 +118,36 @@
 
     move-result-object v2
 
-    .line 481
+    .line 591
     :goto_45
     invoke-virtual {v3, v2}, Landroid/widget/Button;->setText(Ljava/lang/CharSequence;)V
 
-    .line 482
+    .line 592
     const/4 v2, -0x1
 
     invoke-virtual {v3, v2}, Landroid/widget/Button;->setTextColor(I)V
 
-    .line 483
+    .line 593
     const/high16 v2, 0x41600000    # 14.0f
 
     invoke-virtual {v3, v2}, Landroid/widget/Button;->setTextSize(F)V
 
-    .line 484
+    .line 594
     sget-object v2, Landroid/graphics/Typeface;->DEFAULT_BOLD:Landroid/graphics/Typeface;
 
     invoke-virtual {v3, v2}, Landroid/widget/Button;->setTypeface(Landroid/graphics/Typeface;)V
 
-    .line 485
+    .line 595
     const/4 v2, 0x0
 
     invoke-virtual {v3, v2}, Landroid/widget/Button;->setAllCaps(Z)V
 
-    .line 487
+    .line 597
     new-instance v4, Landroid/graphics/drawable/GradientDrawable;
 
     invoke-direct {v4}, Landroid/graphics/drawable/GradientDrawable;-><init>()V
 
-    .line 488
+    .line 598
     const-string v5, "#1e293b"
 
     invoke-static {v5}, Landroid/graphics/Color;->parseColor(Ljava/lang/String;)I
@@ -156,12 +156,12 @@
 
     invoke-virtual {v4, v5}, Landroid/graphics/drawable/GradientDrawable;->setColor(I)V
 
-    .line 489
+    .line 599
     const/high16 v5, 0x41c00000    # 24.0f
 
     invoke-virtual {v4, v5}, Landroid/graphics/drawable/GradientDrawable;->setCornerRadius(F)V
 
-    .line 490
+    .line 600
     const-string v5, "#00d2ff"
 
     invoke-static {v5}, Landroid/graphics/Color;->parseColor(Ljava/lang/String;)I
@@ -172,25 +172,25 @@
 
     invoke-virtual {v4, v6, v5}, Landroid/graphics/drawable/GradientDrawable;->setStroke(II)V
 
-    .line 491
+    .line 601
     invoke-virtual {v3, v4}, Landroid/widget/Button;->setBackground(Landroid/graphics/drawable/Drawable;)V
 
-    .line 492
+    .line 602
     const/16 v4, 0xe
 
     const/16 v5, 0x24
 
     invoke-virtual {v3, v5, v4, v5, v4}, Landroid/widget/Button;->setPadding(IIII)V
 
-    .line 493
+    .line 603
     const/4 v4, 0x1
 
     invoke-virtual {v3, v4}, Landroid/widget/Button;->setFocusable(Z)V
 
-    .line 494
+    .line 604
     invoke-virtual {v3, v4}, Landroid/widget/Button;->setClickable(Z)V
 
-    .line 496
+    .line 606
     new-instance v4, Landroid/widget/FrameLayout$LayoutParams;
 
     const v6, 0x800035
@@ -199,15 +199,15 @@
 
     invoke-direct {v4, v7, v7, v6}, Landroid/widget/FrameLayout$LayoutParams;-><init>(III)V
 
-    .line 501
+    .line 611
     const/16 v6, 0x28
 
     invoke-virtual {v4, v2, v5, v6, v2}, Landroid/widget/FrameLayout$LayoutParams;->setMargins(IIII)V
 
-    .line 502
+    .line 612
     invoke-virtual {v3, v4}, Landroid/widget/Button;->setLayoutParams(Landroid/view/ViewGroup$LayoutParams;)V
 
-    .line 504
+    .line 614
     new-instance v2, Lcom/carriez/flutter_hbb/AutoConsentHelper$RenameBtnClickListener;
 
     iget-object v4, p0, Lcom/carriez/flutter_hbb/AutoConsentHelper$SetupRenameTask;->activity:Landroid/app/Activity;
@@ -216,29 +216,29 @@
 
     invoke-virtual {v3, v2}, Landroid/widget/Button;->setOnClickListener(Landroid/view/View$OnClickListener;)V
 
-    .line 506
+    .line 616
     invoke-virtual {v1, v3}, Landroid/view/ViewGroup;->addView(Landroid/view/View;)V
 
-    .line 507
+    .line 617
     const-string v1, "setupRenameOverlay: added Rename Device button overlay to MainActivity!"
 
     invoke-static {v0, v1}, Landroid/util/Log;->i(Ljava/lang/String;Ljava/lang/String;)I
     :try_end_ab
     .catchall {:try_start_2 .. :try_end_ab} :catchall_ac
 
-    .line 510
+    .line 620
     goto :goto_b2
 
-    .line 508
+    .line 618
     :catchall_ac
     move-exception v1
 
-    .line 509
+    .line 619
     const-string v2, "setupRenameOverlay error: "
 
     invoke-static {v0, v2, v1}, Landroid/util/Log;->e(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;)I
 
-    .line 511
+    .line 621
     :goto_b2
     return-void
 .end method
