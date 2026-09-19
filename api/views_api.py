@@ -1090,17 +1090,6 @@ def api_device_config(request):
                 dev_obj.last_reboot_requested_at = None
                 RustDesDevice.objects.filter(rid=rid).update(last_reboot_requested_at=None)
 
-        # Auto-clear pending state if device has already applied or reports target version.
-        # IMPORTANT: Do NOT auto-clear if entry has an undelivered 'password' field —
-        # password updates are confirmed only via explicit ACK, not version number matching.
-        if target_cfg and target_cfg.get('pending', False):
-            queued_ver = target_cfg.get('version', cfg.version)
-            has_undelivered_password = 'password' in target_cfg
-            if not has_undelivered_password and param_ver >= queued_ver and param_ver > 0:
-                target_cfg['pending'] = False
-                target_cfg['acknowledged_at'] = now_dt.isoformat()
-                save_device_config_updates(updates)
-
         if target_cfg and target_cfg.get('pending', False):
             target_host = sanitize_server_host(target_cfg.get('server_host')) or cfg.server_host
             target_api = target_cfg.get('api_server')
@@ -1112,6 +1101,7 @@ def api_device_config(request):
             resp = {
                 'id': rid,
                 'pending': True,
+                'push_id': str(target_cfg.get('push_id', '')),
                 'version': target_cfg.get('version', cfg.version),
                 'server_version': cfg.version,
                 'server_host': target_host,
@@ -1238,11 +1228,14 @@ def api_device_config(request):
             # Use old_server_host (captured BEFORE cfg was updated) — comparing against cfg.server_host
             # after the update would always yield False since cfg.server_host was just set to server_host.
             is_migration_to_different_server = (server_host != old_server_host)
+            import time
+            current_push_id = str(int(time.time() * 1000))
 
             for did in device_ids:
                 did_str = str(did).strip()
                 dev_entry = updates.get(did_str, {})
                 dev_entry['pending'] = True
+                dev_entry['push_id'] = current_push_id
                 dev_entry['server_host'] = server_host
                 dev_entry['server_key'] = server_key
                 dev_entry['hbbs_port'] = hbbs_port
@@ -1322,6 +1315,7 @@ def api_device_config_ack(request):
         had_password_pending = False
         if rid in updates:
             updates[rid]['pending'] = False
+            updates[rid].pop('push_id', None)
             if 'password' in updates[rid]:
                 had_password_pending = True
                 updates[rid].pop('password', None)
