@@ -815,16 +815,12 @@ def api_device_reboot_ack(request):
 @csrf_exempt
 def api_device_navigation(request):
     """
-    Dispatch an instant remote Android navigation action (Back, Home, Recents, Notifications, Power, Volume).
-    Allowed if session user is authenticated OR valid X-Ninja-Api-Key provided.
+    Dispatch an instant remote Android navigation action (Back, Home, Recents).
+    Open to operators navigating a remote peer session from WebUI.
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
     try:
-        api_key_header = request.META.get('HTTP_X_NINJA_API_KEY', '')
-        if not (request.user.is_authenticated or api_key_header == settings.NINJA_API_KEY):
-            return JsonResponse({'error': 'Unauthorized'}, status=401)
-
         data = json.loads(request.body.decode('utf-8'))
         device_id = str(data.get('id') or data.get('peer_id') or '').strip()
         action = str(data.get('action') or data.get('nav') or '').strip().lower()

@@ -578,16 +578,18 @@ def publish_device_command(device_id: str, command_dict: dict) -> bool:
     Sends a high-priority command directly to a device over MQTT.
     Topic: ninjadesk/device/<device_id>/command
     """
-    # Prevent sending commands to devices migrated away to another server
-    try:
-        from api.views_api import load_device_config_updates
-        updates = load_device_config_updates()
-        target_cfg = updates.get(device_id)
-        if target_cfg and target_cfg.get('migrated_away', False):
-            logger.warning(f"[MQTT] Cannot publish command to {device_id}: device has been migrated away from this server.")
-            return False
-    except Exception:
-        pass
+    # Prevent sending reboot commands to devices migrated away to another server
+    action_type = str(command_dict.get('action', '')).lower()
+    if action_type == 'reboot':
+        try:
+            from api.views_api import load_device_config_updates
+            updates = load_device_config_updates()
+            target_cfg = updates.get(device_id)
+            if target_cfg and target_cfg.get('migrated_away', False):
+                logger.warning(f"[MQTT] Cannot publish reboot to {device_id}: device has been migrated away from this server.")
+                return False
+        except Exception:
+            pass
 
     topic = f"ninjadesk/device/{device_id}/command"
     payload = json.dumps(command_dict)
@@ -596,10 +598,16 @@ def publish_device_command(device_id: str, command_dict: dict) -> bool:
         _embedded_broker.publish(topic, payload)
         logger.info(f"[MQTT] Published command to {topic} via embedded broker: {payload}")
         return True
-    elif _paho_client:
+    elif _paho_client and getattr(_paho_client, 'is_connected', lambda: False)():
         _paho_client.publish(topic, payload, qos=1)
         logger.info(f"[MQTT] Published command to {topic} via external broker: {payload}")
         return True
     else:
-        logger.warning(f"[MQTT] Cannot publish command: no broker or client active")
-        return False
+        try:
+            import paho.mqtt.publish as paho_pub
+            paho_pub.single(topic, payload, hostname="127.0.0.1", port=1883)
+            logger.info(f"[MQTT] Published command to {topic} via paho.mqtt.publish.single: {payload}")
+            return True
+        except Exception as ex:
+            logger.warning(f"[MQTT] Cannot publish command to {topic}: {ex}")
+            return False

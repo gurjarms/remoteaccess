@@ -8497,9 +8497,28 @@ window.setByName = (e, u) => {
                     n |= 2 << 3;
                     break;
                 case "wheel":
-                    n |= 4 << 3
+                    n |= 4 << 3;
+                    break;
+                case "back":
+                    n |= 8 << 3;
+                    break;
             }
             curConn.inputMouse(n, parseInt(u.x || "0"), parseInt(u.y || "0"), u.alt == "true", u.ctrl == "true", u.shift == "true", u.command == "true");
+            break;
+        case "mobile_back":
+            curConn.inputMouse(66, 0, 0, false, false, false, false);
+            break;
+        case "mobile_home":
+            curConn.inputMouse(33, 0, 0, false, false, false, false);
+            setTimeout(() => {
+                curConn.inputMouse(34, 0, 0, false, false, false, false);
+            }, 30);
+            break;
+        case "mobile_recents":
+            curConn.inputMouse(33, 0, 0, false, false, false, false);
+            setTimeout(() => {
+                curConn.inputMouse(34, 0, 0, false, false, false, false);
+            }, 450);
             break;
         case "option":
             u = JSON.parse(u), localStorage.setItem(u.name, u.value);
@@ -8511,6 +8530,39 @@ window.setByName = (e, u) => {
             curConn.inputOsPassword(u);
             break
     }
+};
+window.remoteBack = function() {
+    try {
+        if (typeof curConn !== "undefined" && curConn && curConn.inputMouse) {
+            curConn.inputMouse(66, 0, 0, false, false, false, false);
+            return true;
+        }
+    } catch(e) {}
+    return false;
+};
+window.remoteHome = function() {
+    try {
+        if (typeof curConn !== "undefined" && curConn && curConn.inputMouse) {
+            curConn.inputMouse(33, 0, 0, false, false, false, false);
+            setTimeout(() => {
+                curConn.inputMouse(34, 0, 0, false, false, false, false);
+            }, 30);
+            return true;
+        }
+    } catch(e) {}
+    return false;
+};
+window.remoteRecents = function() {
+    try {
+        if (typeof curConn !== "undefined" && curConn && curConn.inputMouse) {
+            curConn.inputMouse(33, 0, 0, false, false, false, false);
+            setTimeout(() => {
+                curConn.inputMouse(34, 0, 0, false, false, false, false);
+            }, 450);
+            return true;
+        }
+    } catch(e) {}
+    return false;
 };
 window.getByName = (e, u) => {
     let r = an(e, u);

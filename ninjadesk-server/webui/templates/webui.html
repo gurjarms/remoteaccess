@@ -320,58 +320,45 @@
     </div>
 
     <!-- 1. BACK BUTTON -->
-    <button class="nav-btn" id="nav-btn-back" onclick="sendDeviceNav('back')" title="Back (Esc / Alt+←)">
+    <button class="nav-btn" id="nav-btn-back" onclick="sendDeviceNav('back')" title="Back">
       <svg viewBox="0 0 24 24">
-        <!-- Android Triangle Back Icon -->
         <polygon points="18,5 6,12 18,19" />
       </svg>
     </button>
 
     <!-- 2. HOME BUTTON -->
-    <button class="nav-btn" id="nav-btn-home" onclick="sendDeviceNav('home')" title="Home (Alt+H / Home)">
+    <button class="nav-btn" id="nav-btn-home" onclick="sendDeviceNav('home')" title="Home">
       <svg viewBox="0 0 24 24">
-        <!-- Android Circle Home Icon -->
         <circle cx="12" cy="12" r="7" />
       </svg>
     </button>
 
     <!-- 3. RECENT APPS BUTTON -->
-    <button class="nav-btn" id="nav-btn-recents" onclick="sendDeviceNav('recents')" title="Recent Apps (Alt+R / Alt+Tab)">
+    <button class="nav-btn" id="nav-btn-recents" onclick="sendDeviceNav('recents')" title="Recent Apps">
       <svg viewBox="0 0 24 24">
-        <!-- Android Square Recents Icon -->
         <rect x="6" y="6" width="12" height="12" rx="2" ry="2" />
-      </svg>
-    </button>
-
-    <div class="nav-divider"></div>
-
-    <!-- 4. NOTIFICATION SHADE PULL-DOWN -->
-    <button class="nav-btn" id="nav-btn-notifications" onclick="sendDeviceNav('notifications')" title="Pull Down Notifications / Quick Settings (Alt+N)">
-      <svg viewBox="0 0 24 24">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-      </svg>
-    </button>
-
-    <!-- 5. POWER / WAKE BUTTON -->
-    <button class="nav-btn" id="nav-btn-power" onclick="sendDeviceNav('power')" title="Power / Lock Screen (Alt+P)">
-      <svg viewBox="0 0 24 24">
-        <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
-        <line x1="12" y1="2" x2="12" y2="12" />
       </svg>
     </button>
   </div>
 
   <script>
     (function() {
-      // Mouse Reticle tracking
+      // Mouse tracking for coordinate accuracy
+      var lastMouseX = window.innerWidth / 2;
+      var lastMouseY = window.innerHeight / 2;
       var reticle = document.getElementById('remote-mouse-reticle');
-      if (reticle) {
-        window.addEventListener('mousemove', function(e) {
+      
+      window.addEventListener('mousemove', function(e) {
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+        if (reticle) {
           reticle.style.left = e.clientX + 'px';
           reticle.style.top = e.clientY + 'px';
           reticle.style.display = 'block';
-        }, { passive: true });
+        }
+      }, { passive: true });
+
+      if (reticle) {
         window.addEventListener('mouseleave', function() {
           reticle.style.display = 'none';
         });
@@ -388,8 +375,8 @@
       }
 
       // Android Navigation Dispatch
-      var apiKey = "{{ api_key|escapejs }}";
-      var targetId = "{{ peer_id|escapejs }}";
+      var urlParams = new URLSearchParams(window.location.search);
+      var targetId = "{{ peer_id|escapejs }}" || urlParams.get('peer') || (window.targetPeerId || '');
       var feedbackToast = document.getElementById('nav-feedback-toast');
       var toastTimer = null;
 
@@ -400,7 +387,52 @@
         if (toastTimer) clearTimeout(toastTimer);
         toastTimer = setTimeout(function() {
           feedbackToast.classList.remove('show');
-        }, 1200);
+        }, 1100);
+      }
+
+      function getRemoteTarget() {
+        var elUnder = document.elementFromPoint(lastMouseX, lastMouseY);
+        if (elUnder && elUnder !== dock && !dock.contains(elUnder) && elUnder.id !== 'remote-mouse-reticle') {
+          return elUnder;
+        }
+        var glass = document.querySelector('flt-glass-pane');
+        if (glass) {
+          if (glass.shadowRoot) {
+            var el = glass.shadowRoot.querySelector('canvas') || glass.shadowRoot.querySelector('[flt-renderer]') || glass.shadowRoot.children[0];
+            if (el) return el;
+          }
+          return glass;
+        }
+        return document.querySelector('canvas') || document.body;
+      }
+
+      function dispatchCanvasMouse(target, button, buttons, isDown) {
+        if (!target) return;
+        var x = lastMouseX;
+        var y = lastMouseY;
+        var evtProps = {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+          clientX: x,
+          clientY: y,
+          screenX: x,
+          screenY: y,
+          button: button,
+          buttons: buttons,
+          pointerId: 1,
+          pointerType: 'mouse',
+          isPrimary: true
+        };
+        try {
+          if (isDown) {
+            target.dispatchEvent(new PointerEvent('pointerdown', evtProps));
+            target.dispatchEvent(new MouseEvent('mousedown', evtProps));
+          } else {
+            target.dispatchEvent(new PointerEvent('pointerup', evtProps));
+            target.dispatchEvent(new MouseEvent('mouseup', evtProps));
+          }
+        } catch (e) {}
       }
 
       window.sendDeviceNav = function(action) {
@@ -413,75 +445,82 @@
         var labels = {
           'back': 'BACK (◀)',
           'home': 'HOME (●)',
-          'recents': 'RECENTS (▢)',
-          'notifications': 'NOTIFICATIONS (▼)',
-          'power': 'POWER (⏻)'
+          'recents': 'RECENTS (▢)'
         };
         showNavFeedback(labels[action] || action.toUpperCase());
 
-        // 1. Dispatch API call to NinjaDesk server (broadcasts instant MQTT command to device)
-        fetch('/api/device/navigation/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Ninja-Api-Key': apiKey
-          },
-          body: JSON.stringify({
-            id: targetId,
-            action: action
-          })
-        }).then(function(res) {
-          return res.json();
-        }).then(function(data) {
-          console.log('[Navigation] Dispatched ' + action + ':', data);
-        }).catch(function(err) {
-          console.warn('[Navigation] Dispatch failed:', err);
-        });
-
-        // 2. Also simulate synthetic keyboard event for RustDesk Flutter canvas if applicable
+        // 1. RustDesk Native Web Client Bridge Call (identical to RustDesk Desktop remote_toolbar.dart)
         try {
-          var keyMap = {
-            'back': { key: 'Escape', code: 'Escape', keyCode: 27 },
-            'home': { key: 'Home', code: 'Home', keyCode: 36 }
-          };
-          var k = keyMap[action];
-          if (k) {
-            var ev = new KeyboardEvent('keydown', {
-              key: k.key,
-              code: k.code,
-              keyCode: k.keyCode,
-              which: k.keyCode,
-              bubbles: true
-            });
-            window.dispatchEvent(ev);
-            document.dispatchEvent(ev);
+          if (action === 'back') {
+            if (typeof window.remoteBack === 'function') window.remoteBack();
+            if (typeof window.setByName === 'function') {
+              window.setByName("mobile_back", "");
+              window.setByName("send_mouse", JSON.stringify({ type: "up", buttons: "back" }));
+            }
+          } else if (action === 'home') {
+            if (typeof window.remoteHome === 'function') window.remoteHome();
+            if (typeof window.setByName === 'function') {
+              window.setByName("mobile_home", "");
+              window.setByName("send_mouse", JSON.stringify({ type: "down", buttons: "wheel" }));
+              setTimeout(function() {
+                window.setByName("send_mouse", JSON.stringify({ type: "up", buttons: "wheel" }));
+              }, 30);
+            }
+          } else if (action === 'recents') {
+            if (typeof window.remoteRecents === 'function') window.remoteRecents();
+            if (typeof window.setByName === 'function') {
+              window.setByName("mobile_recents", "");
+              window.setByName("send_mouse", JSON.stringify({ type: "down", buttons: "wheel" }));
+              setTimeout(function() {
+                window.setByName("send_mouse", JSON.stringify({ type: "up", buttons: "wheel" }));
+              }, 450);
+            }
+          }
+        } catch (e) {
+          console.warn('[Navigation] Native bridge note:', e);
+        }
+
+        // 2. Direct Canvas PointerEvent injection
+        try {
+          var targetEl = getRemoteTarget();
+          if (action === 'back') {
+            dispatchCanvasMouse(targetEl, 3, 8, true);
+            setTimeout(function() {
+              dispatchCanvasMouse(targetEl, 3, 0, false);
+              dispatchCanvasMouse(targetEl, 2, 2, true);
+              setTimeout(function() {
+                dispatchCanvasMouse(targetEl, 2, 0, false);
+              }, 30);
+            }, 30);
+          } else if (action === 'home') {
+            dispatchCanvasMouse(targetEl, 1, 4, true);
+            setTimeout(function() {
+              dispatchCanvasMouse(targetEl, 1, 0, false);
+            }, 40);
+          } else if (action === 'recents') {
+            dispatchCanvasMouse(targetEl, 1, 4, true);
+            setTimeout(function() {
+              dispatchCanvasMouse(targetEl, 1, 0, false);
+            }, 460);
           }
         } catch (e) {}
-      };
 
-      // Keyboard Shortcuts
-      window.addEventListener('keydown', function(e) {
-        // Ignore if user is currently typing in an input field
-        var tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
-        if (tag === 'input' || tag === 'textarea') return;
-
-        if (e.key === 'Escape' || (e.altKey && e.key === 'ArrowLeft')) {
-          e.preventDefault();
-          window.sendDeviceNav('back');
-        } else if ((e.altKey && (e.key === 'h' || e.key === 'H')) || e.key === 'Home') {
-          e.preventDefault();
-          window.sendDeviceNav('home');
-        } else if (e.altKey && (e.key === 'r' || e.key === 'R' || e.key === 'Tab')) {
-          e.preventDefault();
-          window.sendDeviceNav('recents');
-        } else if (e.altKey && (e.key === 'n' || e.key === 'N')) {
-          e.preventDefault();
-          window.sendDeviceNav('notifications');
-        } else if (e.altKey && (e.key === 'p' || e.key === 'P')) {
-          e.preventDefault();
-          window.sendDeviceNav('power');
+        // 3. High-speed backend MQTT command dispatch to device
+        if (targetId) {
+          fetch('/api/device/navigation/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              id: targetId,
+              action: action
+            })
+          }).catch(function(err) {
+            console.warn('[Navigation] API dispatch note:', err);
+          });
         }
-      });
+      };
 
       // Draggable Navigation Dock
       var dock = document.getElementById('android-nav-dock');
