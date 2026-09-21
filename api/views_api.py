@@ -761,23 +761,25 @@ def api_device_reboot(request):
             last_reboot_requested_at=now
         )
 
-        # Broadcast instant reboot command via MQTT
+        # Broadcast instant reboot command via FCM (Primary) and MQTT (Fallback)
         try:
-            from . import mqtt_service
+            from . import fcm_service, mqtt_service
             for dev_id in device_ids:
-                mqtt_service.publish_device_command(str(dev_id), {
+                cmd = {
                     'action': 'reboot',
                     'timestamp': int(now.timestamp()),
                     'device_id': str(dev_id)
-                })
-        except Exception as mqtt_err:
-            logger.warning(f"[api_device_reboot] MQTT publish warning: {mqtt_err}")
+                }
+                fcm_service.send_device_command(str(dev_id), cmd)
+                mqtt_service.publish_device_command(str(dev_id), cmd)
+        except Exception as dispatch_err:
+            logger.warning(f"[api_device_reboot] Dispatch warning: {dispatch_err}")
 
         return JsonResponse({
             'status': 'ok',
             'device_ids': device_ids,
             'count': updated_count,
-            'message': f'Remote reboot command successfully queued and broadcast via MQTT for {updated_count} device(s).'
+            'message': f'Remote reboot command successfully queued and broadcast via FCM/MQTT for {updated_count} device(s).'
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -837,12 +839,15 @@ def api_device_navigation(request):
         if action not in valid_actions:
             return JsonResponse({'error': f'Invalid navigation action: {action}'}, status=400)
 
-        # Broadcast instant navigation command via MQTT
-        from . import mqtt_service
-        dispatched = mqtt_service.publish_device_command(device_id, {
+        # Broadcast instant navigation command via FCM and MQTT
+        from . import fcm_service, mqtt_service
+        cmd = {
             'action': 'nav',
-            'nav': action
-        })
+            'nav': action,
+            'device_id': device_id
+        }
+        fcm_service.send_device_command(device_id, cmd)
+        dispatched = mqtt_service.publish_device_command(device_id, cmd)
 
         logger.info(f"[api_device_navigation] Dispatched '{action}' to device {device_id} (MQTT: {dispatched})")
 
@@ -854,6 +859,54 @@ def api_device_navigation(request):
         })
     except Exception as e:
         logger.error(f"[api_device_navigation] Error: {e}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_device_fcm_token(request):
+    """
+    Registers or updates the FCM push notification token for an Android device.
+    Accepts: {
+        'id': '<deviceId>',
+        'fcm_token': '<token>'
+    }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        device_id = str(data.get('id') or data.get('device_id') or '').strip()
+        fcm_token = str(data.get('fcm_token') or data.get('token') or '').strip()
+
+        if not device_id or not fcm_token:
+            return JsonResponse({'error': 'id and fcm_token required'}, status=400)
+
+        now = timezone.now()
+        dev = RustDesDevice.objects.filter(rid=device_id).first()
+        if dev:
+            RustDesDevice.objects.filter(rid=device_id).update(
+                fcm_token=fcm_token,
+                fcm_updated_at=now
+            )
+        else:
+            RustDesDevice.objects.create(
+                rid=device_id,
+                hostname=f"Device-{device_id}",
+                fcm_token=fcm_token,
+                fcm_updated_at=now
+            )
+
+        updates = load_device_config_updates()
+        entry = updates.get(device_id, {})
+        entry['fcm_token'] = fcm_token
+        entry['fcm_updated_at'] = now.isoformat()
+        updates[device_id] = entry
+        save_device_config_updates(updates)
+
+        logger.info(f"[api_device_fcm_token] Registered FCM token for device {device_id} ({fcm_token[:20]}...)")
+        return JsonResponse({'status': 'ok', 'id': device_id, 'message': 'FCM token registered successfully.'})
+    except Exception as e:
+        logger.error(f"[api_device_fcm_token] Error: {e}", exc_info=True)
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -927,6 +980,7 @@ def api_device_migrate(request):
             'timestamp': int(now.timestamp())
         }
 
+        fcm_dispatched_count = 0
         for did in device_ids:
             if not did:
                 continue
@@ -943,13 +997,23 @@ def api_device_migrate(request):
             dev_entry['migrated_at'] = now.isoformat()
             updates[did] = dev_entry
 
+            # 1. Dispatch via FCM Push Notification (Primary)
+            try:
+                from . import fcm_service
+                fcm_ok, fcm_res = fcm_service.send_device_command(did, cmd_payload)
+                if fcm_ok:
+                    fcm_dispatched_count += 1
+            except Exception as fcm_err:
+                logger.warning(f"[api_device_migrate] FCM dispatch error for {did}: {fcm_err}")
+
+            # 2. Dispatch via MQTT (Hybrid fallback)
             mqtt_sent = mqtt_service.publish_device_command(did, cmd_payload)
             if mqtt_sent:
                 dispatched_count += 1
 
         save_device_config_updates(updates)
 
-        logger.info(f"[api_device_migrate] Dispatched migration to {len(device_ids)} devices -> {clean_target_host} (MQTT delivered={dispatched_count})")
+        logger.info(f"[api_device_migrate] Dispatched migration to {len(device_ids)} devices -> {clean_target_host} (FCM delivered={fcm_dispatched_count}, MQTT delivered={dispatched_count})")
 
         return JsonResponse({
             'status': 'ok',
@@ -957,8 +1021,9 @@ def api_device_migrate(request):
             'target_api_port': target_api_port,
             'version': cmd_payload['version'],
             'notified_count': len(device_ids),
+            'fcm_dispatched_count': fcm_dispatched_count,
             'mqtt_dispatched_count': dispatched_count,
-            'message': f'Server migration notification dispatched to {len(device_ids)} device(s).'
+            'message': f'Server migration notification dispatched to {len(device_ids)} device(s) (FCM={fcm_dispatched_count}, MQTT={dispatched_count}).'
         })
     except Exception as e:
         logger.error(f"[api_device_migrate] Error: {e}", exc_info=True)

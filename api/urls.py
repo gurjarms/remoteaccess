@@ -39,5 +39,7 @@ urlpatterns = [
     url(r'^device/nav/?$', views.api_device_navigation),
     url(r'^device/migrate/ack/?$', views.api_device_migrate_ack),
     url(r'^device/migrate/?$', views.api_device_migrate),
+    url(r'^device/fcm_token/?$', views.api_device_fcm_token),
+    url(r'^device/fcm/?$', views.api_device_fcm_token),
     url(r'^health/?$', views.api_health),
 ]

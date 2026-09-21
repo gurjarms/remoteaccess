@@ -13,16 +13,18 @@
   "489629155": {
     "pending": false,
     "password_updated_at": "2026-09-19T16:40:38.814050",
-    "server_host": "192.168.1.22",
+    "server_host": "192.168.1.52",
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 274,
-    "acknowledged_at": "2026-09-21T16:34:17.658007",
-    "api_server": "http://192.168.1.22:8000",
-    "updated_at": "2026-09-21T14:59:51.198946",
-    "migrated_away": false,
-    "migrated_at": "2026-09-21T16:34:17.866427"
+    "version": 276,
+    "acknowledged_at": "2026-09-21T16:40:17.057019",
+    "api_server": "http://192.168.1.52:8000",
+    "updated_at": "2026-09-21T16:39:58.286429",
+    "migrated_away": true,
+    "migrated_at": "2026-09-21T18:00:28.992913",
+    "fcm_token": "egOY4s7HQ3uQ4sMzLfloiV:APA91bG2g7x_1_lz93QJpYjxOmZOz_rqlnLg8NljKy0uC2_jKH_dMJv_17I4XTEQJQDNcpW4XBtUB00IqkFoiOE6aHRi8vsKNApwOv1Y4yzIrR3KJU81rZk",
+    "fcm_updated_at": "2026-09-21T18:00:37.670922"
   },
   "619222512": {
     "pending": true,
@@ -61,26 +63,41 @@
     "pending": true,
     "password": "newpassword123",
     "password_updated_at": "2026-09-19T16:36:50.791103",
-    "server_host": "192.168.1.52",
+    "server_host": "192.168.1.22",
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 275,
-    "migrated_away": true,
-    "api_server": "http://192.168.1.52:8000",
-    "migrated_at": "2026-09-21T16:19:03.381296"
+    "version": 276,
+    "migrated_away": false,
+    "api_server": "http://192.168.1.22:8000",
+    "migrated_at": "2026-09-21T17:59:36.466319"
   },
   "561781668": {
     "pending": true,
     "password_updated_at": "2026-09-19T17:47:06.439845",
-    "server_host": "192.168.1.52",
+    "server_host": "192.168.1.22",
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 275,
+    "version": 276,
     "acknowledged_at": "2026-09-19T17:47:10.630332",
-    "migrated_away": true,
-    "api_server": "http://192.168.1.52:8000",
-    "migrated_at": "2026-09-21T16:19:03.381296"
+    "migrated_away": false,
+    "api_server": "http://192.168.1.22:8000",
+    "migrated_at": "2026-09-21T17:59:36.466319"
+  },
+  "test_fcm_device": {
+    "fcm_token": "fake_token_test_12345",
+    "fcm_updated_at": "2026-09-21T16:56:46.874306"
+  },
+  "test": {
+    "fcm_token": "test_token",
+    "fcm_updated_at": "2026-09-21T17:23:52.665827",
+    "pending": true,
+    "migrated_away": false,
+    "server_host": "192.168.1.22",
+    "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
+    "api_server": "http://192.168.1.22:8000",
+    "version": 276,
+    "migrated_at": "2026-09-21T17:59:36.466319"
   }
 }

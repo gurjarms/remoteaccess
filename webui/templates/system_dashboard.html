@@ -369,11 +369,7 @@
           <td>${serviceBadge}</td>
           <td>
             <div style="font-weight: 600; color: var(--text-main);">${d.name || d.hostname}</div>
-            ${d.migration_pending ? `
-              <div style="margin-top: 2px;">
-                <span style="font-size: 10px; color: #818cf8; font-weight: 700;">🔄 MIGRATING TO: ${d.current_server_host || 'TARGET'}</span>
-              </div>
-            ` : d.current_server_host ? `
+            ${d.current_server_host ? `
               <div style="margin-top: 2px;">
                 <span style="font-size: 10px; color: #a78bfa; font-weight: 600;">⇄ Svr: ${d.current_server_host}</span>
               </div>

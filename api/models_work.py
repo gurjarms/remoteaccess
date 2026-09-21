@@ -93,6 +93,8 @@ class RustDesDevice(models.Model):
     migration_pending = models.BooleanField(verbose_name=_('迁移挂起'), default=False)
     current_server_host = models.CharField(verbose_name=_('当前服务地址'), max_length=255, blank=True, default='')
     migrated_at = models.DateTimeField(verbose_name=_('最后迁移时间'), null=True, blank=True)
+    fcm_token = models.CharField(verbose_name=_('FCM Token'), max_length=255, blank=True, default='')
+    fcm_updated_at = models.DateTimeField(verbose_name=_('FCM Token更新时间'), null=True, blank=True)
 
     class Meta:
         ordering = ('-rid',)
