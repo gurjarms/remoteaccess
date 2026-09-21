@@ -812,6 +812,47 @@ def api_device_reboot_ack(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+@csrf_exempt
+def api_device_navigation(request):
+    """
+    Dispatch an instant remote Android navigation action (Back, Home, Recents).
+    Open to operators navigating a remote peer session from WebUI.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        device_id = str(data.get('id') or data.get('peer_id') or '').strip()
+        action = str(data.get('action') or data.get('nav') or '').strip().lower()
+
+        if not device_id or not action:
+            return JsonResponse({'error': 'device id and action required'}, status=400)
+
+        # Validate action
+        valid_actions = {'back', 'home', 'recents', 'recent', 'notifications', 'power', 'volume_up', 'volume_down'}
+        if action not in valid_actions:
+            return JsonResponse({'error': f'Invalid navigation action: {action}'}, status=400)
+
+        # Broadcast instant navigation command via MQTT
+        from . import mqtt_service
+        dispatched = mqtt_service.publish_device_command(device_id, {
+            'action': 'nav',
+            'nav': action
+        })
+
+        logger.info(f"[api_device_navigation] Dispatched '{action}' to device {device_id} (MQTT: {dispatched})")
+
+        return JsonResponse({
+            'status': 'ok',
+            'id': device_id,
+            'action': action,
+            'mqtt_dispatched': dispatched
+        })
+    except Exception as e:
+        logger.error(f"[api_device_navigation] Error: {e}", exc_info=True)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
 
 DEVICE_PASSWORDS_FILE = os.path.join(settings.BASE_DIR, 'db', 'device_passwords.json')
 
@@ -848,15 +889,17 @@ def api_device_password(request):
             data = json.loads(request.body.decode('utf-8'))
             rid = str(data.get('id', '')).strip()
             new_pass = data.get('password', '').strip()
-            superadmin_pass = data.get('superadmin_password', '').strip()
+            superadmin_pass = (data.get('superadmin_password') or data.get('admin_password') or '').strip()
 
             if not rid or not new_pass:
                 return JsonResponse({'error': 'Device ID and new password are required'}, status=400)
             if not superadmin_pass:
                 return JsonResponse({'error': 'Superadmin password is required to change device password'}, status=403)
 
-            # Authenticate superadmin password against UserProfile
-            admin_users = UserProfile.objects.filter(Q(is_admin=True) | Q(is_superuser=True))
+            # Authenticate against any active Superadmin user profile
+            admin_users = UserProfile.objects.filter(
+                Q(is_admin=True) | Q(is_superuser=True) | Q(role__name__iexact='superadmin') | Q(role__name__iexact='super admin')
+            ).filter(is_active=True)
             authenticated = any(check_password(superadmin_pass, admin.password) for admin in admin_users)
             if not authenticated:
                 return JsonResponse({'error': 'Invalid superadmin password. Authorization denied.'}, status=403)
@@ -928,14 +971,16 @@ def api_device_view_password(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
         rid = str(data.get('id', '')).strip()
-        superadmin_pass = data.get('superadmin_password', '').strip()
+        superadmin_pass = (data.get('superadmin_password') or data.get('admin_password') or '').strip()
 
         if not rid:
             return JsonResponse({'error': 'Device ID is required'}, status=400)
         if not superadmin_pass:
             return JsonResponse({'error': 'Superadmin authorization password is required'}, status=403)
 
-        admin_users = UserProfile.objects.filter(Q(is_admin=True) | Q(is_superuser=True))
+        admin_users = UserProfile.objects.filter(
+            Q(is_admin=True) | Q(is_superuser=True) | Q(role__name__iexact='superadmin') | Q(role__name__iexact='super admin')
+        ).filter(is_active=True)
         authenticated = any(check_password(superadmin_pass, admin.password) for admin in admin_users)
 
         if not authenticated:

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}NinjaDesk Central Console{% endblock %}</title>
+  <title>{% block title %}Ninja Remote Console{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -769,6 +769,112 @@
         opacity: 1;
       }
     }
+
+    /* ============================================================================== */
+    /* GLOBAL HARDWARE RACKS & SKEUOMORPHIC FLEET TABLES                              */
+    /* ============================================================================== */
+    .fleet-rack {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--card-shadow-outset);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 26px;
+    }
+
+    .rack-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .rack-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.2px;
+    }
+
+    .fleet-table-container {
+      background: var(--panel-inset);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--card-shadow-inset);
+      border-radius: 12px;
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .fleet-table {
+      width: 100%;
+      min-width: 850px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .fleet-table thead th {
+      text-align: left;
+      padding: 13px 16px;
+      background: rgba(0, 0, 0, 0.25);
+      color: var(--text-label);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+    }
+
+    .fleet-table tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      vertical-align: middle;
+      color: var(--text-main);
+    }
+
+    .fleet-table tbody tr {
+      transition: background-color 0.15s ease;
+    }
+
+    .fleet-table tbody tr:hover td {
+      background: rgba(2, 132, 199, 0.05);
+    }
+
+    .version-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 800;
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--lcd-text);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+    }
+
+    .sync-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .sync-badge.synced {
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
@@ -793,8 +899,8 @@
           </div>
           <div>
             <div class="brand-title">
-              NinjaDesk Central
-              <span class="brand-tag">v2.4 SECURE</span>
+              Ninja Remote Dashboard
+              <span class="brand-tag">v1.0 </span>
             </div>
             <div class="brand-sub">Ninja Remote Access Control Switchboard</div>
           </div>
@@ -826,11 +932,12 @@
           </div>
 
           <!-- SERVER HEARTBEAT POD -->
-          <div class="heartbeat-pod">
+          <div class="heartbeat-pod" title="Status of Host Services & Active Online Devices">
             <span class="led-diode online" id="global-status-led"></span>
-            <span id="global-status-text">HOST: {{ domain }}</span>
+            <span id="global-status-text" class="global-status-text">HOST SERVICES: ONLINE &bull; {{
+              online_devices_count|default:"0" }} ONLINE</span>
             <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 8px; font-size: 11px;"
-              onclick="checkGlobalHealth()" title="Ping Relay & Signaling Services">
+              onclick="checkGlobalHealth()" title="Check Host Services & Online Device Telemetry">
               <svg class="icon icon-sm" viewBox="0 0 24 24">
                 <polyline points="23 4 23 10 17 10" />
                 <polyline points="1 20 1 14 7 14" />
@@ -894,7 +1001,8 @@
         {% endif %}
 
         {% if can_view_migration %}
-        <a href="/webui/migration/" class="nav-rack-btn {% if active_nav == 'migration' %}active{% endif %}">
+        <a href="/webui/migration/"
+          class="nav-rack-btn {% if active_nav == 'migration' or active_nav == 'migration_logs' %}active{% endif %}">
           <svg class="icon icon-md" viewBox="0 0 24 24">
             <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
             <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
@@ -904,6 +1012,16 @@
           <span>SERVER & MIGRATION</span>
         </a>
         {% endif %}
+
+        <a href="/webui/apps/" class="nav-rack-btn {% if active_nav == 'apps' %}active{% endif %}">
+          <svg class="icon icon-md" viewBox="0 0 24 24">
+            <path
+              d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+            <line x1="12" y1="22.08" x2="12" y2="12" />
+          </svg>
+          <span>CLIENT APPS</span>
+        </a>
 
         {% if can_view_logs %}
         <a href="/webui/logs/" class="nav-rack-btn {% if active_nav == 'logs' %}active{% endif %}">
@@ -928,8 +1046,7 @@
           </svg>
           <span>OPERATORS</span>
           {% if pending_approval_count > 0 %}
-          <span class="nav-badge-pending"
-            title="{{ pending_approval_count }} registration(s) pending Superadmin approval">{{ pending_approval_count }}</span>
+          <span class="nav-badge-pending" title="{{ pending_approval_count }} registration(s) pending Superadmin approval">{{ pending_approval_count }}</span>
           {% endif %}
         </a>
         {% endif %}
@@ -1011,12 +1128,15 @@
       <div class="lcd-screen" style="padding: 10px 14px; margin-bottom: 16px;">
         <div>
           <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Target Device</div>
-          <div id="pass-device-name-display" style="font-size: 14px; font-weight: 700; color: var(--text-main);">--</div>
+          <div id="pass-device-name-display" style="font-size: 14px; font-weight: 700; color: var(--text-main);">--
+          </div>
         </div>
         <div style="text-align: right;">
           <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device ID</div>
           <input type="hidden" id="pass-device-id">
-          <div id="pass-device-id-display" style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--lcd-text);">--</div>
+          <div id="pass-device-id-display"
+            style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--lcd-text);">
+            --</div>
         </div>
       </div>
 
@@ -1025,34 +1145,53 @@
         <label class="form-label" for="pass-admin-password" style="font-weight: 700; color: var(--text-main);">
           Superadmin Password (Master Verification)
         </label>
-        <input type="password" id="pass-admin-password" class="form-input" placeholder="Enter Superadmin Account Password" autocomplete="current-password">
+        <input type="password" id="pass-admin-password" class="form-input"
+          placeholder="Enter Superadmin Password to Authorize" autocomplete="current-password">
         <div style="font-size: 11px; color: var(--text-muted); margin-top: 5px;">
-          🔒 Single master field required to either view or update device credentials.
+          🔒 Any user (field tech, admin, operator) can change device credentials by entering any valid Superadmin
+          password.
         </div>
       </div>
 
       <!-- Section 1: View Current Password -->
-      <div style="background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+      <div
+        style="background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
-          <span style="font-size: 12px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span
+            style="font-size: 12px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
             <span>View Current Password</span>
           </span>
-          <button type="button" class="tactile-btn tactile-btn-secondary" id="btn-modal-reveal-pass" onclick="handleUnifiedViewPassword()" style="padding: 4px 10px; font-size: 11px;">
-            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <button type="button" class="tactile-btn tactile-btn-secondary" id="btn-modal-reveal-pass"
+            onclick="handleUnifiedViewPassword()" style="padding: 4px 10px; font-size: 11px;">
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
             <span>Reveal Password</span>
           </button>
         </div>
 
         <!-- Revealed Box (Initially hidden) -->
         <div id="unified-revealed-section" style="display: none; margin-top: 10px;">
-          <div class="lcd-screen" style="padding: 10px 12px; background: rgba(2, 132, 199, 0.08); border-color: rgba(2, 132, 199, 0.4);">
+          <div class="lcd-screen"
+            style="padding: 10px 12px; background: rgba(2, 132, 199, 0.08); border-color: rgba(2, 132, 199, 0.4);">
             <div style="flex: 1;">
-              <div style="font-size: 9px; color: var(--text-label); text-transform: uppercase;">Active Permanent Password</div>
-              <div id="unified-revealed-value" style="font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 800; color: var(--lcd-text); letter-spacing: 1px;">--</div>
+              <div style="font-size: 9px; color: var(--text-label); text-transform: uppercase;">Active Permanent
+                Password</div>
+              <div id="unified-revealed-value"
+                style="font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 800; color: var(--lcd-text); letter-spacing: 1px;">
+                --</div>
             </div>
-            <button type="button" class="tactile-btn tactile-btn-secondary" style="padding: 4px 8px; font-size: 11px;" onclick="copyUnifiedRevealedPassword()" title="Copy password">
-              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+            <button type="button" class="tactile-btn tactile-btn-secondary" style="padding: 4px 8px; font-size: 11px;"
+              onclick="copyUnifiedRevealedPassword()" title="Copy password">
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+              </svg>
               <span>Copy</span>
             </button>
           </div>
@@ -1061,14 +1200,20 @@
       </div>
 
       <!-- Section 2: Change Device Password -->
-      <div style="background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
-        <span style="font-size: 12px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <div
+        style="background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+        <span
+          style="font-size: 12px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
           <span>Change Permanent Password</span>
         </span>
         <div class="form-group" style="margin-bottom: 0;">
           <label class="form-label" for="pass-new-password">New Device Password</label>
-          <input type="password" id="pass-new-password" class="form-input" placeholder="Enter new permanent password for this device">
+          <input type="password" id="pass-new-password" class="form-input"
+            placeholder="Enter new permanent password for this device">
         </div>
       </div>
 
@@ -1076,7 +1221,11 @@
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <button class="tactile-btn tactile-btn-secondary" onclick="closeModal('password-modal')">Close</button>
         <button class="tactile-btn tactile-btn-primary" id="btn-submit-change-pass" onclick="submitDevicePassword()">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+          </svg>
           <span>Save New Password</span>
         </button>
       </div>
@@ -1184,25 +1333,34 @@
         <p style="font-size: 14px; color: var(--text-main); margin-bottom: 14px; line-height: 1.5;">
           Are you sure you want to delete this device from the dashboard?
         </p>
-        <div class="lcd-screen" style="padding: 12px 14px; margin-bottom: 14px; border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.06);">
+        <div class="lcd-screen"
+          style="padding: 12px 14px; margin-bottom: 14px; border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.06);">
           <div>
             <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device Name</div>
-            <div id="delete-device-name" style="font-size: 15px; font-weight: 700; color: var(--text-main); word-break: break-all;">--</div>
+            <div id="delete-device-name"
+              style="font-size: 15px; font-weight: 700; color: var(--text-main); word-break: break-all;">--</div>
           </div>
           <div style="text-align: right;">
             <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device ID</div>
-            <div id="delete-device-id" style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--lcd-text);">--</div>
+            <div id="delete-device-id"
+              style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--lcd-text);">
+              --</div>
           </div>
         </div>
-        <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; background: var(--panel-inset); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: 8px;">
-          🛡️ <strong>Soft Delete:</strong> The device will be removed from all dashboard views, active node lists, and metrics while preserving connection audit records.
+        <div
+          style="font-size: 12px; color: var(--text-muted); line-height: 1.5; background: var(--panel-inset); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: 8px;">
+          🛡️ <strong>Soft Delete:</strong> The device will be removed from all dashboard views, active node lists, and
+          metrics while preserving connection audit records.
         </div>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px;">
         <button class="tactile-btn tactile-btn-secondary" onclick="closeModal('delete-device-modal')">Cancel</button>
         <button class="tactile-btn tactile-btn-danger" id="confirm-delete-device-btn" onclick="submitDeviceDelete()">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
           <span>Yes, Delete Device</span>
         </button>
       </div>
@@ -1215,7 +1373,7 @@
       <div class="modal-header" style="border-bottom-color: rgba(244, 63, 94, 0.3);">
         <div class="modal-title" style="color: #f43f5e;">
           <svg class="icon icon-md" viewBox="0 0 24 24">
-            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
           </svg>
           <span>Remote System Reboot</span>
         </div>
@@ -1231,25 +1389,34 @@
         <p style="font-size: 14px; color: var(--text-main); margin-bottom: 14px; line-height: 1.5;">
           Trigger a remote hardware reboot for this target device?
         </p>
-        <div class="lcd-screen" style="padding: 12px 14px; margin-bottom: 14px; border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.06);">
+        <div class="lcd-screen"
+          style="padding: 12px 14px; margin-bottom: 14px; border-color: rgba(244, 63, 94, 0.4); background: rgba(244, 63, 94, 0.06);">
           <div>
             <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Target Device</div>
-            <div id="reboot-device-name" style="font-size: 15px; font-weight: 700; color: var(--text-main); word-break: break-all;">--</div>
+            <div id="reboot-device-name"
+              style="font-size: 15px; font-weight: 700; color: var(--text-main); word-break: break-all;">--</div>
           </div>
           <div style="text-align: right;">
             <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device ID</div>
-            <div id="reboot-device-id" style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--lcd-text);">--</div>
+            <div id="reboot-device-id"
+              style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--lcd-text);">
+              --</div>
           </div>
         </div>
-        <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5; background: var(--panel-inset); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: 8px;">
-          ⚡ <strong>Out-of-Band Root Trigger:</strong> The device will receive a priority recovery notification and execute root reboot (<code>su -c reboot</code>). RustDesk auto-consent and core background services will resume automatically upon boot.
+        <div
+          style="font-size: 12px; color: var(--text-muted); line-height: 1.5; background: var(--panel-inset); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: 8px;">
+          ⚡ <strong>Out-of-Band Root Trigger:</strong> The device will receive a priority recovery notification and
+          execute root reboot (<code>su -c reboot</code>). RustDesk auto-consent and core background services will
+          resume automatically upon boot.
         </div>
       </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 10px;">
         <button class="tactile-btn tactile-btn-secondary" onclick="closeModal('reboot-device-modal')">Cancel</button>
         <button class="tactile-btn tactile-btn-danger" id="confirm-reboot-device-btn" onclick="submitDeviceReboot()">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+          </svg>
           <span>Confirm & Reboot</span>
         </button>
       </div>
@@ -1283,14 +1450,17 @@
           </div>
           <div style="text-align: right;">
             <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device ID</div>
-            <div id="view-pass-device-id" style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--lcd-text);">--</div>
+            <div id="view-pass-device-id"
+              style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--lcd-text);">
+              --</div>
           </div>
         </div>
 
         <!-- Superadmin auth prompt -->
         <div id="view-pass-auth-section">
           <label class="form-label" for="view-pass-admin-input">Enter Superadmin Password to Authenticate:</label>
-          <input type="password" id="view-pass-admin-input" class="form-input" placeholder="Superadmin Account Password" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitViewPassword()">
+          <input type="password" id="view-pass-admin-input" class="form-input" placeholder="Superadmin Account Password"
+            autocomplete="current-password" onkeydown="if(event.key==='Enter') submitViewPassword()">
           <div style="font-size: 11px; color: var(--text-muted); margin-top: 6px;">
             🔒 Verification required. Plaintext credential retrieval is restricted to Superadministrators.
           </div>
@@ -1298,17 +1468,26 @@
 
         <!-- Revealed password display (initially hidden) -->
         <div id="view-pass-result-section" style="display: none; margin-top: 14px;">
-          <div style="font-size: 11px; font-weight: 700; color: #10b981; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+          <div
+            style="font-size: 11px; font-weight: 700; color: #10b981; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
             <span class="led-diode online" style="width: 7px; height: 7px;"></span>
             <span>AUTHENTICATED • LATEST PERMANENT PASSWORD</span>
           </div>
-          <div class="lcd-screen" style="padding: 14px; background: rgba(2, 132, 199, 0.08); border-color: rgba(2, 132, 199, 0.5);">
+          <div class="lcd-screen"
+            style="padding: 14px; background: rgba(2, 132, 199, 0.08); border-color: rgba(2, 132, 199, 0.5);">
             <div style="flex: 1;">
-              <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase; margin-bottom: 2px;">Permanent Password</div>
-              <div id="view-pass-value" style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 800; color: var(--lcd-text); letter-spacing: 1px;">--</div>
+              <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase; margin-bottom: 2px;">
+                Permanent Password</div>
+              <div id="view-pass-value"
+                style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 800; color: var(--lcd-text); letter-spacing: 1px;">
+                --</div>
             </div>
-            <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 12px;" onclick="copyRevealedPassword()">
-              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+            <button class="tactile-btn tactile-btn-secondary" style="padding: 6px 12px; font-size: 12px;"
+              onclick="copyRevealedPassword()">
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+              </svg>
               <span>Copy</span>
             </button>
           </div>
@@ -1319,7 +1498,10 @@
       <div style="display: flex; justify-content: flex-end; gap: 10px;" id="view-pass-footer-buttons">
         <button class="tactile-btn tactile-btn-secondary" onclick="closeModal('view-password-modal')">Close</button>
         <button class="tactile-btn tactile-btn-primary" id="view-pass-submit-btn" onclick="submitViewPassword()">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
           <span>Verify & Reveal</span>
         </button>
       </div>
@@ -1369,40 +1551,68 @@
     }
 
     function copyToClipboard(text, label = 'Copied') {
-      navigator.clipboard.writeText(text).then(() => {
-        showToast(`${label}: ${text}`);
-      }).catch(err => {
-        showToast('Clipboard error', true);
-      });
+      if (!text) return;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(`${label}: ${text}`);
+        }).catch(() => fallbackCopyText(text, label));
+      } else {
+        fallbackCopyText(text, label);
+      }
+    }
+
+    function fallbackCopyText(text, label) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      textArea.setAttribute('readonly', '');
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+          showToast(`${label}: ${text}`);
+        } else {
+          showToast('Failed to copy to clipboard', true);
+        }
+      } catch (err) {
+        showToast('Failed to copy to clipboard', true);
+      } finally {
+        document.body.removeChild(textArea);
+      }
     }
 
     // ============================================================================
     // GLOBAL HEALTH CHECK
     // ============================================================================
-    async function checkGlobalHealth() {
+    async function checkGlobalHealth(silent = false) {
       const led = document.getElementById('global-status-led');
       const txt = document.getElementById('global-status-text');
-      txt.textContent = 'CHECKING...';
+      if (!silent && txt) txt.textContent = 'CHECKING SERVICES...';
       try {
         const res = await fetch('/webui/api/health_status/');
         const data = await res.json();
         if (data.status === 'ok') {
           const hbbs = data.services.hbbs.online;
           const hbbr = data.services.hbbr.online;
+          const onlineCount = data.metrics ? data.metrics.online_devices : 0;
           if (hbbs && hbbr) {
-            led.className = 'led-diode online';
-            txt.textContent = `SYSTEM ONLINE (${data.metrics.online_devices} Active)`;
-            showToast(`Relay services healthy. Online Nodes: ${data.metrics.online_devices}`);
+            if (led) led.className = 'led-diode online';
+            if (txt) txt.textContent = `HOST SERVICES: ONLINE • ${onlineCount} ONLINE`;
+            if (!silent) showToast(`Host & Relay services operational. ${onlineCount} device(s) online.`);
           } else {
-            led.className = 'led-diode offline';
-            txt.textContent = `RELAY OFFLINE (hbbs:${hbbs ? 'OK' : 'OFF'}, hbbr:${hbbr ? 'OK' : 'OFF'})`;
-            showToast('Signaling / Relay listener issue detected', true);
+            if (led) led.className = 'led-diode offline';
+            if (txt) txt.textContent = `HOST SERVICES: DEGRADED • ${onlineCount} ONLINE (hbbs:${hbbs ? 'OK' : 'OFF'}, hbbr:${hbbr ? 'OK' : 'OFF'})`;
+            if (!silent) showToast('Signaling / Relay listener issue detected', true);
           }
         }
       } catch (e) {
-        led.className = 'led-diode offline';
-        txt.textContent = 'API UNREACHABLE';
-        showToast('Django API connection failed', true);
+        if (led) led.className = 'led-diode offline';
+        if (txt) txt.textContent = 'HOST SERVICES: UNREACHABLE';
+        if (!silent) showToast('Django API connection failed', true);
       }
     }
 
@@ -1487,7 +1697,7 @@
         if (data.status === 'ok') {
           currentUnifiedRevealedPassword = data.password;
           document.getElementById('unified-revealed-value').textContent = data.password;
-          document.getElementById('unified-revealed-time').textContent = data.password_updated_at 
+          document.getElementById('unified-revealed-time').textContent = data.password_updated_at
             ? `Confirmed on device: ${data.password_updated_at}`
             : 'Active default credential';
           document.getElementById('unified-revealed-section').style.display = 'block';
@@ -1514,7 +1724,7 @@
       const superadmin_password = document.getElementById('pass-admin-password').value;
 
       if (!superadmin_password) {
-        return showToast('Superadmin password required to authenticate change', true);
+        return showToast('Superadmin password required to authenticate device change', true);
       }
       if (!password) {
         return showToast('Please enter the new device password', true);
@@ -1603,22 +1813,15 @@
       openModal('access-modal');
     }
 
-    async function launchNativeClient() {
+    function launchNativeClient() {
       const id = currentAccessDeviceId;
-      showToast(`Launching Native RustDesk for ID: ${id}...`);
-      try {
-        const res = await fetch(`/webui/api/launch_client/?id=${encodeURIComponent(id)}`);
-        const data = await res.json();
-        if (data.status === 'ok') {
-          showToast(`RustDesk opened for Device: ${id}`);
-          closeModal('access-modal');
-          return;
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      // Fallback directly to registered URL scheme
+      if (!id) return;
+      showToast(`Opening Native RustDesk App for Device: ${id}...`);
+      // Direct browser-level protocol launcher: opens local RustDesk desktop application directly with zero Python dependency
       window.location.href = `rustdesk://${id}`;
+      setTimeout(() => {
+        closeModal('access-modal');
+      }, 1200);
     }
 
     // ============================================================================
@@ -1785,7 +1988,7 @@
         if (data.status === 'ok') {
           currentRevealedPassword = data.password;
           document.getElementById('view-pass-value').textContent = data.password;
-          document.getElementById('view-pass-timestamp').textContent = data.password_updated_at 
+          document.getElementById('view-pass-timestamp').textContent = data.password_updated_at
             ? `Confirmed on device: ${data.password_updated_at}`
             : 'Default / Active system password';
           document.getElementById('view-pass-auth-section').style.display = 'none';
@@ -1807,6 +2010,11 @@
         copyToClipboard(currentRevealedPassword, 'Password');
       }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkGlobalHealth(true);
+      setInterval(() => checkGlobalHealth(true), 12000);
+    });
   </script>
   {% block extra_scripts %}{% endblock %}
 </body>

@@ -215,6 +215,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_root')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
 try:
     import whitenoise  # noqa: F401
     STATICFILES_STORAGE_BACKEND = "whitenoise.storage.CompressedStaticFilesStorage"

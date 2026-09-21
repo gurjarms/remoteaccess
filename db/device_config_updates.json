@@ -12,16 +12,16 @@
   },
   "489629155": {
     "pending": false,
-    "password_updated_at": "2026-09-18T15:06:07.167560",
-    "server_host": "nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
+    "password_updated_at": "2026-09-19T16:40:38.814050",
+    "server_host": "192.168.1.52",
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 263,
-    "acknowledged_at": "2026-09-19T12:29:03.072487",
-    "api_server": "http://127.0.0.1:8000",
-    "updated_at": "2026-09-19T12:28:58.514643",
-    "migrated_away": false
+    "version": 272,
+    "acknowledged_at": "2026-09-21T13:28:26.811202",
+    "api_server": "http://192.168.1.52:8000",
+    "updated_at": "2026-09-21T13:28:22.870378",
+    "migrated_away": true
   },
   "619222512": {
     "pending": true,
@@ -55,5 +55,25 @@
     "version": 259,
     "updated_at": "2026-09-18T17:01:55.246975",
     "migrated_away": true
+  },
+  "test_any_user_device": {
+    "pending": true,
+    "password": "newpassword123",
+    "password_updated_at": "2026-09-19T16:36:50.791103",
+    "server_host": "nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
+    "server_key": "loesGg8dnOV9n5KIZmNq4PNSvXCxrDw3WXPBXR3430I=",
+    "hbbs_port": "21116",
+    "hbbr_port": "21117",
+    "version": 270
+  },
+  "561781668": {
+    "pending": false,
+    "password_updated_at": "2026-09-19T17:47:06.439845",
+    "server_host": "nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
+    "server_key": "loesGg8dnOV9n5KIZmNq4PNSvXCxrDw3WXPBXR3430I=",
+    "hbbs_port": "21116",
+    "hbbr_port": "21117",
+    "version": 270,
+    "acknowledged_at": "2026-09-19T17:47:10.630332"
   }
 }

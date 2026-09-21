@@ -22,12 +22,21 @@ urlpatterns = [
     url(r'^devices/?$', views.devices_view, name='webui_devices'),
     url(r'^dashboard/?$', views.dashboard_view, name='webui_dashboard'),
     url(r'^migration/?$', views.migration_view, name='webui_migration'),
+    url(r'^migration/logs/?$', views.migration_logs_view, name='webui_migration_logs'),
+    url(r'^apps/?$', views.app_releases_view, name='webui_apps'),
     url(r'^logs/?$', views.logs_view, name='webui_logs'),
     url(r'^remote/?$', views.remote_view, name='webui_remote'),
 
     # OPERATORS & DYNAMIC ROLES CONSOLE
     url(r'^users/?$', views.users_view, name='webui_users'),
     url(r'^roles/?$', views.roles_view, name='webui_roles'),
+
+    # CLIENT APPS REST APIs & DOWNLOADS
+    url(r'^apps/upload/?$', views.app_upload_api, name='webui_app_upload'),
+    url(r'^apps/delete/(?P<app_id>\d+)/?$', views.app_delete_api, name='webui_app_delete'),
+    url(r'^apps/download/(?P<app_id>\d+)/?$', views.app_download_view, name='webui_app_download'),
+    url(r'^apps/set_latest/(?P<app_id>\d+)/?$', views.app_set_latest_api, name='webui_app_set_latest'),
+    url(r'^api/migration/logs/?$', views.api_migration_logs, name='webui_api_migration_logs'),
 
     # HARDWARE & SESSION APIs
     url(r'^api/health_status/?$', views.api_health_status, name='webui_health_status'),

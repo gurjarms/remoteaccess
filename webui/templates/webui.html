@@ -98,11 +98,149 @@
     }
   </style>
 
+  <!-- MOUSE CURSOR OVERLAY -->
+  <style>
+    #nd-cursor {
+      position: fixed;
+      top: 0; left: 0;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: rgba(2, 132, 199, 0.22);
+      border: 2px solid #0ea5e9;
+      pointer-events: none;
+      display: none;
+      z-index: 99999;
+      transform: translate3d(0,0,0);
+      transition: background 0.1s, border-color 0.1s;
+      box-shadow: 0 0 6px rgba(14,165,233,0.5);
+    }
+    #nd-cursor.nd-down {
+      background: rgba(244, 63, 94, 0.38);
+      border-color: #f43f5e;
+      box-shadow: 0 0 8px rgba(244,63,94,0.6);
+    }
+  </style>
+
+  <!-- ANDROID NAVIGATION DOCK -->
+  <style>
+    .nd-nav-dock {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: linear-gradient(180deg, rgba(26,36,52,0.93) 0%, rgba(12,18,30,0.97) 100%);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 36px;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 4px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07);
+      z-index: 99990;
+      user-select: none;
+      cursor: default;
+    }
+    .nd-nav-dock:hover { box-shadow: 0 6px 40px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.10); }
+    .nd-drag-handle {
+      display: flex; align-items: center; justify-content: center;
+      width: 18px; height: 28px;
+      color: rgba(255,255,255,0.28);
+      cursor: grab;
+      flex-shrink: 0;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+    .nd-drag-handle:hover { color: rgba(255,255,255,0.55); }
+    .nd-drag-handle:active { cursor: grabbing; }
+    .nd-nav-divider {
+      width: 1px; height: 22px;
+      background: rgba(255,255,255,0.12);
+      margin: 0 2px;
+      flex-shrink: 0;
+    }
+    .nd-nav-btn {
+      display: flex; align-items: center; justify-content: center;
+      width: 44px; height: 36px;
+      background: linear-gradient(180deg, #273445 0%, #18232f 100%);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.80);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .nd-nav-btn svg { width: 18px; height: 18px; fill: currentColor; pointer-events: none; }
+    .nd-nav-btn:hover {
+      background: linear-gradient(180deg, #2f4157 0%, #1e2d3e 100%);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+    .nd-nav-btn:active, .nd-nav-btn.nd-active {
+      background: linear-gradient(180deg, #111820 0%, #1a2534 100%);
+      transform: scale(0.93);
+      box-shadow: none;
+    }
+    .nd-nav-toast {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      background: rgba(12,18,30,0.93);
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.10);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.18s, transform 0.18s;
+      white-space: nowrap;
+    }
+    .nd-nav-toast.nd-show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+
 </head>
 
 <body>
   <div class="loading">
     <div class="loader"></div>
+  </div>
+
+  <!-- Mouse cursor dot -->
+  <div id="nd-cursor"></div>
+
+  <!-- Android Navigation Dock -->
+  <div class="nd-nav-dock" id="nd-nav-dock">
+    <div class="nd-nav-toast" id="nd-nav-toast"></div>
+    <div class="nd-drag-handle" id="nd-drag-handle" title="Drag to move">
+      <svg width="10" height="18" viewBox="0 0 10 18" fill="currentColor">
+        <circle cx="2.5" cy="3" r="1.5"/><circle cx="7.5" cy="3" r="1.5"/>
+        <circle cx="2.5" cy="9" r="1.5"/><circle cx="7.5" cy="9" r="1.5"/>
+        <circle cx="2.5" cy="15" r="1.5"/><circle cx="7.5" cy="15" r="1.5"/>
+      </svg>
+    </div>
+    <div class="nd-nav-divider"></div>
+    <!-- Back -->
+    <button class="nd-nav-btn" id="nd-btn-back" title="Back" onclick="ndNav('back')">
+      <svg viewBox="0 0 24 24"><polygon points="17,4 7,12 17,20"/></svg>
+    </button>
+    <!-- Home -->
+    <button class="nd-nav-btn" id="nd-btn-home" title="Home" onclick="ndNav('home')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6.5"/></svg>
+    </button>
+    <!-- Recents -->
+    <button class="nd-nav-btn" id="nd-btn-recents" title="Recent Apps" onclick="ndNav('recents')">
+      <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2.5" ry="2.5"/></svg>
+    </button>
   </div>
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
@@ -171,6 +309,100 @@
       loadMainDartJs();
     }
   </script>
+
+  <script>
+    // ── NinjaDesk: Cursor + Nav Dock (isolated, no media projection touch) ──
+    (function() {
+
+      // ── 1. GPU-accelerated mouse cursor dot ──
+      var cur = document.getElementById('nd-cursor');
+      var curX = window.innerWidth / 2, curY = window.innerHeight / 2;
+      var rafPending = false;
+
+      function moveCursor() {
+        cur.style.transform = 'translate3d(' + (curX - 7) + 'px,' + (curY - 7) + 'px,0)';
+        rafPending = false;
+      }
+      document.addEventListener('mousemove', function(e) {
+        curX = e.clientX; curY = e.clientY;
+        if (cur.style.display !== 'block') cur.style.display = 'block';
+        if (!rafPending) { rafPending = true; requestAnimationFrame(moveCursor); }
+      }, { passive: true });
+      document.addEventListener('mouseleave', function() { cur.style.display = 'none'; });
+      document.addEventListener('mousedown', function() { cur.classList.add('nd-down'); });
+      document.addEventListener('mouseup',   function() { cur.classList.remove('nd-down'); });
+
+      // ── 2. Navigation dock ──
+      var dock  = document.getElementById('nd-nav-dock');
+      var toast = document.getElementById('nd-nav-toast');
+      var handle = document.getElementById('nd-drag-handle');
+      var toastTimer = null;
+      var lastNavTime = 0;
+
+      var peerId = "{{ peer_id|escapejs }}" ||
+                   new URLSearchParams(window.location.search).get('peer') || '';
+
+      // Toast feedback
+      var labels = { back: 'BACK ◀', home: 'HOME ●', recents: 'RECENTS ▢' };
+      function showToast(action) {
+        if (!toast) return;
+        toast.textContent = labels[action] || action.toUpperCase();
+        toast.classList.add('nd-show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(function() { toast.classList.remove('nd-show'); }, 1000);
+      }
+
+      // Nav dispatch — MQTT API only, no WebRTC/bridge touch
+      window.ndNav = function(action) {
+        var now = Date.now();
+        if (now - lastNavTime < 350) return;
+        lastNavTime = now;
+
+        // Button press animation
+        var btn = document.getElementById('nd-btn-' + action);
+        if (btn) {
+          btn.classList.add('nd-active');
+          setTimeout(function() { btn.classList.remove('nd-active'); }, 160);
+        }
+        showToast(action);
+
+        // Send via backend MQTT API
+        if (peerId) {
+          fetch('/api/device/navigation/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: peerId, action: action })
+          }).catch(function(e) { console.warn('[NinjaDesk Nav]', e); });
+        }
+      };
+
+      // ── 3. Draggable dock ──
+      var dragging = false, sx = 0, sy = 0, dl = 0, dt = 0;
+      handle.addEventListener('mousedown', function(e) {
+        dragging = true;
+        sx = e.clientX; sy = e.clientY;
+        var r = dock.getBoundingClientRect();
+        dl = r.left; dt = r.top;
+        dock.style.bottom = 'auto';
+        dock.style.transform = 'none';
+        dock.style.left = dl + 'px';
+        dock.style.top  = dt + 'px';
+        document.body.style.userSelect = 'none';
+        e.preventDefault();
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        dock.style.left = (dl + e.clientX - sx) + 'px';
+        dock.style.top  = (dt + e.clientY - sy) + 'px';
+      });
+      document.addEventListener('mouseup', function() {
+        dragging = false;
+        document.body.style.userSelect = '';
+      });
+
+    })();
+  </script>
+
   <script src={% static "/web_client/libs/firebase-app.js" %}?8.10.1"></script>
 
   <script>
