@@ -20,6 +20,7 @@ from .views_front import *
 from django.utils.translation import gettext as _
 from django.utils import timezone
 import logging
+import re
 
 logger = logging.getLogger('ninjadesk.api')
 
@@ -859,9 +860,11 @@ def api_device_navigation(request):
 @csrf_exempt
 def api_device_migrate(request):
     """
-    Trigger dynamic server migration for an Android device via MQTT push notification.
+    Trigger dynamic server migration for Android devices via MQTT push notification and HTTP polling queues.
     Accepts: {
-        'id': '<deviceId>',
+        'id': '<deviceId>',                # optional if device_ids or all_devices provided
+        'device_ids': ['id1', 'id2'],      # optional list of device IDs
+        'all_devices': True/False,         # optional, targets all non-deleted devices
         'target_host': '192.168.1.50',
         'target_key': 'DBq6By4uWAZ1...',   # optional, defaults to active server key
         'target_api_port': 8000,           # optional, defaults to 8000
@@ -870,13 +873,25 @@ def api_device_migrate(request):
     """
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
+    user = getattr(request, 'user', None)
+    if user and user.is_authenticated:
+        if not (user.is_superuser or user.is_admin):
+            return JsonResponse({'error': 'Superadmin authorization required to trigger server migration.'}, status=403)
+
     try:
         data = json.loads(request.body.decode('utf-8'))
-        device_id = str(data.get('id') or data.get('device_id') or '').strip()
-        target_host = str(data.get('target_host') or data.get('host') or '').strip()
+        device_ids = list(data.get('device_ids') or [])
+        single_id = str(data.get('id') or data.get('device_id') or '').strip()
+        if single_id and single_id not in device_ids:
+            device_ids.append(single_id)
 
-        if not device_id:
-            return JsonResponse({'error': 'device id required'}, status=400)
+        if data.get('all_devices', False):
+            device_ids = list(RustDesDevice.objects.filter(is_deleted=False).values_list('rid', flat=True))
+
+        if not device_ids:
+            return JsonResponse({'error': 'device id, device_ids, or all_devices required'}, status=400)
+
+        target_host = str(data.get('target_host') or data.get('host') or '').strip()
         if not target_host:
             return JsonResponse({'error': 'target_host required'}, status=400)
 
@@ -894,49 +909,56 @@ def api_device_migrate(request):
         except (ValueError, TypeError):
             target_api_port = 8000
 
-        # Mark migration_pending on device record
         now = timezone.now()
-        dev = RustDesDevice.objects.filter(rid=device_id).first()
-        if dev:
-            RustDesDevice.objects.filter(rid=device_id).update(
-                migration_pending=True,
-                current_server_host=clean_target_host
-            )
+        is_local = bool(cfg and clean_target_host == sanitize_server_host(cfg.server_host))
+        target_version = (cfg.version + 1) if cfg else 1
 
-        # Also update updates file so polling / auto-push respects migration
-        try:
-            updates = load_device_config_updates()
-            dev_entry = updates.get(device_id, {})
-            dev_entry['pending'] = False
-            dev_entry['migrated_away'] = True
-            dev_entry['server_host'] = clean_target_host
-            dev_entry['migrated_at'] = now.isoformat()
-            updates[device_id] = dev_entry
-            save_device_config_updates(updates)
-        except Exception as up_err:
-            logger.warning(f"[api_device_migrate] Failed updating device_config_updates: {up_err}")
-
-        # Broadcast migration command via MQTT
+        updates = load_device_config_updates()
         from . import mqtt_service
+
+        dispatched_count = 0
         cmd_payload = {
             'action': 'migrate',
             'host': clean_target_host,
             'key': target_key,
             'api_port': target_api_port,
             'relay': target_relay,
+            'version': cfg.version if cfg else 1,
             'timestamp': int(now.timestamp())
         }
-        dispatched = mqtt_service.publish_device_command(device_id, cmd_payload)
 
-        logger.info(f"[api_device_migrate] Migration command dispatched to {device_id} -> {clean_target_host} (MQTT: {dispatched})")
+        for did in device_ids:
+            if not did:
+                continue
+            RustDesDevice.objects.filter(rid=did).update(
+                migration_pending=True
+            )
+            dev_entry = updates.get(did, {})
+            dev_entry['pending'] = True
+            dev_entry['migrated_away'] = not is_local
+            dev_entry['server_host'] = clean_target_host
+            dev_entry['server_key'] = target_key
+            dev_entry['api_server'] = f"http://{clean_target_host}:{target_api_port}"
+            dev_entry['version'] = target_version
+            dev_entry['migrated_at'] = now.isoformat()
+            updates[did] = dev_entry
+
+            mqtt_sent = mqtt_service.publish_device_command(did, cmd_payload)
+            if mqtt_sent:
+                dispatched_count += 1
+
+        save_device_config_updates(updates)
+
+        logger.info(f"[api_device_migrate] Dispatched migration to {len(device_ids)} devices -> {clean_target_host} (MQTT delivered={dispatched_count})")
 
         return JsonResponse({
             'status': 'ok',
-            'id': device_id,
             'target_host': clean_target_host,
             'target_api_port': target_api_port,
-            'mqtt_dispatched': dispatched,
-            'message': f'Server migration command dispatched to device {device_id}.'
+            'version': cmd_payload['version'],
+            'notified_count': len(device_ids),
+            'mqtt_dispatched_count': dispatched_count,
+            'message': f'Server migration notification dispatched to {len(device_ids)} device(s).'
         })
     except Exception as e:
         logger.error(f"[api_device_migrate] Error: {e}", exc_info=True)
@@ -946,7 +968,8 @@ def api_device_migrate(request):
 @csrf_exempt
 def api_device_migrate_ack(request):
     """
-    Device acknowledges successful migration to this destination server.
+    Device acknowledges server migration.
+    Sent to BOTH origin server (confirming departure) and destination server (confirming arrival).
     Accepts: {
         'id': '<deviceId>',
         'from': '192.168.1.22',
@@ -967,46 +990,85 @@ def api_device_migrate_ack(request):
             return JsonResponse({'error': 'device id required'}, status=400)
 
         now = timezone.now()
+        cfg = get_or_create_server_config_state()
+        target_version = cfg.version if cfg else 1
+
+        req_host = sanitize_server_host(request.get_host().split(':')[0])
+        clean_to = sanitize_server_host(to_host)
+        clean_from = sanitize_server_host(from_host)
+        clean_cfg_host = sanitize_server_host(cfg.server_host) if cfg else ''
+
+        # Determine if THIS server is the destination (arrival) or origin (departure)
+        is_destination = bool(clean_to and (req_host == clean_to or clean_to in ('127.0.0.1', 'localhost') or (clean_cfg_host and clean_to == clean_cfg_host)))
+
         dev = RustDesDevice.objects.filter(rid=device_id).first()
-        if dev:
-            RustDesDevice.objects.filter(rid=device_id).update(
-                migration_pending=False,
-                current_server_host=to_host or dev.current_server_host,
-                migrated_at=now,
-                update_time=now
-            )
+        updates = load_device_config_updates()
+        dev_entry = updates.get(device_id, {})
+
+        if is_destination:
+            # === DEVICE ARRIVED AT THIS DESTINATION SERVER ===
+            if dev:
+                RustDesDevice.objects.filter(rid=device_id).update(
+                    migration_pending=False,
+                    current_server_host=to_host or dev.current_server_host,
+                    config_version=target_version,
+                    migrated_at=now,
+                    update_time=now
+                )
+            else:
+                try:
+                    RustDesDevice.objects.create(
+                        rid=device_id,
+                        hostname=f"Migrated-{device_id}",
+                        migration_pending=False,
+                        current_server_host=to_host,
+                        config_version=target_version,
+                        migrated_at=now,
+                        rustdesk_service_running=True
+                    )
+                except Exception as cr_err:
+                    logger.warning(f"[api_device_migrate_ack] Device creation notice: {cr_err}")
+
+            dev_entry['pending'] = False
+            dev_entry['migrated_away'] = False  # Arrived and active here!
+            dev_entry['server_host'] = to_host
+            dev_entry['version'] = target_version
+            req_port = request.get_port()
+            port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
+            dev_entry['api_server'] = f"{request.scheme}://{to_host}{port_str}"
+            dev_entry['migrated_at'] = now.isoformat()
+            updates[device_id] = dev_entry
+            save_device_config_updates(updates)
+
+            # Auto-align local ServerConfigVersion if this server is receiving the device
+            if to_host and cfg and sanitize_server_host(to_host) != sanitize_server_host(cfg.server_host):
+                if req_host == clean_to or req_host in ('127.0.0.1', 'localhost'):
+                    cfg.server_host = clean_to
+                    cfg.save(update_fields=['server_host'])
+                    logger.info(f"[api_device_migrate_ack] Aligned local ServerConfigVersion server_host to {clean_to}")
+
+            logger.info(f"[api_device_migrate_ack] Destination ACK: Device {device_id} ARRIVED at this server {to_host} from {from_host}")
         else:
-            # Device newly arriving at this server via migration: ensure record exists
-            try:
-                RustDesDevice.objects.create(
-                    rid=device_id,
-                    hostname=f"Migrated-{device_id}",
+            # === DEVICE DEPARTED FROM THIS ORIGIN SERVER ===
+            if dev:
+                RustDesDevice.objects.filter(rid=device_id).update(
                     migration_pending=False,
                     current_server_host=to_host,
-                    migrated_at=now,
-                    rustdesk_service_running=True
+                    migrated_at=now
                 )
-            except Exception as cr_err:
-                logger.warning(f"[api_device_migrate_ack] Device creation notice: {cr_err}")
-
-        # Update local config updates map to indicate device is now active here
-        try:
-            updates = load_device_config_updates()
-            dev_entry = updates.get(device_id, {})
             dev_entry['pending'] = False
-            dev_entry['migrated_away'] = False  # Not migrated away from THIS server!
+            dev_entry['migrated_away'] = True  # Departed from this server!
             dev_entry['server_host'] = to_host
             dev_entry['migrated_at'] = now.isoformat()
             updates[device_id] = dev_entry
             save_device_config_updates(updates)
-        except Exception as up_err:
-            logger.warning(f"[api_device_migrate_ack] Error updating updates map: {up_err}")
 
-        logger.info(f"[api_device_migrate_ack] Device {device_id} successfully acknowledged migration: from={from_host} to={to_host} status={status_str}")
+            logger.info(f"[api_device_migrate_ack] Origin ACK: Device {device_id} DEPARTED from this server {from_host} to {to_host}")
 
         return JsonResponse({
             'status': 'ok',
             'id': device_id,
+            'role': 'destination' if is_destination else 'origin',
             'from': from_host,
             'to': to_host,
             'message': 'Migration ACK recorded successfully.'
@@ -1327,12 +1389,16 @@ def api_device_config(request):
                 resp['reboot'] = True
             return JsonResponse(resp)
         elif dev_ver < cfg.version and cfg.version > 0:
-            # Device has outdated config version. ONLY auto-push if this device has NOT been
-            # explicitly migrated to a different server. If 'migrated_away' is set in the
-            # updates entry, it means this device was intentionally moved to another server
-            # by an admin — do NOT push our own config back over the top!
-            is_migrated_away = target_cfg and target_cfg.get('migrated_away', False)
-            if not is_migrated_away:
+            # Device has outdated config version. ONLY auto-push if:
+            # 1. This device has NOT been explicitly migrated to a different server (migrated_away is False).
+            # 2. This device does NOT have an explicit per-device assigned server_host that differs from cfg.server_host.
+            #    (If a device was explicitly migrated to a specific host, NEVER override it with a stale global broadcast host!)
+            is_migrated_away = bool(target_cfg and target_cfg.get('migrated_away', False))
+            device_assigned_host = sanitize_server_host(target_cfg.get('server_host') if target_cfg else '')
+            clean_cfg_host = sanitize_server_host(cfg.server_host)
+            has_conflicting_assignment = bool(device_assigned_host and clean_cfg_host and device_assigned_host != clean_cfg_host)
+
+            if not is_migrated_away and not has_conflicting_assignment:
                 target_host = cfg.server_host
                 req_port = request.get_port()
                 port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
@@ -1345,7 +1411,7 @@ def api_device_config(request):
                     'server_version': cfg.version,
                     'server_host': cfg.server_host,
                     'server_key': cfg.server_key,
-                    'hbbs_port': str(cfg.hbbs_port),
+                    'hbbs_port': str(cfg.hbbr_port if False else cfg.hbbs_port),
                     'hbbr_port': str(cfg.hbbr_port),
                     'api_server': target_api,
                 }
@@ -1606,7 +1672,7 @@ def api_device_sync_status(request):
         if is_pending and dev_ver >= target_version and target_version > 0:
             is_pending = False
 
-        is_synced = (dev_ver == cfg.version and not is_pending)
+        is_synced = (dev_ver >= cfg.version and not is_pending)
         if is_synced:
             synced += 1
             status_label = 'synced'

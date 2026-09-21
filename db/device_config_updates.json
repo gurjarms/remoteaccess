@@ -13,15 +13,16 @@
   "489629155": {
     "pending": false,
     "password_updated_at": "2026-09-19T16:40:38.814050",
-    "server_host": "192.168.1.52",
+    "server_host": "192.168.1.22",
     "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 272,
-    "acknowledged_at": "2026-09-21T13:28:26.811202",
-    "api_server": "http://192.168.1.52:8000",
-    "updated_at": "2026-09-21T13:28:22.870378",
-    "migrated_away": true
+    "version": 274,
+    "acknowledged_at": "2026-09-21T16:34:17.658007",
+    "api_server": "http://192.168.1.22:8000",
+    "updated_at": "2026-09-21T14:59:51.198946",
+    "migrated_away": false,
+    "migrated_at": "2026-09-21T16:34:17.866427"
   },
   "619222512": {
     "pending": true,
@@ -60,20 +61,26 @@
     "pending": true,
     "password": "newpassword123",
     "password_updated_at": "2026-09-19T16:36:50.791103",
-    "server_host": "nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
-    "server_key": "loesGg8dnOV9n5KIZmNq4PNSvXCxrDw3WXPBXR3430I=",
+    "server_host": "192.168.1.52",
+    "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 270
+    "version": 275,
+    "migrated_away": true,
+    "api_server": "http://192.168.1.52:8000",
+    "migrated_at": "2026-09-21T16:19:03.381296"
   },
   "561781668": {
-    "pending": false,
+    "pending": true,
     "password_updated_at": "2026-09-19T17:47:06.439845",
-    "server_host": "nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
-    "server_key": "loesGg8dnOV9n5KIZmNq4PNSvXCxrDw3WXPBXR3430I=",
+    "server_host": "192.168.1.52",
+    "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 270,
-    "acknowledged_at": "2026-09-19T17:47:10.630332"
+    "version": 275,
+    "acknowledged_at": "2026-09-19T17:47:10.630332",
+    "migrated_away": true,
+    "api_server": "http://192.168.1.52:8000",
+    "migrated_at": "2026-09-21T16:19:03.381296"
   }
 }

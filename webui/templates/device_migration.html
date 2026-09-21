@@ -500,6 +500,13 @@
     </div>
 
     <div class="form-group">
+      <label class="form-label">Management API Port</label>
+      <input type="number" id="target-api-port" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
+        value="8000" placeholder="8000" autocomplete="off" autocorrect="off"
+        autocapitalize="off" spellcheck="false" {% if not is_superadmin %}readonly{% endif %}>
+    </div>
+
+    <div class="form-group">
       <label class="form-label">Server Public Key</label>
       <input type="text" id="target-key" class="form-input {% if not is_superadmin %}input-locked{% endif %}"
         value="{{ public_key }}" placeholder="e.g. DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=" autocomplete="off"
@@ -530,7 +537,7 @@
     </div>
 
     {% if is_superadmin %}
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
       <button class="tactile-btn tactile-btn-secondary" style="padding: 10px 16px; font-size: 12px;"
         onclick="broadcastNewConfig(false)">
         <svg class="icon icon-sm" viewBox="0 0 24 24">
@@ -545,6 +552,25 @@
           <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
         </svg>
         <span>Save & Broadcast New Config to ALL Devices</span>
+      </button>
+
+      <div style="width: 1px; height: 28px; background: var(--card-border); margin: 0 4px;"></div>
+
+      <button class="tactile-btn" style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: #fff; border-color: #4338ca; padding: 10px 16px; font-size: 12px;"
+        onclick="migrateViaNotification(false)" title="Send instant push notification command to selected devices using parameters above">
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span>Migrate Selected via Notification (<span id="migrate-selected-count">0</span>)</span>
+      </button>
+      <button class="tactile-btn" style="background: rgba(99, 102, 241, 0.18); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.45); padding: 10px 16px; font-size: 12px;"
+        onclick="migrateViaNotification(true)" title="Send instant push notification command to ALL devices using parameters above">
+        <svg class="icon icon-sm" viewBox="0 0 24 24">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+        <span>Migrate ALL via Notification</span>
       </button>
     </div>
     {% else %}
@@ -930,8 +956,13 @@
         const safeName = (d.name || d.hostname || d.id).replace(/'/g, "\\'");
         actionHtml = `
 <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+  <button class="tactile-btn" style="padding: 4px 8px; font-size: 11px; white-space: nowrap; background: rgba(99, 102, 241, 0.15); color: #818cf8; border-color: rgba(99, 102, 241, 0.4);"
+    onclick="migrateSingleViaNotification('${d.id}', '${safeName}')" title="Migrate this device via instant notification using parameters in the form above">
+    <svg class="icon icon-sm" viewBox="0 0 24 24" style="width:12px;height:12px;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+    <span>Migrate (Notification)</span>
+  </button>
   <button class="tactile-btn tactile-btn-secondary" style="padding: 4px 10px; font-size: 11px; white-space: nowrap;"
-    onclick="pushConfigToSingleDevice('${d.id}')">
+    onclick="pushConfigToSingleDevice('${d.id}')" title="Push current configuration without incrementing version">
     <svg class="icon icon-sm" viewBox="0 0 24 24" style="width:12px;height:12px;">
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
     </svg>
@@ -989,6 +1020,8 @@
     }
     const btnCount = document.getElementById('selected-btn-count');
     if (btnCount) btnCount.textContent = count;
+    const notifBtnCount = document.getElementById('migrate-selected-count');
+    if (notifBtnCount) notifBtnCount.textContent = count;
 
     const allBoxes = document.querySelectorAll('.device-row-cb');
     const checkAll = document.getElementById('check-all');
@@ -1092,6 +1125,77 @@ ${host}:${hbbs_port}`)) {
     } catch (e) {
       showToast(e.message, true);
     }
+  }
+
+  // 5b. MIGRATE VIA OUT-OF-BAND PUSH NOTIFICATION (USES SAME FORM)
+  async function migrateViaNotification(migrateAll, singleId) {
+    if (!IS_SUPERADMIN) {
+      return showToast('Superadmin authorization required to trigger server migration', true);
+    }
+
+    let host = sanitizeHostInput(document.getElementById('target-host').value);
+    const key = document.getElementById('target-key').value.trim();
+    const apiPort = (document.getElementById('target-api-port')?.value || '8000').trim();
+    const hbbs_port = document.getElementById('target-hbbs-port').value.trim();
+    const hbbr_port = document.getElementById('target-hbbr-port').value.trim();
+
+    if (!host) {
+      return showToast('Destination Server Host is required in the form above', true);
+    }
+    document.getElementById('target-host').value = host;
+
+    let targetIds = [];
+    if (singleId) {
+      targetIds = [singleId];
+    } else if (!migrateAll) {
+      targetIds = Array.from(document.querySelectorAll('.device-row-cb:checked')).map(cb => cb.value);
+      if (targetIds.length === 0) {
+        return showToast('Please select at least one device, or click "Migrate ALL via Notification"', true);
+      }
+    }
+
+    const targetDesc = singleId 
+      ? `Device ${singleId}` 
+      : (migrateAll ? 'ALL registered devices' : `${targetIds.length} selected device(s)`);
+
+    if (!confirm(`🚀 MIGRATE VIA INSTANT NOTIFICATION?\n\nTarget: ${targetDesc}\nDestination Server: ${host}\nAPI Port: ${apiPort}\n\nDevices will receive instant MQTT & polling notification, update settings on disk, and immediately reconnect to the new server.`)) {
+      return;
+    }
+
+    try {
+      showToast(`Dispatching migration notification to ${targetDesc}...`);
+      const res = await fetch('/api/device/migrate/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Ninja-Api-Key': API_KEY
+        },
+        body: JSON.stringify({
+          all_devices: migrateAll && !singleId,
+          device_ids: targetIds,
+          target_host: host,
+          target_key: key,
+          target_api_port: parseInt(apiPort, 10) || 8000,
+          hbbs_port: hbbs_port,
+          hbbr_port: hbbr_port
+        })
+      });
+
+      const data = await res.json();
+      if (data.status === 'ok') {
+        showToast(`Migration notification dispatched! (${data.notified_count || 1} device(s))`);
+        selectDevicesByType('none');
+        await loadSyncStatus();
+      } else {
+        showToast(data.error || 'Migration dispatch failed', true);
+      }
+    } catch (e) {
+      showToast(e.message, true);
+    }
+  }
+
+  function migrateSingleViaNotification(deviceId, deviceName) {
+    migrateViaNotification(false, deviceId);
   }
 
   // 6. PUSH CURRENT CONFIGURATION TO A SINGLE DEVICE (DOES NOT INCREMENT VERSION)

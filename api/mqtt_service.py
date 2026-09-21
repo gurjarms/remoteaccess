@@ -593,21 +593,45 @@ def publish_device_command(device_id: str, command_dict: dict) -> bool:
 
     topic = f"ninjadesk/device/{device_id}/command"
     payload = json.dumps(command_dict)
+    dispatched = False
 
     if _embedded_broker:
         _embedded_broker.publish(topic, payload)
         logger.info(f"[MQTT] Published command to {topic} via embedded broker: {payload}")
-        return True
+        dispatched = True
     elif _paho_client and getattr(_paho_client, 'is_connected', lambda: False)():
         _paho_client.publish(topic, payload, qos=1)
         logger.info(f"[MQTT] Published command to {topic} via external broker: {payload}")
-        return True
+        dispatched = True
     else:
         try:
             import paho.mqtt.publish as paho_pub
             paho_pub.single(topic, payload, hostname="127.0.0.1", port=1883)
             logger.info(f"[MQTT] Published command to {topic} via paho.mqtt.publish.single: {payload}")
-            return True
+            dispatched = True
         except Exception as ex:
-            logger.warning(f"[MQTT] Cannot publish command to {topic}: {ex}")
-            return False
+            logger.warning(f"[MQTT] Cannot publish command to local broker on {topic}: {ex}")
+
+    # Cross-broker dispatch: If device is recorded as currently active on a remote server,
+    # also publish the command to that remote server's broker so the device receives it immediately.
+    try:
+        from api.models import RustDesDevice
+        dev = RustDesDevice.objects.filter(rid=device_id).first()
+        remote_host = getattr(dev, 'current_server_host', '') if dev else ''
+        if remote_host and remote_host not in ('127.0.0.1', 'localhost', '0.0.0.0'):
+            def _cross_dispatch():
+                try:
+                    s = socket.socket()
+                    s.settimeout(1.5)
+                    s.connect((remote_host, 1883))
+                    s.close()
+                    import paho.mqtt.publish as paho_pub
+                    paho_pub.single(topic, payload, hostname=remote_host, port=1883, keepalive=3)
+                    logger.info(f"[MQTT] Cross-broker dispatch: published command to remote broker at {remote_host}:1883")
+                except Exception as r_err:
+                    logger.debug(f"[MQTT] Cross-broker dispatch to {remote_host} note: {r_err}")
+            threading.Thread(target=_cross_dispatch, daemon=True).start()
+    except Exception:
+        pass
+
+    return dispatched
