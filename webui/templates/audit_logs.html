@@ -627,25 +627,12 @@
     loadLogs();
   }
 
-  // COPY TEXT HELPER
-  function copyText(val, label) {
-    if (!val || val === '—') return;
-    navigator.clipboard.writeText(val).then(() => {
-      showToast(`${label} copied to clipboard: ${val}`);
-    }).catch(() => {});
-  }
-
-  function showToast(msg) {
-    const toast = document.createElement('div');
-    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0284c7;color:#fff;padding:10px 18px;border-radius:10px;font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:700;box-shadow:0 4px 12px rgba(0,0,0,0.5);z-index:99999;animation:fadeIn 0.2s;';
-    toast.innerText = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transition = 'opacity 0.3s';
-      setTimeout(() => toast.remove(), 300);
-    }, 2200);
-  }
+  // COPY CHIPS — delegated handler uses global copyToClipboard() from base_skeuo.html
+  document.addEventListener('click', function(e) {
+    const chip = e.target.closest('.copy-chip[data-copy]');
+    if (!chip) return;
+    copyToClipboard(chip.dataset.copy, chip.dataset.label || 'Value');
+  });
 
   // EXPORT CSV HANDLER
   function exportCsv() {
@@ -750,7 +737,7 @@
               <td>
                 <div style="font-weight: 700; color: var(--text-main);">${l.target_name}</div>
                 <div style="margin-top: 2px;">
-                  <span class="copy-chip" onclick="copyText('${l.target_id}', 'Target Device ID')" title="Click to copy ID">
+                  <span class="copy-chip" data-copy="${l.target_id}" data-label="Target Device ID" title="Click to copy ID">
                     <span>${l.target_id}</span>
                     <svg class="icon" style="width:11px;height:11px;opacity:0.6;" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   </span>
@@ -760,7 +747,7 @@
                 <div style="color: var(--text-main); font-weight: 600;">${l.from_name}</div>
                 ${l.from_id && l.from_id !== '—' && l.from_id !== l.from_name ? `
                   <div style="margin-top: 2px;">
-                    <span class="copy-chip" onclick="copyText('${l.from_id}', 'Source ID')" title="Click to copy ID">
+                    <span class="copy-chip" data-copy="${l.from_id}" data-label="Source ID" title="Click to copy ID">
                       <span>${l.from_id}</span>
                     </span>
                   </div>
@@ -768,7 +755,7 @@
               </td>
               <td>
                 ${l.from_ip && l.from_ip !== '—' ? `
-                  <span class="copy-chip" onclick="copyText('${l.from_ip}', 'Client IP')" title="Click to copy IP">
+                  <span class="copy-chip" data-copy="${l.from_ip}" data-label="Client IP" title="Click to copy IP">
                     <span>${l.from_ip}</span>
                   </span>
                 ` : '<span style="color: var(--text-muted);">—</span>'}
@@ -793,7 +780,7 @@
               </td>
               <td>
                 ${l.session_id && l.session_id !== '—' ? `
-                  <span class="copy-chip" style="font-size: 10px;" onclick="copyText('${l.session_id}', 'Session ID')" title="Click to copy Session ID">
+                  <span class="copy-chip" style="font-size: 10px;" data-copy="${l.session_id}" data-label="Session ID" title="Click to copy Session ID">
                     <span>${l.session_id.substring(0, 14)}...</span>
                     <svg class="icon" style="width:10px;height:10px;opacity:0.6;" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   </span>

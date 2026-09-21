@@ -13,18 +13,18 @@
   "489629155": {
     "pending": false,
     "password_updated_at": "2026-09-19T16:40:38.814050",
-    "server_host": "192.168.1.52",
-    "server_key": "DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=",
+    "server_host": "nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
+    "server_key": "loesGg8dnOV9n5KIZmNq4PNSvXCxrDw3WXPBXR3430I=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
     "version": 276,
-    "acknowledged_at": "2026-09-21T16:40:17.057019",
-    "api_server": "http://192.168.1.52:8000",
+    "acknowledged_at": "2026-09-21T18:28:06.760500",
+    "api_server": "http://nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io:8000",
     "updated_at": "2026-09-21T16:39:58.286429",
     "migrated_away": true,
-    "migrated_at": "2026-09-21T18:00:28.992913",
-    "fcm_token": "egOY4s7HQ3uQ4sMzLfloiV:APA91bG2g7x_1_lz93QJpYjxOmZOz_rqlnLg8NljKy0uC2_jKH_dMJv_17I4XTEQJQDNcpW4XBtUB00IqkFoiOE6aHRi8vsKNApwOv1Y4yzIrR3KJU81rZk",
-    "fcm_updated_at": "2026-09-21T18:00:37.670922"
+    "migrated_at": "2026-09-21T20:00:16.521246",
+    "fcm_token": "eswd__6uTeiW_JUSAYvHuC:APA91bGzA4l2j9kRlOGRnywN3xniHMQkM7yW12lszckDifGVZUgwFSHWWk9Gdf_qVnIsD8McEXRGX5Ts-FFGa-8BcJEa1_-whCJ-qm6WJ0x_AUjHhZpxhOI",
+    "fcm_updated_at": "2026-09-21T20:00:21.920983"
   },
   "619222512": {
     "pending": true,

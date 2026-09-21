@@ -436,13 +436,13 @@ function updateSortIndicators() {
   });
 }
 
-function copyText(text, label = 'Copied') {
-  navigator.clipboard.writeText(text).then(() => {
-    showToast(`${label} to clipboard!`);
-  }).catch(() => {
-    showToast('Failed to copy to clipboard', true);
-  });
-}
+// COPY CHIPS — delegated handler uses global copyToClipboard() from base_skeuo.html
+document.addEventListener('click', function(e) {
+  const chip = e.target.closest('.copy-chip[data-copy]');
+  if (!chip) return;
+  copyToClipboard(chip.dataset.copy, chip.dataset.label || 'Value');
+});
+
 
 async function loadLogs(page = 1) {
   currentPage = page;
@@ -494,7 +494,7 @@ async function loadLogs(page = 1) {
           <td>
             <div style="display: flex; align-items: center; gap: 6px;">
               <span style="font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--lcd-text);">${escapeHtml(l.server_host)}</span>
-              <button class="copy-chip" onclick="copyText('${escapeHtml(l.server_host)}', 'Host')" title="Copy Host">
+              <button class="copy-chip" data-copy="${l.server_host}" data-label="Host" title="Copy Host">
                 <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               </button>
             </div>
@@ -505,7 +505,7 @@ async function loadLogs(page = 1) {
               <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted);" title="${escapeHtml(fullKey)}">
                 ${escapeHtml(truncKey)}
               </span>
-              <button class="copy-chip" onclick="copyText('${escapeHtml(fullKey)}', 'Public Key')" title="Copy Public Key">
+              <button class="copy-chip" data-copy="${fullKey}" data-label="Public Key" title="Copy Public Key">
                 <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               </button>
             </div>

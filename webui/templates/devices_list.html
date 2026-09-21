@@ -334,13 +334,7 @@
               <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
                 ${d.hostname || 'Android / Windows Node'}
               </div>
-              ${d.current_server_host ? `
-              <div style="margin-top: 6px;">
-                <span class="sync-badge" style="font-size: 10px; padding: 3px 8px; display: inline-flex; align-items: center; gap: 5px; background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: 6px; color: #a78bfa; font-weight: 600;">
-                  <span>⇄ Server: ${d.current_server_host}</span>
-                </span>
-              </div>
-              ` : ''}
+
               ${d.password_updated_recent ? `
               <div style="margin-top: 6px;">
                 <span class="sync-badge synced" style="font-size: 10px; padding: 3px 8px; display: inline-flex; align-items: center; gap: 5px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; color: #10b981; font-weight: 700;" title="Password updated on ${d.password_updated_at || 'Recently'}">
