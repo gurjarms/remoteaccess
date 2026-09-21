@@ -90,6 +90,9 @@ class RustDesDevice(models.Model):
     password_updated_at = models.DateTimeField(verbose_name=_('密码更新确认时间'), null=True, blank=True)
     rustdesk_service_running = models.BooleanField(verbose_name=_('RustDesk服务正常运行'), default=True)
     last_reboot_requested_at = models.DateTimeField(verbose_name=_('最后重启指令时间'), null=True, blank=True)
+    migration_pending = models.BooleanField(verbose_name=_('迁移挂起'), default=False)
+    current_server_host = models.CharField(verbose_name=_('当前服务地址'), max_length=255, blank=True, default='')
+    migrated_at = models.DateTimeField(verbose_name=_('最后迁移时间'), null=True, blank=True)
 
     class Meta:
         ordering = ('-rid',)

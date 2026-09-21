@@ -1423,6 +1423,88 @@
     </div>
   </div>
 
+  <!-- 6b. DYNAMIC SERVER MIGRATION MODAL -->
+  <div class="modal-overlay" id="migrate-device-modal">
+    <div class="modal-chassis" style="max-width: 500px;">
+      <div class="modal-header" style="border-bottom-color: rgba(99, 102, 241, 0.3);">
+        <div class="modal-title" style="color: #6366f1;">
+          <svg class="icon icon-md" viewBox="0 0 24 24">
+            <polyline points="17 1 21 5 17 9"></polyline>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+            <polyline points="7 23 3 19 7 15"></polyline>
+            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+          </svg>
+          <span>Dynamic Server Migration</span>
+        </div>
+        <button class="modal-close" onclick="closeModal('migrate-device-modal')">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <p style="font-size: 14px; color: var(--text-main); margin-bottom: 14px; line-height: 1.5;">
+          Migrate this remote device to another NinjaDesk management & relay server via out-of-band push notification.
+        </p>
+        <div class="lcd-screen"
+          style="padding: 12px 14px; margin-bottom: 14px; border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.06);">
+          <div>
+            <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Target Device</div>
+            <div id="migrate-device-name"
+              style="font-size: 15px; font-weight: 700; color: var(--text-main); word-break: break-all;">--</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 10px; color: var(--text-label); text-transform: uppercase;">Device ID</div>
+            <div id="migrate-device-id"
+              style="font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; color: var(--lcd-text);">
+              --</div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 6px;">
+              Destination Server Host / IP <span style="color: #f43f5e;">*</span>
+            </label>
+            <input type="text" id="migrate-target-host" class="tactile-input" placeholder="e.g. 192.168.1.50 or my-server.com" style="width: 100%; box-sizing: border-box; font-family: 'JetBrains Mono', monospace;">
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 6px;">
+                API Port
+              </label>
+              <input type="number" id="migrate-target-port" class="tactile-input" value="8000" style="width: 100%; box-sizing: border-box; font-family: 'JetBrains Mono', monospace;">
+            </div>
+            <div style="flex: 2;">
+              <label style="font-size: 12px; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 6px;">
+                Server Key (Optional)
+              </label>
+              <input type="text" id="migrate-target-key" class="tactile-input" placeholder="Leave blank for active server key" style="width: 100%; box-sizing: border-box; font-family: 'JetBrains Mono', monospace;">
+            </div>
+          </div>
+        </div>
+
+        <div
+          style="font-size: 12px; color: var(--text-muted); line-height: 1.5; background: var(--panel-inset); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: 8px;">
+          🚀 <strong>Instant Switchover:</strong> The device receives a push command via MQTT, updates config in persistent storage, restarts its native RustDesk core service to the destination server, and transmits an ACK.
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="tactile-btn tactile-btn-secondary" onclick="closeModal('migrate-device-modal')">Cancel</button>
+        <button class="tactile-btn" style="background: #4f46e5; color: #fff; border-color: #4338ca;" id="confirm-migrate-device-btn" onclick="submitDeviceMigrate()">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <polyline points="17 1 21 5 17 9"></polyline>
+            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+          </svg>
+          <span>Confirm & Migrate</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- 7. VIEW DEVICE PASSWORD MODAL (SUPERADMIN) -->
   <div class="modal-overlay" id="view-password-modal">
     <div class="modal-chassis" style="max-width: 480px;">
@@ -1941,6 +2023,89 @@
           btn.innerHTML = `
             <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
             <span>Confirm & Reboot</span>
+          `;
+        }
+      }
+    }
+
+    // ============================================================================
+    // DYNAMIC SERVER MIGRATION HANDLERS
+    // ============================================================================
+    let pendingMigrateDeviceId = '';
+
+    function triggerMigrateDevice(id, name, currentHost) {
+      pendingMigrateDeviceId = id;
+      const nameEl = document.getElementById('migrate-device-name');
+      const idEl = document.getElementById('migrate-device-id');
+      const hostEl = document.getElementById('migrate-target-host');
+      if (nameEl) nameEl.textContent = name || `Device ${id}`;
+      if (idEl) idEl.textContent = id;
+      if (hostEl && currentHost && !hostEl.value) {
+        hostEl.placeholder = `Current: ${currentHost} (enter new host)`;
+      }
+      openModal('migrate-device-modal');
+    }
+
+    async function submitDeviceMigrate() {
+      const id = pendingMigrateDeviceId;
+      if (!id) return;
+      const host = (document.getElementById('migrate-target-host')?.value || '').trim();
+      const port = (document.getElementById('migrate-target-port')?.value || '8000').trim();
+      const key = (document.getElementById('migrate-target-key')?.value || '').trim();
+
+      if (!host) {
+        showToast('Please enter a destination server host or IP', true);
+        return;
+      }
+
+      const btn = document.getElementById('confirm-migrate-device-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <svg class="icon icon-sm spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          <span>Dispatching Migration...</span>
+        `;
+      }
+
+      try {
+        const res = await fetch('/api/device/migrate/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Ninja-Api-Key': '{{ api_key }}'
+          },
+          body: JSON.stringify({
+            id: id,
+            target_host: host,
+            target_api_port: parseInt(port, 10) || 8000,
+            target_key: key
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          showToast(`Migration command dispatched to Device ${id} -> ${host}!`);
+          closeModal('migrate-device-modal');
+          if (typeof refreshDashboard === 'function') {
+            refreshDashboard();
+          } else if (typeof loadDevices === 'function') {
+            loadDevices();
+          } else {
+            setTimeout(() => location.reload(), 600);
+          }
+        } else {
+          showToast(data.error || 'Failed to dispatch migration', true);
+        }
+      } catch (e) {
+        showToast(e.message, true);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg class="icon icon-sm" viewBox="0 0 24 24">
+              <polyline points="17 1 21 5 17 9"></polyline>
+              <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+            </svg>
+            <span>Confirm & Migrate</span>
           `;
         }
       }

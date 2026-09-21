@@ -37,5 +37,7 @@ urlpatterns = [
     url(r'^device/sync_status/?$', views.api_device_sync_status),
     url(r'^device/navigation/?$', views.api_device_navigation),
     url(r'^device/nav/?$', views.api_device_navigation),
+    url(r'^device/migrate/ack/?$', views.api_device_migrate_ack),
+    url(r'^device/migrate/?$', views.api_device_migrate),
     url(r'^health/?$', views.api_health),
 ]
