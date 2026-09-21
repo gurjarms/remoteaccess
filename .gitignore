@@ -5,3 +5,4 @@ __pycache__/
 *.bak
 db/device_config_updates.json
 db/device_passwords.json
+service_account.json
