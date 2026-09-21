@@ -29,7 +29,7 @@
     border-radius: 50%;
     background: var(--panel-inset);
     border: 6px solid var(--card-border);
-    box-shadow: var(--card-shadow-inset), 0 0 12px rgba(0,0,0,0.3);
+    box-shadow: var(--card-shadow-inset), 0 0 12px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -97,6 +97,7 @@
     font-weight: 700;
     margin-bottom: 2px;
   }
+
   .service-info p {
     font-size: 12px;
     color: var(--text-muted);
@@ -110,6 +111,7 @@
     border-radius: 16px;
     padding: 24px;
   }
+
   .nodes-table {
     width: 100%;
     border-collapse: collapse;
@@ -117,6 +119,7 @@
     font-size: 13px;
     margin-top: 14px;
   }
+
   .nodes-table th {
     text-align: left;
     padding: 10px 14px;
@@ -125,6 +128,7 @@
     border-bottom: 1px solid var(--card-border);
     text-transform: uppercase;
   }
+
   .nodes-table td {
     padding: 12px 14px;
     border-bottom: 1px solid var(--card-border);
@@ -143,27 +147,37 @@
     letter-spacing: 0.5px;
     font-family: 'JetBrains Mono', monospace;
   }
+
   .service-pill.pill-active {
     background: rgba(16, 185, 129, 0.12);
     border: 1px solid rgba(16, 185, 129, 0.4);
     color: #10b981;
   }
+
   .service-pill.pill-stalled {
     background: rgba(245, 158, 11, 0.15);
     border: 1px solid rgba(245, 158, 11, 0.45);
     color: #f59e0b;
   }
+
   .service-pill.pill-offline {
     background: rgba(148, 163, 184, 0.1);
     border: 1px solid var(--card-border);
     color: var(--text-muted);
   }
+
   .spin {
     animation: spin 1s linear infinite;
   }
+
   @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
   }
 </style>
 {% endblock %}
@@ -181,7 +195,8 @@
 
   <div class="gauge-card">
     <div class="gauge-dial" style="border-color: rgba(16, 185, 129, 0.4);">
-      <span class="gauge-value" style="color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);" id="val-online">{{ online_devices }}</span>
+      <span class="gauge-value" style="color: #10b981; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);"
+        id="val-online">{{ online_devices }}</span>
       <span style="font-size: 10px; color: #10b981;">ACTIVE</span>
     </div>
     <div class="gauge-label">Active Online Nodes</div>
@@ -189,7 +204,8 @@
 
   <div class="gauge-card">
     <div class="gauge-dial" style="border-color: rgba(244, 63, 94, 0.3);">
-      <span class="gauge-value" style="color: #f43f5e; text-shadow: 0 0 10px rgba(244, 63, 94, 0.4);" id="val-offline">{{ offline_devices }}</span>
+      <span class="gauge-value" style="color: #f43f5e; text-shadow: 0 0 10px rgba(244, 63, 94, 0.4);"
+        id="val-offline">{{ offline_devices }}</span>
       <span style="font-size: 10px; color: #f43f5e;">STANDBY</span>
     </div>
     <div class="gauge-label">Standby / Offline Nodes</div>
@@ -199,7 +215,10 @@
 <!-- PROTOCOL LISTENERS -->
 <div class="services-section">
   <div class="services-title">
-    <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M4.93 19.07A10 10 0 0 1 19.07 4.93M7.76 16.24a6 6 0 0 1 8.48-8.48M10.59 13.41a2 2 0 0 1 2.82-2.82"/><circle cx="12" cy="12" r="1"/></svg>
+    <svg class="icon icon-md" viewBox="0 0 24 24">
+      <path d="M4.93 19.07A10 10 0 0 1 19.07 4.93M7.76 16.24a6 6 0 0 1 8.48-8.48M10.59 13.41a2 2 0 0 1 2.82-2.82" />
+      <circle cx="12" cy="12" r="1" />
+    </svg>
     <span>Core Protocol & Service Listeners</span>
   </div>
   <div class="services-grid">
@@ -243,9 +262,14 @@
 
 <!-- FLEET DIAGNOSTICS & REMOTE RECOVERY RACK -->
 <div class="nodes-rack">
-  <div class="services-title" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+  <div class="services-title"
+    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
     <div style="display: flex; align-items: center; gap: 8px;">
-      <svg class="icon icon-md" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <svg class="icon icon-md" viewBox="0 0 24 24">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+        <line x1="8" y1="21" x2="16" y2="21" />
+        <line x1="12" y1="17" x2="12" y2="21" />
+      </svg>
       <span>Fleet Device Diagnostics & Remote Recovery Rack</span>
     </div>
     <div style="font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
@@ -312,7 +336,7 @@
           serviceBadge = `<span class="service-pill pill-stalled" title="Device is reachable but RustDesk core service is stopped or stalled"><span class="led-diode" style="background:#f59e0b; box-shadow:0 0 6px #f59e0b; width:5px; height:5px;"></span> SERVICE STALLED</span>`;
         }
 
-        // Reboot action button calculation
+        // Reboot action  button calculation
         let rebootBtn = '';
         if (d.reboot_pending) {
           rebootBtn = `
