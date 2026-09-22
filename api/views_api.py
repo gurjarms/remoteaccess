@@ -819,6 +819,108 @@ def api_device_reboot_ack(request):
 
 
 @csrf_exempt
+def api_device_wake(request):
+    """
+    Dispatch an instant Wake Device & Restart Services command.
+    Sends high-priority push via FCM and low-latency MQTT command.
+    Brings app to foreground, powers on display, unlocks keyguard,
+    restarts FFI core service, and re-triggers MediaProjection capture.
+    """
+    if request.method not in ['POST', 'GET']:
+        return JsonResponse({'error': 'POST or GET required'}, status=405)
+    try:
+        device_id = None
+        if request.method == 'POST':
+            if request.body:
+                try:
+                    data = json.loads(request.body.decode('utf-8'))
+                    device_id = str(data.get('id', '')).strip()
+                except Exception:
+                    pass
+            if not device_id:
+                device_id = str(request.POST.get('id', '')).strip()
+        else:
+            device_id = str(request.GET.get('id', '')).strip()
+
+        # Auto-resolve target device if omitted
+        if not device_id:
+            recent_dev = RustDesDevice.objects.order_by('-update_time').first()
+            if recent_dev:
+                device_id = recent_dev.rid
+            else:
+                from .models import RustDeskPeer
+                p = RustDeskPeer.objects.first()
+                if p:
+                    device_id = p.uid
+
+        if not device_id:
+            return JsonResponse({'error': 'id required'}, status=400)
+
+        now = timezone.now()
+        cmd = {
+            'action': 'wake',
+            'timestamp': int(now.timestamp()),
+            'device_id': str(device_id)
+        }
+
+        # 1. FCM High-Priority Push
+        fcm_sent = False
+        try:
+            from . import fcm_service
+            fcm_sent = fcm_service.send_device_command(str(device_id), cmd)
+        except Exception as fcm_err:
+            logger.warning(f"[api_device_wake] FCM dispatch warning: {fcm_err}")
+
+        # 2. MQTT Low-Latency Push
+        mqtt_sent = False
+        try:
+            from . import mqtt_service
+            mqtt_sent = mqtt_service.publish_device_command(str(device_id), cmd)
+        except Exception as mqtt_err:
+            logger.warning(f"[api_device_wake] MQTT dispatch warning: {mqtt_err}")
+
+        logger.info(f"[api_device_wake] Wake command dispatched for {device_id} (FCM={fcm_sent}, MQTT={mqtt_sent})")
+
+        return JsonResponse({
+            'status': 'ok',
+            'id': device_id,
+            'fcm_dispatched': bool(fcm_sent),
+            'mqtt_dispatched': bool(mqtt_sent),
+            'message': f'Wake signal successfully dispatched to device {device_id}.'
+        })
+    except Exception as e:
+        logger.error(f"[api_device_wake] Error: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def api_device_wake_ack(request):
+    """
+    Device acknowledges receipt and execution of wake command.
+    Marks device as awake and services active.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        rid = str(data.get('id', '')).strip()
+        if not rid:
+            return JsonResponse({'error': 'id required'}, status=400)
+
+        now = timezone.now()
+        RustDesDevice.objects.filter(rid=rid).update(update_time=now, rustdesk_service_running=True)
+        logger.info(f"[api_device_wake_ack] Device {rid} confirmed wake & service recovery at {now}")
+
+        return JsonResponse({
+            'status': 'ok',
+            'id': rid,
+            'message': 'Wake confirmed and recorded.'
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
 def api_device_navigation(request):
     """
     Dispatch an instant remote Android navigation action (Back, Home, Recents).
@@ -831,21 +933,48 @@ def api_device_navigation(request):
         device_id = str(data.get('id') or data.get('peer_id') or '').strip()
         action = str(data.get('action') or data.get('nav') or '').strip().lower()
 
-        if not device_id or not action:
-            return JsonResponse({'error': 'device id and action required'}, status=400)
+        if not action:
+            return JsonResponse({'error': 'action required'}, status=400)
+
+        # If device_id is missing or placeholder, auto-resolve to active registered device
+        if not device_id or device_id in ('null', 'undefined', 'default', 'none', '""'):
+            try:
+                from .models import RustDesDevice, RustDeskPeer
+                dev = RustDesDevice.objects.filter(is_deleted=False).order_by('-update_time').first()
+                if dev and dev.rid:
+                    device_id = str(dev.rid).strip()
+                else:
+                    peer = RustDeskPeer.objects.order_by('-id').first()
+                    if peer and peer.rid:
+                        device_id = str(peer.rid).strip()
+            except Exception as ex:
+                logger.warning(f"[api_device_navigation] Auto-resolve device error: {ex}")
+
+        if not device_id:
+            return JsonResponse({'error': 'device id required'}, status=400)
 
         # Validate action
-        valid_actions = {'back', 'home', 'recents', 'recent', 'notifications', 'power', 'volume_up', 'volume_down'}
+        valid_actions = {
+            'back', 'home', 'recents', 'recent', 'notifications', 'power', 
+            'volume_up', 'volume_down', 'scroll_up', 'scroll_down', 'page_up', 'page_down'
+        }
         if action not in valid_actions:
             return JsonResponse({'error': f'Invalid navigation action: {action}'}, status=400)
 
-        # Broadcast instant navigation command via FCM and MQTT
+        # Broadcast instant navigation/scroll command via FCM and MQTT
         from . import fcm_service, mqtt_service
         cmd = {
             'action': 'nav',
             'nav': action,
             'device_id': device_id
         }
+        amount = data.get('amount')
+        if amount:
+            try:
+                cmd['amount'] = int(amount)
+            except (ValueError, TypeError):
+                pass
+
         fcm_service.send_device_command(device_id, cmd)
         dispatched = mqtt_service.publish_device_command(device_id, cmd)
 

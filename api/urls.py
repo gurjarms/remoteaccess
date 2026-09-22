@@ -32,6 +32,8 @@ urlpatterns = [
     url(r'^device/delete/?$', views.api_device_delete),
     url(r'^device/reboot/ack/?$', views.api_device_reboot_ack),
     url(r'^device/reboot/?$', views.api_device_reboot),
+    url(r'^device/wake/ack/?$', views.api_device_wake_ack),
+    url(r'^device/wake/?$', views.api_device_wake),
     url(r'^device/config/ack/?$', views.api_device_config_ack),
     url(r'^device/config/?$', views.api_device_config),
     url(r'^device/sync_status/?$', views.api_device_sync_status),

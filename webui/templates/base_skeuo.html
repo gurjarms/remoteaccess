@@ -2029,6 +2029,49 @@
     }
 
     // ============================================================================
+    // REMOTE WAKE DEVICE & RESTART SERVICES HANDLER
+    // ============================================================================
+    async function triggerWakeDevice(id, name, btnEl) {
+      if (!id) return;
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.dataset.originalHtml = btnEl.innerHTML;
+        btnEl.innerHTML = `
+          <svg class="icon icon-sm spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+          <span>Waking...</span>
+        `;
+      }
+      showToast(`⚡ Dispatching wake & service restart signal to ${name || ('Device ' + id)}...`);
+
+      try {
+        const res = await fetch('/api/device/wake/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id: id })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+          showToast(`⚡ Wake signal sent via FCM & MQTT to ${name || id}! Services restarting.`);
+        } else {
+          showToast(`⚠️ Wake warning: ${data.error || 'Failed to dispatch'}`);
+        }
+      } catch (err) {
+        showToast(`❌ Wake error: ${err.message}`);
+      } finally {
+        setTimeout(() => {
+          if (btnEl && btnEl.dataset.originalHtml) {
+            btnEl.disabled = false;
+            btnEl.innerHTML = btnEl.dataset.originalHtml;
+          }
+          if (typeof loadDevices === 'function') loadDevices();
+          else if (typeof refreshDashboard === 'function') refreshDashboard();
+        }, 2200);
+      }
+    }
+
+    // ============================================================================
     // DYNAMIC SERVER MIGRATION HANDLERS
     // ============================================================================
     let pendingMigrateDeviceId = '';

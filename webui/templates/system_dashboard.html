@@ -389,6 +389,10 @@
                 <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor" stroke="none"/></svg>
                 <span>Connect</span>
               </button>
+              <button class="tactile-btn tactile-btn-secondary btn-wake-device" style="padding: 4px 8px; font-size: 11px;" onclick="triggerWakeDevice('${d.id}', '${safeName}', this)" title="Wake device and restart services">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+                <span>Wake</span>
+              </button>
               ${rebootBtn}
               <button class="btn-delete-quick" onclick="triggerDeleteDevice('${d.id}', '${safeName}')" title="Delete Device">
                 <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
