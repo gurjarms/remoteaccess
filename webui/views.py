@@ -91,7 +91,9 @@ def get_server_context(request, active_nav='devices'):
 
     hbbs_port = getattr(_settings, 'HBBS_PORT', 21116)
     hbbr_port = getattr(_settings, 'HBBR_PORT', 21117)
-    public_key = getattr(_settings, 'KEY', getattr(_settings, 'ID_SERVER_PUB_KEY', 'DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ='))
+    from api.views_api import get_local_server_public_key, is_local_or_lan_host
+    local_pub_key = get_local_server_public_key()
+    public_key = local_pub_key
     api_key = getattr(_settings, 'NINJA_API_KEY', 'ninja-local-dev-key')
 
     # Automatically prefer latest dynamic server configuration from DB if present,
@@ -111,8 +113,13 @@ def get_server_context(request, active_nav='devices'):
             elif not domain or domain in ('127.0.0.1', 'localhost', '0.0.0.0'):
                 domain = req_host
 
-            if cfg.server_key and not (is_local_req and is_cfg_external):
+            if is_local_or_lan_host(domain):
+                public_key = local_pub_key
+            elif cfg.server_key and not (is_local_req and is_cfg_external):
                 public_key = cfg.server_key
+            else:
+                public_key = local_pub_key
+
             if cfg.hbbs_port:
                 hbbs_port = cfg.hbbs_port
             if cfg.hbbr_port:
@@ -335,6 +342,29 @@ def index(request):
     if peer_id:
         is_default_peer = peer_id == DEFAULT_PEER_ID
         context = get_server_context(request)
+        try:
+            from api.views_api import load_device_config_updates, is_local_or_lan_host, get_local_server_public_key
+            updates = load_device_config_updates()
+            dev_cfg = updates.get(peer_id)
+            if dev_cfg and isinstance(dev_cfg, dict):
+                dev_host = dev_cfg.get('server_host')
+                dev_key = dev_cfg.get('server_key')
+                if dev_host:
+                    clean_dev_host = re.sub(r'^https?://', '', dev_host).split('/')[0].split(':')[0]
+                    context['domain'] = clean_dev_host
+                    if is_local_or_lan_host(clean_dev_host):
+                        context['public_key'] = get_local_server_public_key()
+                    elif dev_key:
+                        context['public_key'] = dev_key
+                elif dev_key:
+                    context['public_key'] = dev_key
+                if dev_cfg.get('hbbs_port'):
+                    context['hbbs_port'] = dev_cfg.get('hbbs_port')
+                if dev_cfg.get('hbbr_port'):
+                    context['hbbr_port'] = dev_cfg.get('hbbr_port')
+        except Exception:
+            pass
+
         context.update({
             'peer_id': peer_id,
             'peer_alias': request.GET.get('alias') or (DEFAULT_PEER_ALIAS if is_default_peer else peer_id),
@@ -348,6 +378,29 @@ def remote_view(request):
     peer_id = request.GET.get('peer') or DEFAULT_PEER_ID
     is_default_peer = peer_id == DEFAULT_PEER_ID
     context = get_server_context(request)
+    try:
+        from api.views_api import load_device_config_updates, is_local_or_lan_host, get_local_server_public_key
+        updates = load_device_config_updates()
+        dev_cfg = updates.get(peer_id)
+        if dev_cfg and isinstance(dev_cfg, dict):
+            dev_host = dev_cfg.get('server_host')
+            dev_key = dev_cfg.get('server_key')
+            if dev_host:
+                clean_dev_host = re.sub(r'^https?://', '', dev_host).split('/')[0].split(':')[0]
+                context['domain'] = clean_dev_host
+                if is_local_or_lan_host(clean_dev_host):
+                    context['public_key'] = get_local_server_public_key()
+                elif dev_key:
+                    context['public_key'] = dev_key
+            elif dev_key:
+                context['public_key'] = dev_key
+            if dev_cfg.get('hbbs_port'):
+                context['hbbs_port'] = dev_cfg.get('hbbs_port')
+            if dev_cfg.get('hbbr_port'):
+                context['hbbr_port'] = dev_cfg.get('hbbr_port')
+    except Exception:
+        pass
+
     context.update({
         'peer_id': peer_id,
         'peer_alias': request.GET.get('alias') or (DEFAULT_PEER_ALIAS if is_default_peer else peer_id),

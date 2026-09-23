@@ -41,8 +41,12 @@
           alias: targetPeerAlias,
           hostname: targetPeerHostname
         };
-        localStorage.setItem("peers", JSON.stringify(existingPeers));
+      } else {
+        if (targetPeerAlias) existingPeers[targetPeerId].alias = targetPeerAlias;
+        if (targetPeerHostname) existingPeers[targetPeerId].hostname = targetPeerHostname;
       }
+      localStorage.setItem("peers", JSON.stringify(existingPeers));
+      console.log("[WebUI] Initialized connection parameters:", { serverHost: serverHost, serverKey: serverKey, peer: targetPeerId });
     } catch (err) {
       console.error("Storage init error:", err);
     }

@@ -26,14 +26,51 @@ import threading
 logger = logging.getLogger('ninjadesk.api')
 
 
+def get_local_server_public_key():
+    """Returns the true public key of the local hbbs relay server running on this machine."""
+    candidates = [
+        os.path.join(settings.BASE_DIR, '..', 'relayserver', 'id_ed25519.pub'),
+        os.path.join(settings.BASE_DIR, '..', 'keys', 'id_ed25519.pub'),
+        os.path.join(settings.BASE_DIR, 'keys', 'id_ed25519.pub'),
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            try:
+                with open(p, 'r', encoding='utf-8') as f:
+                    k = f.read().strip()
+                    if k:
+                        return k
+            except Exception:
+                pass
+    return getattr(settings, 'SERVER_KEY', getattr(settings, 'KEY', 'DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ='))
+
+
+def is_local_or_lan_host(host_str):
+    if not host_str:
+        return True
+    s = str(host_str).strip()
+    s = re.sub(r'^https?://', '', s).split('/')[0].split(':')[0]
+    if not s or s in ('127.0.0.1', 'localhost', '0.0.0.0'):
+        return True
+    if s.startswith(('192.168.', '10.', '172.')):
+        return True
+    local_cfg = getattr(settings, 'SERVER_HOST', '')
+    if local_cfg:
+        local_clean = re.sub(r'^https?://', '', local_cfg).split('/')[0].split(':')[0]
+        if s == local_clean:
+            return True
+    return False
+
+
 def get_or_create_server_config_state():
     cfg = ServerConfigVersion.objects.order_by('-id').first()
+    local_pub_key = get_local_server_public_key()
     if not cfg:
         raw_default_host = getattr(settings, 'ID_SERVER', '') or getattr(settings, 'SERVER_HOST', '')
         if raw_default_host:
             raw_default_host = re.sub(r'^https?://', '', raw_default_host).split('/')[0].split(':')[0]
         default_host = raw_default_host if raw_default_host else '127.0.0.1'
-        default_key = getattr(settings, 'SERVER_KEY', getattr(settings, 'KEY', 'DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ='))
+        default_key = local_pub_key
         default_hbbs = str(getattr(settings, 'HBBS_PORT', '21116'))
         default_hbbr = str(getattr(settings, 'HBBR_PORT', '21117'))
         cfg = ServerConfigVersion.objects.create(
@@ -44,6 +81,10 @@ def get_or_create_server_config_state():
             hbbr_port=default_hbbr,
             updated_by='system'
         )
+    elif is_local_or_lan_host(cfg.server_host) and cfg.server_key != local_pub_key:
+        # Self-heal corrupted local server records where an old remote key was mistakenly retained
+        cfg.server_key = local_pub_key
+        cfg.save(update_fields=['server_key'])
     return cfg
 
 
@@ -1085,7 +1126,11 @@ def api_device_migrate(request):
             return JsonResponse({'error': 'Invalid target_host'}, status=400)
 
         cfg = ServerConfigVersion.objects.first()
-        target_key = str(data.get('target_key') or data.get('key') or (cfg.server_key if cfg else '')).strip()
+        target_key = str(data.get('target_key') or data.get('key') or '').strip()
+        if is_local_or_lan_host(clean_target_host):
+            target_key = get_local_server_public_key()
+        elif not target_key:
+            target_key = cfg.server_key if cfg else get_local_server_public_key()
         target_relay = str(data.get('target_relay_host') or data.get('relay') or clean_target_host).strip()
 
         try:
@@ -1660,7 +1705,9 @@ def api_device_config(request):
             # If pushing current active server configuration, default to cfg state
             if push_current or not server_host:
                 server_host = cfg.server_host
-            if push_current or not server_key:
+            if is_local_or_lan_host(server_host):
+                server_key = get_local_server_public_key()
+            elif push_current or not server_key:
                 server_key = cfg.server_key
             if push_current or not hbbs_port:
                 hbbs_port = str(cfg.hbbs_port)
