@@ -13,18 +13,18 @@
   "489629155": {
     "pending": false,
     "password_updated_at": "2026-09-19T16:40:38.814050",
-    "server_host": "nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
+    "server_host": "192.168.1.22",
     "server_key": "loesGg8dnOV9n5KIZmNq4PNSvXCxrDw3WXPBXR3430I=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 280,
-    "acknowledged_at": "2026-09-22T15:34:55.965056",
-    "api_server": "http://nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io:8000",
-    "updated_at": "2026-09-22T15:34:51.891661",
+    "version": 283,
+    "acknowledged_at": "2026-09-23T12:35:11.006029",
+    "api_server": "http://192.168.1.22:8000",
+    "updated_at": "2026-09-23T11:49:21.112087",
     "migrated_away": false,
-    "migrated_at": "2026-09-22T17:17:20.320855",
-    "fcm_token": "eomAoZASTsOpiTB6lA4NqI:APA91bHpRumA_tAeaY-OZBs-CeEdnFXetpUReV1tnnb68Geov3PlzunGuXx7_xLbzXliVdHo0IIMiVoH4xwJWLHOADWMRJo111k7x4rVKcPWyDHQr65fgUg",
-    "fcm_updated_at": "2026-09-22T18:42:45.938759"
+    "migrated_at": "2026-09-23T12:35:00.621865",
+    "fcm_token": "c9WYb09yQaauDKTLfyy8tq:APA91bFi3O2BIQrFC2cF7LV1NdaL7zuM6c8PvW45fRRgI2SKr46NkysTcDfVs4I6p4nVjn_2DUEOcYmbuObHwv_OFBjxJsa78tN6mEdTztsgdNSacN_vIqg",
+    "fcm_updated_at": "2026-09-23T12:35:16.365120"
   },
   "619222512": {
     "pending": true,
@@ -79,17 +79,19 @@
   },
   "561781668": {
     "pending": false,
-    "password_updated_at": "2026-09-19T17:47:06.439845",
-    "server_host": "nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
+    "password_updated_at": "2026-09-23T12:05:49.163602",
+    "server_host": "192.168.1.22",
     "server_key": "loesGg8dnOV9n5KIZmNq4PNSvXCxrDw3WXPBXR3430I=",
     "hbbs_port": "21116",
     "hbbr_port": "21117",
-    "version": 280,
-    "acknowledged_at": "2026-09-22T16:37:41.420089",
+    "version": 283,
+    "acknowledged_at": "2026-09-23T12:35:04.301391",
     "migrated_away": false,
-    "api_server": "http://nshuxqgtkawfrx7wv7e5l6cj.103.174.10.206.sslip.io",
+    "api_server": "http://192.168.1.22:8000",
     "migrated_at": "2026-09-21T17:59:36.466319",
-    "updated_at": "2026-09-22T15:34:51.891652"
+    "updated_at": "2026-09-22T18:59:46.846164",
+    "fcm_token": "dqTGbHoOTEqo1eWg2TJwIn:APA91bGjKR3Zx0hi-gAHOpw4fwMu4rIRF_MSRd35PwMipX7b9ssToj1wy-1GrSfXyHrfGcqNdOhBDr5I5P38wlLgaVbixYnIYqJ2m3CWhXP96ibQqfFzJGU",
+    "fcm_updated_at": "2026-09-23T12:35:09.756624"
   },
   "test_fcm_device": {
     "fcm_token": "fake_token_test_12345",

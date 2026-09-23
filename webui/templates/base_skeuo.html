@@ -2041,7 +2041,7 @@
           <span>Waking...</span>
         `;
       }
-      showToast(`⚡ Dispatching wake & service restart signal to ${name || ('Device ' + id)}...`);
+      showToast(`⚡ Dispatching wake push notification to ${name || ('Device ' + id)}...`);
 
       try {
         const res = await fetch('/api/device/wake/', {
@@ -2053,7 +2053,7 @@
         });
         const data = await res.json();
         if (data.status === 'ok') {
-          showToast(`⚡ Wake signal sent via FCM & MQTT to ${name || id}! Services restarting.`);
+          showToast(`⚡ Wake push notification sent to ${name || id}! Services restarting.`);
         } else {
           showToast(`⚠️ Wake warning: ${data.error || 'Failed to dispatch'}`);
         }

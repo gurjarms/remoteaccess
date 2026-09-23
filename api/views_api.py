@@ -863,30 +863,31 @@ def api_device_wake(request):
             'device_id': str(device_id)
         }
 
-        # 1. FCM High-Priority Push
+        # FCM High-Priority Push Notification ONLY (MQTT wake removed as requested)
         fcm_sent = False
+        fcm_msg = ''
         try:
             from . import fcm_service
-            fcm_sent = fcm_service.send_device_command(str(device_id), cmd)
+            fcm_sent, fcm_msg = fcm_service.send_device_command(str(device_id), cmd)
         except Exception as fcm_err:
+            fcm_msg = str(fcm_err)
             logger.warning(f"[api_device_wake] FCM dispatch warning: {fcm_err}")
 
-        # 2. MQTT Low-Latency Push
-        mqtt_sent = False
-        try:
-            from . import mqtt_service
-            mqtt_sent = mqtt_service.publish_device_command(str(device_id), cmd)
-        except Exception as mqtt_err:
-            logger.warning(f"[api_device_wake] MQTT dispatch warning: {mqtt_err}")
+        logger.info(f"[api_device_wake] Wake push notification dispatched for {device_id} (FCM={fcm_sent}, detail={fcm_msg})")
 
-        logger.info(f"[api_device_wake] Wake command dispatched for {device_id} (FCM={fcm_sent}, MQTT={mqtt_sent})")
+        if not fcm_sent:
+            return JsonResponse({
+                'status': 'error',
+                'id': device_id,
+                'fcm_dispatched': False,
+                'error': f'Failed to send wake notification: {fcm_msg or "Unknown error"}'
+            }, status=400)
 
         return JsonResponse({
             'status': 'ok',
             'id': device_id,
-            'fcm_dispatched': bool(fcm_sent),
-            'mqtt_dispatched': bool(mqtt_sent),
-            'message': f'Wake signal successfully dispatched to device {device_id}.'
+            'fcm_dispatched': True,
+            'message': f'Wake push notification successfully dispatched to device {device_id}.'
         })
     except Exception as e:
         logger.error(f"[api_device_wake] Error: {e}")
