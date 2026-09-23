@@ -639,7 +639,7 @@ def api_devices_list(request):
 
         reboot_pending = False
         if getattr(d, 'last_reboot_requested_at', None):
-            if (timezone.now() - d.last_reboot_requested_at).total_seconds() <= 600:
+            if (timezone.now() - d.last_reboot_requested_at).total_seconds() <= 120:
                 reboot_pending = True
 
         data.append({
@@ -741,22 +741,13 @@ def api_device_reboot(request):
         if not device_ids:
             return JsonResponse({'error': 'device id required'}, status=400)
 
-        # Disallow rebooting devices that have been migrated away to another server
+        # Previously blocked migrated devices; now allowed so admins can restart devices regardless
         updates = load_device_config_updates()
-        active_device_ids = []
         for did in device_ids:
             target_cfg = updates.get(str(did).strip())
             if target_cfg and target_cfg.get('migrated_away', False):
-                logger.warning(f"[api_device_reboot] Device {did} was migrated away. Blocking reboot from old server.")
-            else:
-                active_device_ids.append(did)
+                logger.info(f"[api_device_reboot] Device {did} was marked migrated_away, dispatching remote reboot trigger via FCM.")
 
-        if not active_device_ids:
-            return JsonResponse({
-                'error': 'The selected device has been migrated to another server and cannot be rebooted from this server.'
-            }, status=400)
-
-        device_ids = active_device_ids
         now = timezone.now()
         updated_count = RustDesDevice.objects.filter(rid__in=device_ids).update(
             last_reboot_requested_at=now
@@ -1561,12 +1552,12 @@ def api_device_config(request):
         target_cfg = updates.get(rid)
         dev_ver = dev_obj.config_version if dev_obj else 0
 
-        # Check if remote reboot is queued for this device (valid within 10 minutes)
+        # Check if remote reboot is queued for this device (valid within 2 minutes)
         reboot_queued = False
         if dev_obj and getattr(dev_obj, 'last_reboot_requested_at', None) and not is_migrated_away:
             now_tz = timezone.now()
             elapsed_reboot = (now_tz - dev_obj.last_reboot_requested_at).total_seconds()
-            if elapsed_reboot <= 600:
+            if elapsed_reboot <= 120:
                 if elapsed_reboot >= 8:
                     # Device has completed reboot and reconnected online! Clear reboot state.
                     dev_obj.last_reboot_requested_at = None

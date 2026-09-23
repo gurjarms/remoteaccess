@@ -1960,8 +1960,62 @@
     }
 
     // ============================================================================
-    // REMOTE REBOOT HANDLERS
+    // REMOTE REBOOT HANDLERS & 2-MINUTE LOCALSTORAGE TIMEOUT
     // ============================================================================
+    const REBOOT_STORAGE_KEY = 'ninjadesk_pending_reboots';
+    const REBOOT_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes
+
+    function getPendingRebootMap() {
+      try {
+        const raw = localStorage.getItem(REBOOT_STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function isDeviceRebootPending(dev) {
+      if (!dev || !dev.id) return false;
+      const id = String(dev.id);
+      const map = getPendingRebootMap();
+      const expiresAt = map[id];
+      const now = Date.now();
+
+      if (expiresAt) {
+        if (now < expiresAt) {
+          return true; // Still within 2 minute window
+        } else {
+          // Expired after 2 minutes without ack/recovery, remove from storage
+          delete map[id];
+          try { localStorage.setItem(REBOOT_STORAGE_KEY, JSON.stringify(map)); } catch (e) {}
+          return false;
+        }
+      }
+
+      // Fall back to server's reboot_pending flag
+      return !!dev.reboot_pending;
+    }
+
+    function recordDeviceRebootStart(id) {
+      if (!id) return;
+      try {
+        const map = getPendingRebootMap();
+        map[String(id)] = Date.now() + REBOOT_TIMEOUT_MS;
+        localStorage.setItem(REBOOT_STORAGE_KEY, JSON.stringify(map));
+      } catch (e) {}
+    }
+
+    function clearDeviceRebootStart(id) {
+      if (!id) return;
+      try {
+        const map = getPendingRebootMap();
+        if (map[String(id)]) {
+          delete map[String(id)];
+          localStorage.setItem(REBOOT_STORAGE_KEY, JSON.stringify(map));
+        }
+      } catch (e) {}
+    }
+
     let pendingRebootDeviceId = '';
 
     function triggerRebootDevice(id, name) {
@@ -1996,7 +2050,9 @@
         });
         const data = await res.json();
         if (data.status === 'ok') {
-          showToast(`Reboot signal queued for Device ${id}. Out-of-band notification dispatched!`);
+          // Record 2-minute timer in localStorage
+          recordDeviceRebootStart(id);
+          showToast(`Reboot signal queued for Device ${id}. Restart button will re-enable in 2 mins if no ack received.`);
           closeModal('reboot-device-modal');
           if (typeof rawDevices !== 'undefined' && Array.isArray(rawDevices)) {
             const devObj = rawDevices.find(d => String(d.id) === String(id));
