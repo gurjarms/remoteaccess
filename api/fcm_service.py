@@ -15,42 +15,119 @@ if not logger.handlers:
     logging.basicConfig(level=logging.INFO)
 
 _firebase_initialized = False
+_init_error = "Not initialized"
+_active_sa_path = None
 
 
 def _get_service_account_path() -> Optional[str]:
-    candidates = [
-        os.path.join(settings.BASE_DIR, 'service_account.json'),
-        os.path.join(settings.BASE_DIR, '..', 'service_account.json'),
-        os.path.join(settings.BASE_DIR, '..', 'apk_patch', 'service_account.json'),
-    ]
-    for p in candidates:
-        if os.path.exists(p):
+    # 1. Environment variables
+    for env_var in ['GOOGLE_APPLICATION_CREDENTIALS', 'FIREBASE_SERVICE_ACCOUNT_KEY']:
+        p = os.environ.get(env_var)
+        if p and os.path.isfile(p) and os.path.getsize(p) > 50:
             return os.path.abspath(p)
+
+    # 2. Candidate directories
+    base_dir = getattr(settings, 'BASE_DIR', os.getcwd())
+    parent_dir = os.path.abspath(os.path.join(base_dir, '..'))
+    candidate_dirs = [
+        base_dir,
+        parent_dir,
+        os.path.join(base_dir, 'firbaseKey'),
+        os.path.join(parent_dir, 'firbaseKey'),
+        os.path.join(base_dir, 'firebaseKey'),
+        os.path.join(parent_dir, 'firebaseKey'),
+        os.path.join(base_dir, 'apk_patch'),
+        os.path.join(parent_dir, 'apk_patch'),
+    ]
+
+    target_names = [
+        'service_account.json',
+        'service-account.json',
+        'serviceAccount.json',
+        'firebase-service-account.json',
+    ]
+
+    for cdir in candidate_dirs:
+        if not os.path.isdir(cdir):
+            continue
+        for name in target_names:
+            candidate = os.path.join(cdir, name)
+            if os.path.isfile(candidate) and os.path.getsize(candidate) > 50:
+                return os.path.abspath(candidate)
+
+    # 3. Fallback: scan candidate directories for any JSON file with "type": "service_account"
+    for cdir in candidate_dirs:
+        if not os.path.isdir(cdir):
+            continue
+        try:
+            for fname in os.listdir(cdir):
+                if fname.endswith('.json') and ('service' in fname.lower() or 'firebase' in fname.lower() or 'admin' in fname.lower()):
+                    candidate = os.path.join(cdir, fname)
+                    if os.path.isfile(candidate) and os.path.getsize(candidate) > 50:
+                        try:
+                            with open(candidate, 'r', encoding='utf-8') as f:
+                                import json
+                                data = json.load(f)
+                                if data.get('type') == 'service_account' and 'private_key' in data:
+                                    return os.path.abspath(candidate)
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+
     return None
 
 
-def init_firebase() -> bool:
-    global _firebase_initialized
-    if _firebase_initialized:
-        return True
+_firebase_initialized = False
+_init_error = "Not initialized"
+_active_sa_path = None
+_active_sa_mtime = 0.0
+
+
+def init_firebase(force_reload: bool = False) -> bool:
+    global _firebase_initialized, _init_error, _active_sa_path, _active_sa_mtime
 
     sa_path = _get_service_account_path()
     if not sa_path:
-        logger.warning("[FCM] service_account.json not found. FCM push notifications disabled.")
+        _init_error = "service_account.json (or service-account.json) not found in server directory or firbaseKey folder."
+        logger.warning(f"[FCM] {_init_error}")
         return False
+
+    try:
+        current_mtime = os.path.getmtime(sa_path)
+    except Exception:
+        current_mtime = 0.0
+
+    if _firebase_initialized and not force_reload and sa_path == _active_sa_path and current_mtime == _active_sa_mtime:
+        return True
 
     try:
         import firebase_admin
         from firebase_admin import credentials
+    except ImportError as ie:
+        _init_error = f"firebase-admin package is not installed: {ie}. Run 'pip install firebase-admin' on this server."
+        logger.error(f"[FCM] {_init_error}")
+        return False
 
-        if not firebase_admin._apps:
-            cred = credentials.Certificate(sa_path)
-            firebase_admin.initialize_app(cred)
-            logger.info(f"[FCM] Firebase Admin SDK initialized successfully using {sa_path}")
+    try:
+        cred = credentials.Certificate(sa_path)
+        if firebase_admin._apps:
+            # Delete existing default app to reload credentials
+            try:
+                default_app = firebase_admin.get_app()
+                firebase_admin.delete_app(default_app)
+            except Exception:
+                pass
+        firebase_admin.initialize_app(cred)
+        logger.info(f"[FCM] Firebase Admin SDK initialized successfully using {sa_path}")
+        _active_sa_path = sa_path
+        _active_sa_mtime = current_mtime
         _firebase_initialized = True
+        _init_error = ""
         return True
     except Exception as ex:
-        logger.error(f"[FCM] Failed to initialize Firebase Admin SDK: {ex}", exc_info=True)
+        _init_error = f"Failed to initialize Firebase Admin SDK using {sa_path}: {ex}"
+        logger.error(f"[FCM] {_init_error}", exc_info=True)
         return False
 
 
@@ -83,7 +160,7 @@ def send_device_command(device_id: str, command_dict: Dict[str, Any]) -> Tuple[b
     command_dict is automatically converted into string key-value pairs (FCM data format).
     """
     if not init_firebase():
-        return False, "FCM service account not initialized"
+        return False, f"FCM service account not initialized: {_init_error}"
 
     token = get_device_fcm_token(device_id)
     if not token:
@@ -122,8 +199,16 @@ def send_device_command(device_id: str, command_dict: Dict[str, Any]) -> Tuple[b
         RustDesDevice.objects.filter(rid=device_id).update(fcm_token='', fcm_updated_at=None)
         return False, "FCM token unregistered/expired"
     except Exception as ex:
-        logger.error(f"[FCM] Failed to dispatch command to device {device_id}: {ex}")
-        return False, str(ex)
+        err_str = str(ex)
+        if "invalid_grant" in err_str or "Invalid JWT Signature" in err_str:
+            err_str = (
+                f"Invalid JWT Signature: The service account private key in {_active_sa_path or 'service_account.json'} "
+                "has been revoked or replaced on Google Cloud / Firebase Console. "
+                "Please download a fresh private key JSON from Firebase Console (Project Settings -> Service accounts) "
+                "and update service_account.json."
+            )
+        logger.error(f"[FCM] Failed to dispatch command to device {device_id}: {err_str}")
+        return False, err_str
 
 
 def send_multicast_command(device_ids: List[str], command_dict: Dict[str, Any]) -> Dict[str, Any]:
@@ -131,7 +216,7 @@ def send_multicast_command(device_ids: List[str], command_dict: Dict[str, Any]) 
     Broadcasts a command to multiple devices using FCM Multicast.
     """
     if not init_firebase():
-        return {'success': 0, 'failure': len(device_ids), 'errors': ['FCM not initialized']}
+        return {'success': 0, 'failure': len(device_ids), 'errors': [f'FCM not initialized: {_init_error}']}
 
     token_map: Dict[str, str] = {}
     for did in device_ids:
@@ -187,8 +272,16 @@ def send_multicast_command(device_ids: List[str], command_dict: Dict[str, Any]) 
 
         logger.info(f"[FCM] Multicast command dispatched: {success_count} succeeded, {failure_count} failed.")
     except Exception as ex:
-        logger.error(f"[FCM] Multicast exception: {ex}")
-        errors.append(str(ex))
+        err_str = str(ex)
+        if "invalid_grant" in err_str or "Invalid JWT Signature" in err_str:
+            err_str = (
+                f"Invalid JWT Signature: The service account private key in {_active_sa_path or 'service_account.json'} "
+                "has been revoked or replaced on Google Cloud / Firebase Console. "
+                "Please download a fresh private key JSON from Firebase Console (Project Settings -> Service accounts) "
+                "and update service_account.json."
+            )
+        logger.error(f"[FCM] Multicast exception: {err_str}")
+        errors.append(err_str)
 
     return {
         'success': success_count,

@@ -21,6 +21,7 @@ from django.utils.translation import gettext as _
 from django.utils import timezone
 import logging
 import re
+import threading
 
 logger = logging.getLogger('ninjadesk.api')
 
@@ -1200,16 +1201,22 @@ def api_device_migrate_ack(request):
         updates = load_device_config_updates()
         dev_entry = updates.get(device_id, {})
 
+        fcm_token = str(data.get('fcm_token') or data.get('token') or '').strip()
+
         if is_destination:
             # === DEVICE ARRIVED AT THIS DESTINATION SERVER ===
             if dev:
-                RustDesDevice.objects.filter(rid=device_id).update(
-                    migration_pending=False,
-                    current_server_host=to_host or dev.current_server_host,
-                    config_version=target_version,
-                    migrated_at=now,
-                    update_time=now
-                )
+                upd_kwargs = {
+                    'migration_pending': False,
+                    'current_server_host': to_host or dev.current_server_host,
+                    'config_version': target_version,
+                    'migrated_at': now,
+                    'update_time': now
+                }
+                if fcm_token:
+                    upd_kwargs['fcm_token'] = fcm_token
+                    upd_kwargs['fcm_updated_at'] = now
+                RustDesDevice.objects.filter(rid=device_id).update(**upd_kwargs)
             else:
                 try:
                     RustDesDevice.objects.create(
@@ -1219,7 +1226,9 @@ def api_device_migrate_ack(request):
                         current_server_host=to_host,
                         config_version=target_version,
                         migrated_at=now,
-                        rustdesk_service_running=True
+                        rustdesk_service_running=True,
+                        fcm_token=fcm_token,
+                        fcm_updated_at=now if fcm_token else None
                     )
                 except Exception as cr_err:
                     logger.warning(f"[api_device_migrate_ack] Device creation notice: {cr_err}")
@@ -1228,6 +1237,9 @@ def api_device_migrate_ack(request):
             dev_entry['migrated_away'] = False  # Arrived and active here!
             dev_entry['server_host'] = to_host
             dev_entry['version'] = target_version
+            if fcm_token:
+                dev_entry['fcm_token'] = fcm_token
+                dev_entry['fcm_updated_at'] = now.isoformat()
             req_port = request.get_port()
             port_str = f":{req_port}" if str(req_port) not in ('80', '443', 'None', '') else ""
             dev_entry['api_server'] = f"{request.scheme}://{to_host}{port_str}"
