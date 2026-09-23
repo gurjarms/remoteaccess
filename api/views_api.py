@@ -762,25 +762,34 @@ def api_device_reboot(request):
             last_reboot_requested_at=now
         )
 
-        # Broadcast instant reboot command via FCM (Primary) and MQTT (Fallback)
+        # Dispatch instant reboot command via FCM Push Notification
+        fcm_sent = False
+        fcm_err_msg = None
         try:
-            from . import fcm_service, mqtt_service
+            from . import fcm_service
             for dev_id in device_ids:
                 cmd = {
                     'action': 'reboot',
                     'timestamp': int(now.timestamp()),
                     'device_id': str(dev_id)
                 }
-                fcm_service.send_device_command(str(dev_id), cmd)
-                mqtt_service.publish_device_command(str(dev_id), cmd)
+                success, msg = fcm_service.send_device_command(str(dev_id), cmd)
+                if success:
+                    fcm_sent = True
+                    logger.info(f"[api_device_reboot] Successfully dispatched FCM reboot notification to device {dev_id}")
+                else:
+                    fcm_err_msg = msg
+                    logger.warning(f"[api_device_reboot] FCM reboot notification note for device {dev_id}: {msg}")
         except Exception as dispatch_err:
-            logger.warning(f"[api_device_reboot] Dispatch warning: {dispatch_err}")
+            fcm_err_msg = str(dispatch_err)
+            logger.warning(f"[api_device_reboot] FCM notification dispatch error: {dispatch_err}")
 
         return JsonResponse({
             'status': 'ok',
             'device_ids': device_ids,
             'count': updated_count,
-            'message': f'Remote reboot command successfully queued and broadcast via FCM/MQTT for {updated_count} device(s).'
+            'fcm_dispatched': fcm_sent,
+            'message': f'Remote reboot notification queued and dispatched via FCM for {updated_count} device(s).' + (f' Note: {fcm_err_msg}' if not fcm_sent and fcm_err_msg else '')
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
@@ -1168,7 +1177,7 @@ def api_device_migrate_ack(request):
     Sent to BOTH origin server (confirming departure) and destination server (confirming arrival).
     Accepts: {
         'id': '<deviceId>',
-        'from': '192.168.1.22',
+        'from': '192.168.1.36',
         'to': '192.168.1.50',
         'status': 'ok'
     }

@@ -1,4 +1,5 @@
 env
+.env
 *.pyc
 __pycache__/
 *.sqlite3*
@@ -6,3 +7,4 @@ __pycache__/
 db/device_config_updates.json
 db/device_passwords.json
 service_account.json
+*/service_account.json 

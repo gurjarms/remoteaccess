@@ -406,9 +406,11 @@
         <span>Pending & Outdated</span>
       </div>
       <div style="display: flex; align-items: baseline; gap: 8px;">
-        <span class="metric-val" id="stat-pending-count" style="color: #f59e0b; font-size: 24px;">{{ pending_devices_count }}</span>
+        <span class="metric-val" id="stat-pending-count" style="color: #f59e0b; font-size: 24px;">{{
+          pending_devices_count }}</span>
         <span style="font-size: 12px; color: var(--text-muted);">pending •</span>
-        <span class="metric-val" id="stat-outdated-count" style="color: #ef4444; font-size: 24px;">{{ outdated_devices_count }}</span>
+        <span class="metric-val" id="stat-outdated-count" style="color: #ef4444; font-size: 24px;">{{
+          outdated_devices_count }}</span>
         <span style="font-size: 12px; color: var(--text-muted);">outdated</span>
       </div>
       <div class="metric-sub">
@@ -431,7 +433,8 @@
         {{ domain }}:{{ hbbs_port }}
       </div>
       <div class="metric-sub">
-        Updated: <span id="stat-updated-at" style="color: var(--text-main); font-weight: 600;">{{ config_updated_at }}</span>
+        Updated: <span id="stat-updated-at" style="color: var(--text-main); font-weight: 600;">{{ config_updated_at
+          }}</span>
       </div>
     </div>
   </div>
@@ -495,29 +498,29 @@
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
         <label class="form-label" style="margin-bottom: 0;">Relay &amp; ID Server Host / IP</label>
       </div>
-      <input type="text" id="target-host" class="form-input"
-        value="{{ domain }}" placeholder="e.g. remote.domain.com or 192.168.1.22:8000" autocomplete="off" autocorrect="off"
+      <input type="text" id="target-host" class="form-input" value="{{ domain }}"
+        placeholder="e.g. remote.domain.com or 192.168.1.36:8000" autocomplete="off" autocorrect="off"
         autocapitalize="off" spellcheck="false">
     </div>
 
 
     <div class="form-group">
       <label class="form-label">Server Public Key</label>
-      <input type="text" id="target-key" class="form-input"
-        value="{{ public_key }}" placeholder="e.g. DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=" autocomplete="off"
-        autocorrect="off" autocapitalize="off" spellcheck="false">
+      <input type="text" id="target-key" class="form-input" value="{{ public_key }}"
+        placeholder="e.g. DBq6By4uWAZ1gVgxQYoCXtvNWUyQJzrrIqT4FqYZ2pQ=" autocomplete="off" autocorrect="off"
+        autocapitalize="off" spellcheck="false">
     </div>
 
     <div class="form-group">
       <label class="form-label">HBBS Port (Signaling &amp; ID)</label>
-      <input type="text" id="target-hbbs-port" class="form-input"
-        value="{{ hbbs_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <input type="text" id="target-hbbs-port" class="form-input" value="{{ hbbs_port }}" autocomplete="off"
+        autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
 
     <div class="form-group">
       <label class="form-label">HBBR Port (Data Relay)</label>
-      <input type="text" id="target-hbbr-port" class="form-input"
-        value="{{ hbbr_port }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <input type="text" id="target-hbbr-port" class="form-input" value="{{ hbbr_port }}" autocomplete="off"
+        autocorrect="off" autocapitalize="off" spellcheck="false">
     </div>
   </div>
 
@@ -528,7 +531,8 @@
         <line x1="12" y1="16" x2="12" y2="12" />
         <line x1="12" y1="8" x2="12.01" y2="8" />
       </svg>
-      <span>Broadcasting will increment the server version to <strong>v<span id="next-version-indicator">{{ server_version|add:1 }}</span></strong>.</span>
+      <span>Broadcasting will increment the server version to <strong>v<span id="next-version-indicator">{{
+            server_version|add:1 }}</span></strong>.</span>
     </div>
 
     <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
@@ -550,16 +554,20 @@
 
       <div style="width: 1px; height: 28px; background: var(--card-border); margin: 0 4px;"></div>
 
-      <button class="tactile-btn" style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: #fff; border-color: #4338ca; padding: 10px 16px; font-size: 12px;"
-        onclick="migrateViaNotification(false)" title="Send instant push notification command to selected devices using parameters above">
+      <button class="tactile-btn"
+        style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: #fff; border-color: #4338ca; padding: 10px 16px; font-size: 12px;"
+        onclick="migrateViaNotification(false)"
+        title="Send instant push notification command to selected devices using parameters above">
         <svg class="icon icon-sm" viewBox="0 0 24 24">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
         </svg>
         <span>Migrate Selected via Notification (<span id="migrate-selected-count">0</span>)</span>
       </button>
-      <button class="tactile-btn" style="background: rgba(99, 102, 241, 0.18); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.45); padding: 10px 16px; font-size: 12px;"
-        onclick="migrateViaNotification(true)" title="Send instant push notification command to ALL devices using parameters above">
+      <button class="tactile-btn"
+        style="background: rgba(99, 102, 241, 0.18); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.45); padding: 10px 16px; font-size: 12px;"
+        onclick="migrateViaNotification(true)"
+        title="Send instant push notification command to ALL devices using parameters above">
         <svg class="icon icon-sm" viewBox="0 0 24 24">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
@@ -588,7 +596,10 @@
       </div>
     </div>
     <span class="badge-tag badge-readonly" style="align-self: flex-start; gap: 6px;">
-      <svg class="icon icon-sm" viewBox="0 0 24 24" style="width:11px;height:11px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+      <svg class="icon icon-sm" viewBox="0 0 24 24" style="width:11px;height:11px;">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
       View Only
     </span>
   </div>
@@ -600,10 +611,13 @@
       <div style="display: flex; gap: 8px; align-items: center;">
         <input type="text" class="form-input input-locked" value="{{ domain }}" readonly
           style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 13px;">
-        <button class="tactile-btn tactile-btn-secondary" style="padding: 8px 12px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
-          data-copy="{{ domain }}" data-label="Server Host"
-          onclick="copyToClipboard(this.dataset.copy, this.dataset.label)">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <button class="tactile-btn tactile-btn-secondary"
+          style="padding: 8px 12px; font-size: 11px; white-space: nowrap; flex-shrink: 0;" data-copy="{{ domain }}"
+          data-label="Server Host" onclick="copyToClipboard(this.dataset.copy, this.dataset.label)">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
           <span>Copy</span>
         </button>
       </div>
@@ -615,10 +629,13 @@
       <div style="display: flex; gap: 8px; align-items: center;">
         <input type="text" class="form-input input-locked" value="{{ hbbs_port }}" readonly
           style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 13px;">
-        <button class="tactile-btn tactile-btn-secondary" style="padding: 8px 12px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
-          data-copy="{{ hbbs_port }}" data-label="HBBS Port"
-          onclick="copyToClipboard(this.dataset.copy, this.dataset.label)">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <button class="tactile-btn tactile-btn-secondary"
+          style="padding: 8px 12px; font-size: 11px; white-space: nowrap; flex-shrink: 0;" data-copy="{{ hbbs_port }}"
+          data-label="HBBS Port" onclick="copyToClipboard(this.dataset.copy, this.dataset.label)">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
           <span>Copy</span>
         </button>
       </div>
@@ -630,10 +647,13 @@
       <div style="display: flex; gap: 8px; align-items: center;">
         <input type="text" class="form-input input-locked" value="{{ hbbr_port }}" readonly
           style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 13px;">
-        <button class="tactile-btn tactile-btn-secondary" style="padding: 8px 12px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
-          data-copy="{{ hbbr_port }}" data-label="HBBR Port"
-          onclick="copyToClipboard(this.dataset.copy, this.dataset.label)">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <button class="tactile-btn tactile-btn-secondary"
+          style="padding: 8px 12px; font-size: 11px; white-space: nowrap; flex-shrink: 0;" data-copy="{{ hbbr_port }}"
+          data-label="HBBR Port" onclick="copyToClipboard(this.dataset.copy, this.dataset.label)">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
           <span>Copy</span>
         </button>
       </div>
@@ -645,10 +665,13 @@
       <div style="display: flex; gap: 8px; align-items: center;">
         <input type="text" class="form-input input-locked" value="{{ public_key }}" readonly
           style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
-        <button class="tactile-btn tactile-btn-secondary" style="padding: 8px 12px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
-          data-copy="{{ public_key }}" data-label="Public Key"
-          onclick="copyToClipboard(this.dataset.copy, this.dataset.label)">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <button class="tactile-btn tactile-btn-secondary"
+          style="padding: 8px 12px; font-size: 11px; white-space: nowrap; flex-shrink: 0;" data-copy="{{ public_key }}"
+          data-label="Public Key" onclick="copyToClipboard(this.dataset.copy, this.dataset.label)">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
           <span>Copy</span>
         </button>
       </div>
@@ -661,9 +684,13 @@
         <input type="text" class="form-input input-locked" id="ro-client-string"
           value="host={{ domain }}:{{ hbbs_port }},key={{ public_key }}" readonly
           style="flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 12px;">
-        <button class="tactile-btn tactile-btn-primary" style="padding: 8px 14px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
+        <button class="tactile-btn tactile-btn-primary"
+          style="padding: 8px 14px; font-size: 11px; white-space: nowrap; flex-shrink: 0;"
           onclick="copyToClipboard(document.getElementById('ro-client-string').value, 'Client Config String')">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
           <span>Copy Full String</span>
         </button>
       </div>
@@ -780,8 +807,7 @@
       <thead>
         <tr>
           <th style="width: 36px; text-align: center;">
-            <input type="checkbox" id="check-all" class="row-checkbox"
-              onchange="toggleCheckAll(this.checked)">
+            <input type="checkbox" id="check-all" class="row-checkbox" onchange="toggleCheckAll(this.checked)">
           </th>
           <th>Device Name &amp; Hardware ID</th>
           <th>IP Address</th>
@@ -1246,8 +1272,8 @@ ${host}:${hbbs_port}`)) {
       }
     }
 
-    const targetDesc = singleId 
-      ? `Device ${singleId}` 
+    const targetDesc = singleId
+      ? `Device ${singleId}`
       : (migrateAll ? 'ALL registered devices' : `${targetIds.length} selected device(s)`);
 
     if (!confirm(`🚀 MIGRATE VIA INSTANT NOTIFICATION?\n\nTarget: ${targetDesc}\nDestination Server: ${host}\n\nDevices will receive instant MQTT & polling notification, update settings on disk, and immediately reconnect to the new server.`)) {
