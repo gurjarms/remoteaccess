@@ -6,6 +6,8 @@ Replaces / supplements MQTT.
 """
 
 import os
+import json
+import base64
 import logging
 from typing import Tuple, Dict, Any, List, Optional
 from django.conf import settings
@@ -17,21 +19,84 @@ if not logger.handlers:
 _firebase_initialized = False
 _init_error = "Not initialized"
 _active_sa_path = None
+_active_sa_mtime = 0.0
+
+
+def _get_service_account_credentials() -> Tuple[Optional[Any], str, float]:
+    """
+    Returns (cert_dict_or_path, identifier_str, mtime/hash).
+    Supports:
+    1. FIREBASE_SERVICE_ACCOUNT_JSON (raw JSON string in Coolify environment or .env)
+    2. FIREBASE_SERVICE_ACCOUNT_B64 / FIREBASE_SERVICE_ACCOUNT_BASE64 (base64-encoded JSON)
+    3. Direct JSON or base64 in FIREBASE_SERVICE_ACCOUNT_KEY
+    4. File path on disk via _get_service_account_path()
+    """
+    # 1. Environment / Settings JSON string or Base64 (Ideal for Coolify / Docker)
+    for var in ['FIREBASE_SERVICE_ACCOUNT_JSON', 'FIREBASE_SERVICE_ACCOUNT_KEY', 'FIREBASE_CREDENTIALS_JSON']:
+        val = os.environ.get(var) or getattr(settings, var, None)
+        if not val:
+            continue
+        val_str = str(val).strip()
+        # Direct JSON string
+        if val_str.startswith('{') and 'private_key' in val_str:
+            try:
+                data = json.loads(val_str)
+                if data.get('type') == 'service_account' and 'private_key' in data:
+                    return data, f"env:{var}", float(len(val_str))
+            except Exception:
+                pass
+        # Base64 encoded JSON
+        if val_str.startswith('ey') or 'base64' in var.lower():
+            try:
+                decoded = base64.b64decode(val_str).decode('utf-8')
+                data = json.loads(decoded)
+                if data.get('type') == 'service_account' and 'private_key' in data:
+                    return data, f"env:{var}(base64)", float(len(val_str))
+            except Exception:
+                pass
+
+    for var in ['FIREBASE_SERVICE_ACCOUNT_B64', 'FIREBASE_SERVICE_ACCOUNT_BASE64']:
+        val = os.environ.get(var) or getattr(settings, var, None)
+        if val:
+            val_str = str(val).strip()
+            try:
+                decoded = base64.b64decode(val_str).decode('utf-8')
+                data = json.loads(decoded)
+                if data.get('type') == 'service_account' and 'private_key' in data:
+                    return data, f"env:{var}", float(len(val_str))
+            except Exception:
+                pass
+
+    # 2. File path on disk
+    path = _get_service_account_path()
+    if path:
+        try:
+            mtime = os.path.getmtime(path)
+        except Exception:
+            mtime = 0.0
+        return path, path, mtime
+
+    return None, "", 0.0
 
 
 def _get_service_account_path() -> Optional[str]:
-    # 1. Environment variables
-    for env_var in ['GOOGLE_APPLICATION_CREDENTIALS', 'FIREBASE_SERVICE_ACCOUNT_KEY']:
-        p = os.environ.get(env_var)
-        if p and os.path.isfile(p) and os.path.getsize(p) > 50:
-            return os.path.abspath(p)
+    # 1. Environment variables and Django settings
+    for env_var in ['GOOGLE_APPLICATION_CREDENTIALS', 'FIREBASE_SERVICE_ACCOUNT_KEY', 'FIREBASE_SERVICE_ACCOUNT_PATH']:
+        p = os.environ.get(env_var) or getattr(settings, env_var, None)
+        if p and os.path.isfile(str(p)) and os.path.getsize(str(p)) > 50:
+            return os.path.abspath(str(p))
 
     # 2. Candidate directories
-    base_dir = getattr(settings, 'BASE_DIR', os.getcwd())
+    server_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    base_dir = str(getattr(settings, 'BASE_DIR', server_root))
     parent_dir = os.path.abspath(os.path.join(base_dir, '..'))
     candidate_dirs = [
+        server_root,
         base_dir,
+        os.getcwd(),
         parent_dir,
+        os.path.join(server_root, 'firbaseKey'),
+        os.path.join(server_root, 'firebaseKey'),
         os.path.join(base_dir, 'firbaseKey'),
         os.path.join(parent_dir, 'firbaseKey'),
         os.path.join(base_dir, 'firebaseKey'),
@@ -66,7 +131,6 @@ def _get_service_account_path() -> Optional[str]:
                     if os.path.isfile(candidate) and os.path.getsize(candidate) > 50:
                         try:
                             with open(candidate, 'r', encoding='utf-8') as f:
-                                import json
                                 data = json.load(f)
                                 if data.get('type') == 'service_account' and 'private_key' in data:
                                     return os.path.abspath(candidate)
@@ -78,27 +142,19 @@ def _get_service_account_path() -> Optional[str]:
     return None
 
 
-_firebase_initialized = False
-_init_error = "Not initialized"
-_active_sa_path = None
-_active_sa_mtime = 0.0
-
-
 def init_firebase(force_reload: bool = False) -> bool:
     global _firebase_initialized, _init_error, _active_sa_path, _active_sa_mtime
 
-    sa_path = _get_service_account_path()
-    if not sa_path:
-        _init_error = "service_account.json (or service-account.json) not found in server directory or firbaseKey folder."
+    cred_source, identifier, current_mtime = _get_service_account_credentials()
+    if not cred_source:
+        _init_error = (
+            "Firebase credentials not found. In Coolify, add environment variable "
+            "FIREBASE_SERVICE_ACCOUNT_JSON or FIREBASE_SERVICE_ACCOUNT_B64, or place service_account.json in server root."
+        )
         logger.warning(f"[FCM] {_init_error}")
         return False
 
-    try:
-        current_mtime = os.path.getmtime(sa_path)
-    except Exception:
-        current_mtime = 0.0
-
-    if _firebase_initialized and not force_reload and sa_path == _active_sa_path and current_mtime == _active_sa_mtime:
+    if _firebase_initialized and not force_reload and identifier == _active_sa_path and current_mtime == _active_sa_mtime:
         return True
 
     try:
@@ -110,7 +166,7 @@ def init_firebase(force_reload: bool = False) -> bool:
         return False
 
     try:
-        cred = credentials.Certificate(sa_path)
+        cred = credentials.Certificate(cred_source)
         if firebase_admin._apps:
             # Delete existing default app to reload credentials
             try:
@@ -119,16 +175,17 @@ def init_firebase(force_reload: bool = False) -> bool:
             except Exception:
                 pass
         firebase_admin.initialize_app(cred)
-        logger.info(f"[FCM] Firebase Admin SDK initialized successfully using {sa_path}")
-        _active_sa_path = sa_path
+        logger.info(f"[FCM] Firebase Admin SDK initialized successfully using {identifier}")
+        _active_sa_path = identifier
         _active_sa_mtime = current_mtime
         _firebase_initialized = True
         _init_error = ""
         return True
     except Exception as ex:
-        _init_error = f"Failed to initialize Firebase Admin SDK using {sa_path}: {ex}"
+        _init_error = f"Failed to initialize Firebase Admin SDK using {identifier}: {ex}"
         logger.error(f"[FCM] {_init_error}", exc_info=True)
         return False
+
 
 
 def get_device_fcm_token(device_id: str) -> Optional[str]:
