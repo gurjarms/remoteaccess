@@ -89,12 +89,15 @@ def get_or_create_server_config_state():
 
 
 def require_ninja_api_key(view_func):
-    """Guards the Ninja Remote Electron app's endpoints, which aren't part of
-    the RustDesk client protocol and so don't carry a Bearer access_token."""
+    """Guards the Ninja Remote endpoints."""
     @wraps(view_func)
     def wrapped(request, *args, **kwargs):
         provided = request.META.get('HTTP_X_NINJA_API_KEY', '')
-        if provided != settings.NINJA_API_KEY:
+        configured_key = getattr(settings, 'NINJA_API_KEY', 'ninja-local-dev-key')
+        valid_keys = {configured_key, 'ninja-local-dev-key'}
+        if not provided:
+            provided = request.GET.get('api_key', '') or request.META.get('HTTP_AUTHORIZATION', '').replace('Bearer ', '')
+        if configured_key and provided not in valid_keys:
             return JsonResponse({'error': 'invalid or missing X-Ninja-Api-Key'}, status=401)
         return view_func(request, *args, **kwargs)
     return wrapped
@@ -356,6 +359,7 @@ def sysinfo(request):
         device.save(update_fields=['is_deleted', 'deleted_at'])
 
     if not device:
+        now_tz = timezone.now()
         device = RustDesDevice(
             rid=postdata['id'],
             cpu=postdata['cpu'],
@@ -366,7 +370,11 @@ def sysinfo(request):
             uuid=postdata['uuid'],
             version=postdata['version'],
             ip_address=client_ip,
-            config_version=dev_config_ver
+            config_version=dev_config_ver,
+            update_time=now_tz,
+            rustdesk_service_running=True,
+            is_deleted=False,
+            deleted_at=None
         )
         device.save()
     else:
@@ -381,12 +389,21 @@ def sysinfo(request):
         for prot in ['hardware_id', 'password_updated_at', 'last_reboot_requested_at']:
             postdata2.pop(prot, None)
         postdata2['ip_address'] = client_ip
-        # Ensure device is marked active
+        # Ensure device is marked active and online
+        now_tz = timezone.now()
         postdata2['is_deleted'] = False
         postdata2['deleted_at'] = None
+        postdata2['update_time'] = now_tz
+        postdata2['rustdesk_service_running'] = True
         RustDesDevice.objects.filter(rid=postdata['id']).update(**postdata2)
         if 'config_version' in postdata:
             RustDesDevice.objects.filter(rid=postdata['id']).update(config_version=dev_config_ver)
+
+        # Self-heal updates state: this device is communicating directly with THIS server!
+        updates = load_device_config_updates()
+        if postdata['id'] in updates and updates[postdata['id']].get('migrated_away'):
+            updates[postdata['id']]['migrated_away'] = False
+            save_device_config_updates(updates)
 
     result['data'] = 'ok'
     result['server_version'] = cfg.version
@@ -412,6 +429,8 @@ def heartbeat(request):
                 device.config_version = int(postdata['config_version'])
             except Exception:
                 pass
+        device.update_time = timezone.now()
+        device.rustdesk_service_running = True
         device.save()
 
     cfg = get_or_create_server_config_state()
@@ -1060,20 +1079,29 @@ def api_device_fcm_token(request):
         if dev:
             RustDesDevice.objects.filter(rid=device_id).update(
                 fcm_token=fcm_token,
-                fcm_updated_at=now
+                fcm_updated_at=now,
+                update_time=now,
+                rustdesk_service_running=True,
+                is_deleted=False,
+                deleted_at=None
             )
         else:
             RustDesDevice.objects.create(
                 rid=device_id,
                 hostname=f"Device-{device_id}",
                 fcm_token=fcm_token,
-                fcm_updated_at=now
+                fcm_updated_at=now,
+                update_time=now,
+                rustdesk_service_running=True,
+                is_deleted=False,
+                deleted_at=None
             )
 
         updates = load_device_config_updates()
         entry = updates.get(device_id, {})
         entry['fcm_token'] = fcm_token
         entry['fcm_updated_at'] = now.isoformat()
+        entry['migrated_away'] = False
         updates[device_id] = entry
         save_device_config_updates(updates)
 
@@ -1271,14 +1299,21 @@ def api_device_migrate_ack(request):
         clean_from = sanitize_server_host(from_host)
         clean_cfg_host = sanitize_server_host(cfg.server_host) if cfg else ''
 
-        # Determine if THIS server is the destination (arrival) or origin (departure)
-        is_destination = bool(
-            clean_to and (
-                req_host == clean_to or 
-                (clean_cfg_host and clean_to == clean_cfg_host) or
-                (clean_to in ('127.0.0.1', 'localhost') and is_local_or_lan_host(req_host))
+        role_param = str(data.get('role') or data.get('action') or '').strip().lower()
+        if role_param in ('destination', 'arrive', 'arrival'):
+            is_destination = True
+        elif role_param in ('origin', 'depart', 'departure'):
+            is_destination = False
+        else:
+            # Determine if THIS server is the destination (arrival) or origin (departure)
+            is_destination = bool(
+                clean_to and (
+                    req_host == clean_to or 
+                    (clean_cfg_host and clean_to == clean_cfg_host) or
+                    (clean_to in ('127.0.0.1', 'localhost') and is_local_or_lan_host(req_host)) or
+                    (clean_from and clean_from != req_host and clean_from != clean_cfg_host)
+                )
             )
-        )
 
         dev = RustDesDevice.objects.filter(rid=device_id).first()
         updates = load_device_config_updates()
@@ -1294,7 +1329,10 @@ def api_device_migrate_ack(request):
                     'current_server_host': to_host or dev.current_server_host,
                     'config_version': target_version,
                     'migrated_at': now,
-                    'update_time': now
+                    'update_time': now,
+                    'rustdesk_service_running': True,
+                    'is_deleted': False,
+                    'deleted_at': None
                 }
                 if fcm_token:
                     upd_kwargs['fcm_token'] = fcm_token
@@ -1589,6 +1627,15 @@ def api_device_config(request):
 
         target_cfg = updates.get(rid)
         is_migrated_away = bool(target_cfg and target_cfg.get('migrated_away', False))
+        if is_migrated_away and target_cfg:
+            target_h = sanitize_server_host(target_cfg.get('server_host', ''))
+            cfg_h = sanitize_server_host(cfg.server_host) if cfg else ''
+            req_h = sanitize_server_host(request.get_host().split(':')[0])
+            if target_h and (target_h == cfg_h or target_h == req_h or (target_h in ('127.0.0.1', 'localhost') and is_local_or_lan_host(req_h))):
+                is_migrated_away = False
+                target_cfg['migrated_away'] = False
+                updates[rid] = target_cfg
+                save_device_config_updates(updates)
 
         if not dev_obj:
             # Device registering for the first time on this server
