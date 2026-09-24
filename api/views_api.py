@@ -1127,16 +1127,44 @@ def api_device_migrate(request):
 
         cfg = ServerConfigVersion.objects.first()
         target_key = str(data.get('target_key') or data.get('key') or '').strip()
-        if is_local_or_lan_host(clean_target_host):
-            target_key = get_local_server_public_key()
-        elif not target_key:
-            target_key = cfg.server_key if cfg else get_local_server_public_key()
+        if not target_key:
+            if is_local_or_lan_host(clean_target_host):
+                target_key = get_local_server_public_key()
+            else:
+                target_key = cfg.server_key if cfg else get_local_server_public_key()
         target_relay = str(data.get('target_relay_host') or data.get('relay') or clean_target_host).strip()
 
         try:
-            target_api_port = int(data.get('target_api_port') or data.get('api_port') or 8000)
+            target_api_port = int(data.get('target_api_port') or data.get('api_port') or 0)
         except (ValueError, TypeError):
-            target_api_port = 8000
+            target_api_port = 0
+
+        is_secure_request = bool(
+            request.is_secure() or 
+            request.META.get('HTTP_X_FORWARDED_PROTO', '').lower() == 'https' or
+            request.META.get('HTTP_CF_VISITOR', '').find('"https"') != -1
+        )
+        is_domain_target = bool(
+            clean_target_host and 
+            '.' in clean_target_host and 
+            not clean_target_host.replace('.', '').isdigit() and 
+            not is_local_or_lan_host(clean_target_host)
+        )
+
+        target_scheme = str(data.get('target_scheme') or data.get('scheme') or '').strip().lower()
+        if not target_scheme:
+            if is_domain_target or is_secure_request or target_api_port == 443:
+                target_scheme = 'https'
+            else:
+                target_scheme = 'http'
+
+        if not target_api_port:
+            if target_scheme == 'https':
+                target_api_port = 443
+            elif is_local_or_lan_host(clean_target_host):
+                target_api_port = 8000
+            else:
+                target_api_port = 80
 
         now = timezone.now()
         is_local = bool(cfg and clean_target_host == sanitize_server_host(cfg.server_host))
@@ -1151,12 +1179,14 @@ def api_device_migrate(request):
             'host': clean_target_host,
             'key': target_key,
             'api_port': target_api_port,
+            'scheme': target_scheme,
             'relay': target_relay,
             'version': cfg.version if cfg else 1,
             'timestamp': int(now.timestamp())
         }
 
         fcm_dispatched_count = 0
+        api_port_suffix = f":{target_api_port}" if target_api_port not in (80, 443) else ""
         for did in device_ids:
             if not did:
                 continue
@@ -1168,7 +1198,7 @@ def api_device_migrate(request):
             dev_entry['migrated_away'] = not is_local
             dev_entry['server_host'] = clean_target_host
             dev_entry['server_key'] = target_key
-            dev_entry['api_server'] = f"http://{clean_target_host}:{target_api_port}"
+            dev_entry['api_server'] = f"{target_scheme}://{clean_target_host}{api_port_suffix}"
             dev_entry['version'] = target_version
             dev_entry['migrated_at'] = now.isoformat()
             updates[did] = dev_entry
@@ -1240,7 +1270,13 @@ def api_device_migrate_ack(request):
         clean_cfg_host = sanitize_server_host(cfg.server_host) if cfg else ''
 
         # Determine if THIS server is the destination (arrival) or origin (departure)
-        is_destination = bool(clean_to and (req_host == clean_to or clean_to in ('127.0.0.1', 'localhost') or (clean_cfg_host and clean_to == clean_cfg_host)))
+        is_destination = bool(
+            clean_to and (
+                req_host == clean_to or 
+                (clean_cfg_host and clean_to == clean_cfg_host) or
+                (clean_to in ('127.0.0.1', 'localhost') and is_local_or_lan_host(req_host))
+            )
+        )
 
         dev = RustDesDevice.objects.filter(rid=device_id).first()
         updates = load_device_config_updates()
