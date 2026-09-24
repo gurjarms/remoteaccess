@@ -250,6 +250,11 @@
       });
       const data = await res.json();
       rawDevices = data.devices || [];
+      rawDevices.sort((a, b) => {
+        const nameA = (a.name || a.hostname || a.id || '').trim().toLowerCase();
+        const nameB = (b.name || b.hostname || b.id || '').trim().toLowerCase();
+        return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+      });
       renderDevices();
     } catch (e) {
       document.getElementById('devices-grid-container').innerHTML = `

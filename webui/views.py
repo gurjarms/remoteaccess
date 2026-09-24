@@ -463,7 +463,7 @@ def migration_view(request):
     cfg = get_or_create_server_config_state()
     updates = load_device_config_updates()
 
-    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False).order_by('-update_time')
+    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False).order_by('hostname', 'rid')
     total = devices.count()
     synced = 0
     pending_count = 0

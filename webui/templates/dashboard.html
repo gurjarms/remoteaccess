@@ -621,6 +621,11 @@
         });
         const data = await res.json();
         devices = data.devices || [];
+        devices.sort((a, b) => {
+          const nameA = (a.name || a.hostname || a.id || '').trim().toLowerCase();
+          const nameB = (b.name || b.hostname || b.id || '').trim().toLowerCase();
+          return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+        });
         renderTable();
       } catch (err) {
         console.error("Error loading devices:", err);

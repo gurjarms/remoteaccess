@@ -643,7 +643,7 @@ def api_devices_list(request):
     Returns full device list with telemetry for the Ninja Remote desktop app.
     """
     now = datetime.datetime.now()
-    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False).order_by('-update_time')
+    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False).order_by('hostname', 'rid')
     peers = {}
     for p in RustDeskPeer.objects.all():
         if p.rid not in peers or (p.alias and not peers[p.rid].alias):
@@ -706,6 +706,8 @@ def api_devices_list(request):
             'password_updated_at': password_updated_at_str,
             'info': {'cpu': d.cpu, 'memory': d.memory, 'version': d.version, 'uuid': d.uuid, 'hardware_id': d.hardware_id},
         })
+    # Alphabetical sorting by display name/alias to ensure stable card positions across heartbeats
+    data.sort(key=lambda x: (str(x.get('name') or x.get('hostname') or x.get('id') or '')).strip().lower())
     return JsonResponse({'devices': data, 'count': len(data)})
 
 
@@ -1934,7 +1936,7 @@ def api_device_sync_status(request):
     """
     cfg = get_or_create_server_config_state()
     updates = load_device_config_updates()
-    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False).order_by('-update_time')
+    devices = RustDesDevice.objects.filter(os__icontains='android', is_deleted=False).order_by('hostname', 'rid')
     peers = {}
     for p in RustDeskPeer.objects.all():
         if p.rid not in peers or (p.alias and not peers[p.rid].alias):
@@ -1994,6 +1996,9 @@ def api_device_sync_status(request):
             'config_updated_at': d.config_updated_at.strftime('%Y-%m-%d %H:%M:%S') if d.config_updated_at else None,
             'last_seen': d.update_time.strftime('%Y-%m-%d %H:%M:%S') if d.update_time else None,
         })
+
+    # Alphabetical sorting by display name/alias to ensure stable matrix rows
+    device_list.sort(key=lambda x: (str(x.get('name') or x.get('hostname') or x.get('id') or '')).strip().lower())
 
     total = len(device_list)
     sync_pct = round((synced / total * 100)) if total > 0 else 100
